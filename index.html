@@ -565,9 +565,13 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
           </div>
         </div>
 
-        <div class="upload-zone" id="m-upload" onclick="document.getElementById('m-file').click()">
+        <div class="upload-zone" id="m-upload"
+          onclick="document.getElementById('m-file').click()"
+          ondragover="monthlyDragOver(event)"
+          ondragleave="monthlyDragLeave(event)"
+          ondrop="monthlyDrop(event)">
           <div style="font-size:26px;margin-bottom:5px">📋</div>
-          <div style="font-size:13px;color:#555;margin-bottom:2px">급여제공기록지 파일 업로드</div>
+          <div style="font-size:13px;color:#555;margin-bottom:2px">클릭하거나 파일을 여기에 드래그하세요</div>
           <div style="font-size:11px;color:#999">케어포 내보내기 PDF · Excel · 이미지</div>
           <div id="m-fname" style="display:none"><span class="file-tag">✓ <span id="m-fn"></span></span></div>
         </div>
@@ -757,19 +761,31 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
       <!-- 자료 첨부 -->
       <div class="card">
         <div class="card-title"><div class="num">1</div> 자료 첨부</div>
-        <div class="upload-zone" id="p-upload" onclick="document.getElementById('p-file').click()">
+        <div class="upload-zone" id="p-upload"
+          onclick="document.getElementById('p-file').click()"
+          ondragover="periodicDragOver(event)"
+          ondragleave="periodicDragLeave(event)"
+          ondrop="periodicDrop(event)">
           <div style="font-size:26px;margin-bottom:5px">📂</div>
-          <div style="font-size:13px;color:#555;margin-bottom:6px">급여제공기록지 (최소 3개월분) 업로드</div>
+          <div style="font-size:13px;color:#555;margin-bottom:6px">클릭하거나 파일을 여기에 드래그하세요</div>
           <div style="font-size:11px;color:#888;line-height:1.9;text-align:left;display:inline-block">
             📋 급여제공기록지 (최소 3개월분 필수)<br>
             📄 이전 욕구사정 평가지<br>
             📄 이전 급여제공계획서<br>
             📄 기타 관련 서류 (낙상·욕창·인지 평가지 등)
           </div>
-          <div id="p-fname" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="p-fn"></span></span></div>
         </div>
-        <input type="file" id="p-file" style="display:none" onchange="handleFile('p',this)" multiple>
-        <div style="margin-top:8px;font-size:11px;color:#aaa">※ 여러 파일을 동시에 선택할 수 있습니다</div>
+        <input type="file" id="p-file" style="display:none" onchange="handlePeriodicFiles(this)" multiple>
+
+        <!-- 첨부파일 목록 -->
+        <div id="p-file-list" style="display:none;margin-top:10px">
+          <div style="font-size:11px;font-weight:600;color:#085041;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+            ✅ 첨부된 파일 <span id="p-file-count" style="background:#0D6E55;color:#fff;border-radius:10px;font-size:10px;padding:1px 7px"></span>
+          </div>
+          <div id="p-file-items" style="display:flex;flex-direction:column;gap:5px"></div>
+          <button onclick="clearPeriodicFiles()" style="margin-top:8px;font-size:11px;color:#888;background:none;border:1px solid #ddd;border-radius:5px;padding:3px 10px;cursor:pointer;font-family:inherit">✕ 전체 삭제</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#aaa">※ 여러 파일을 동시에 선택하거나 드래그하여 업로드할 수 있습니다</div>
       </div>
 
       <!-- 작성자 의견 -->
@@ -839,6 +855,38 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         </div>
 
         <!-- 변경사유 안내 (계획서 선택 + 결과평가 미선택 시 표시) -->
+        <!-- 욕구사정 초기/재사정 선택 박스 -->
+        <div id="needs-type-box" style="display:none;margin-top:10px;background:#EEF4FF;border:1.5px solid #90A8D0;border-radius:8px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:600;color:#1F3864;margin-bottom:8px;display:flex;align-items:center;gap:5px">
+            📋 욕구사정 구분을 선택해주세요
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:12px">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;flex:1;background:#fff;border:1.5px solid #90A8D0;border-radius:7px;padding:9px 13px;transition:all .15s" id="needs-type-label-new">
+              <input type="radio" name="needs-type" value="initial" checked style="accent-color:#1F3864;width:15px;height:15px" onchange="highlightNeedsType()">
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#1F3864">신규 · 초기 사정</div>
+                <div style="font-size:10px;color:#888;margin-top:1px">이전 평가 없음 — 현재 상태 중심 작성</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;flex:1;background:#fff;border:1.5px solid #90A8D0;border-radius:7px;padding:9px 13px;transition:all .15s" id="needs-type-label-re">
+              <input type="radio" name="needs-type" value="reassess" style="accent-color:#1F3864;width:15px;height:15px" onchange="highlightNeedsType()">
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#1F3864">재사정</div>
+                <div style="font-size:10px;color:#888;margin-top:1px">이전 평가와 비교 분석 포함</div>
+              </div>
+            </label>
+          </div>
+          <div style="margin-top:10px">
+            <div style="font-size:11px;font-weight:600;color:#1F3864;margin-bottom:4px">
+              📅 작성일 <span style="font-weight:400;color:#888">(이 날짜 시점 기준으로 문서를 작성합니다)</span>
+            </div>
+            <input type="date" id="needs-write-date"
+              style="width:100%;padding:8px 10px;border:1.5px solid #90A8D0;border-radius:6px;font-size:13px;font-family:inherit;color:#333;outline:none"
+              oninput="updateNeedsDatePreview()">
+            <div id="needs-date-preview" style="display:none;margin-top:6px;font-size:11px;color:#555;background:#fff;border-radius:5px;padding:5px 10px;line-height:1.7"></div>
+          </div>
+        </div>
+
         <div id="change-reason-box" style="display:none;margin-top:10px;background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:14px 16px">
           <div style="font-size:12px;font-weight:600;color:#854F0B;margin-bottom:10px;display:flex;align-items:center;gap:5px">
             📋 급여제공계획서 변경 사유를 선택해주세요
@@ -3073,6 +3121,16 @@ function buildPeriodicPrompt(opinion) {
   const reasonVal = reason ? reason.value : null;
   const otherText = document.getElementById('other-reason-text') ? document.getElementById('other-reason-text').value.trim() : '';
 
+  // 욕구사정 신규/재사정 컨텍스트
+  const needsType = document.querySelector('input[name="needs-type"]:checked')?.value || 'reassess';
+  const needsWriteDate = document.getElementById('needs-write-date')?.value || '';
+  const typeLabel = needsType === 'initial' ? '신규·초기 사정' : '재사정';
+  const typeGuide = needsType === 'initial'
+    ? '· 초기 사정: 이전 평가 비교표 생략\n· 현재 상태 중심으로 각 항목 상세 서술\n· 변화분석 불필요, 현재 시점 기술만'
+    : '· 재사정: 이전 평가 대비 변화 비교 반드시 포함\n· 이전 평가일과 현재 평가일 확인하여 비교 기재\n· 각 항목에 ①현상명명·임상해석 + ②변화분석 모두 작성';
+  const writeDateGuide = needsWriteDate
+    ? `· 이 문서는 "${needsWriteDate}" 시점 기준으로 작성 — 해당 날짜 이후 기록 반영 금지` : '';
+
   let changeReasonSection = '';
   if (hasPlan && !hasResult && reasonVal === 'other' && otherText) {
     changeReasonSection = `
@@ -3097,6 +3155,9 @@ function buildPeriodicPrompt(opinion) {
 - 실제 기재된 데이터만 사용, 추측 금지
 - 2026년도 장기요양기관 평가지표(주야간보호) 기준 준수
 - 욕구사정은 아래 10개 항목 순서대로 빠짐없이 작성할 것:
+  [욕구사정 구분: ${typeLabel}]
+  ${typeGuide}
+  ${writeDateGuide}
   1) 질병 및 의료 욕구
   2) 신체기능 욕구
   3) 인지·행동 욕구
@@ -3402,6 +3463,140 @@ function toggleDoc(el, id) {
   el.classList.toggle('selected', cb.checked);
   // 정기문서: 계획서(p6) 또는 결과평가(p5) 변경 시 사유 박스 업데이트
   if (id === 'p5' || id === 'p6') checkReasonBox();
+  if (id === 'p4') checkNeedsType();
+}
+
+// ────── 월간 드래그 앤 드롭 ──────
+function monthlyDragOver(e) {
+  e.preventDefault();
+  document.getElementById('m-upload').style.borderColor = '#1F3864';
+  document.getElementById('m-upload').style.background = '#EEF2FF';
+}
+function monthlyDragLeave(e) {
+  const zone = document.getElementById('m-upload');
+  if (!zone.classList.contains('has-file')) {
+    zone.style.borderColor = '';
+    zone.style.background = '';
+  }
+}
+function monthlyDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('m-upload');
+  zone.style.borderColor = ''; zone.style.background = '';
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  const dt = new DataTransfer();
+  dt.items.add(f);
+  const input = document.getElementById('m-file');
+  input.files = dt.files;
+  handleFile('m', input);
+}
+
+// ────── 정기 드래그 앤 드롭 + 다중파일 ──────
+let periodicFiles = [];
+
+function handlePeriodicFiles(input) {
+  if (!input.files || input.files.length === 0) return;
+  Array.from(input.files).forEach(f => {
+    if (!periodicFiles.find(x => x.name === f.name && x.size === f.size)) {
+      periodicFiles.push(f);
+    }
+  });
+  renderPeriodicFileList();
+  document.getElementById('p-upload').classList.add('has-file');
+}
+
+function renderPeriodicFileList() {
+  const listDiv = document.getElementById('p-file-list');
+  const itemsDiv = document.getElementById('p-file-items');
+  const countEl = document.getElementById('p-file-count');
+  if (!listDiv || !itemsDiv) return;
+  if (periodicFiles.length === 0) { listDiv.style.display = 'none'; return; }
+  listDiv.style.display = 'block';
+  if (countEl) countEl.textContent = periodicFiles.length + '개';
+  itemsDiv.innerHTML = periodicFiles.map((f, i) => {
+    const icon = f.name.endsWith('.pdf') ? '📄' : (f.name.endsWith('.xlsx') || f.name.endsWith('.xls')) ? '📊' : '🖼';
+    const size = f.size > 1024*1024 ? (f.size/1024/1024).toFixed(1)+'MB' : Math.round(f.size/1024)+'KB';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#F8F9FB;border:1px solid #E0E6F0;border-radius:6px;font-size:12px">
+      <span>${icon}</span>
+      <span style="flex:1;color:#333;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
+      <span style="color:#aaa;font-size:11px;flex-shrink:0">${size}</span>
+      <button onclick="removePeriodicFile(${i})" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:13px;padding:0;line-height:1;flex-shrink:0">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function removePeriodicFile(idx) {
+  periodicFiles.splice(idx, 1);
+  renderPeriodicFileList();
+  if (periodicFiles.length === 0) document.getElementById('p-upload').classList.remove('has-file');
+}
+
+function clearPeriodicFiles() {
+  periodicFiles = [];
+  renderPeriodicFileList();
+  document.getElementById('p-upload').classList.remove('has-file');
+  const pFile = document.getElementById('p-file');
+  if (pFile) pFile.value = '';
+}
+
+function periodicDragOver(e) {
+  e.preventDefault();
+  document.getElementById('p-upload').style.borderColor = '#0D6E55';
+  document.getElementById('p-upload').style.background = '#F0FBF7';
+}
+function periodicDragLeave(e) {
+  const zone = document.getElementById('p-upload');
+  if (!zone.classList.contains('has-file')) {
+    zone.style.borderColor = ''; zone.style.background = '';
+  }
+}
+function periodicDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('p-upload');
+  zone.style.borderColor = ''; zone.style.background = '';
+  if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+  const dt = new DataTransfer();
+  Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+  const input = document.getElementById('p-file');
+  input.files = dt.files;
+  handlePeriodicFiles(input);
+}
+
+// ────── 욕구사정 신규/재사정 ──────
+function checkNeedsType() {
+  const hasNeeds = document.getElementById('p4')?.checked;
+  const box = document.getElementById('needs-type-box');
+  if (box) box.style.display = hasNeeds ? 'block' : 'none';
+  if (hasNeeds) {
+    const today = new Date().toISOString().split('T')[0];
+    const writeEl = document.getElementById('needs-write-date');
+    if (writeEl && !writeEl.value) writeEl.value = today;
+    updateNeedsDatePreview();
+  }
+}
+
+function updateNeedsDatePreview() {
+  const writeDate = document.getElementById('needs-write-date')?.value || '';
+  const preview = document.getElementById('needs-date-preview');
+  if (!preview) return;
+  if (!writeDate) { preview.style.display = 'none'; return; }
+  const today = new Date().toISOString().split('T')[0];
+  preview.style.display = 'block';
+  preview.innerHTML = writeDate < today
+    ? `<span style="color:#BA7517">⚠ ${writeDate} 시점으로 작성 — 해당 날짜까지의 기록지 기반으로 생성됩니다.</span>`
+    : `<span style="color:#0D6E55">✓ 오늘(${writeDate}) 기준으로 작성합니다.</span>`;
+}
+
+function highlightNeedsType() {
+  const val = document.querySelector('input[name="needs-type"]:checked')?.value;
+  const l1 = document.getElementById('needs-type-label-new');
+  const l2 = document.getElementById('needs-type-label-re');
+  if (!l1 || !l2) return;
+  l1.style.borderColor = val === 'initial' ? '#1F3864' : '#90A8D0';
+  l1.style.background  = val === 'initial' ? '#EEF2FF' : '#fff';
+  l2.style.borderColor = val === 'reassess' ? '#1F3864' : '#90A8D0';
+  l2.style.background  = val === 'reassess' ? '#EEF2FF' : '#fff';
 }
 
 function checkReasonBox() {
@@ -3899,6 +4094,10 @@ function resetSub(type) {
   }
   if (type === 'periodic') {
     window._periodicHtml = null;
+    periodicFiles = [];
+    renderPeriodicFileList();
+    const needsBox = document.getElementById('needs-type-box');
+    if (needsBox) needsBox.style.display = 'none';
   }
 }
 
