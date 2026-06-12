@@ -403,6 +403,169 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 </head>
 <body>
 
+<!-- ══════════════════════════════════════
+     랜딩 페이지 (인증 전 표시)
+══════════════════════════════════════ -->
+<div id="landing-page" style="display:none;">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  #landing-page {
+    font-family: 'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    background: #F0F4FA;
+    min-height: 100vh;
+  }
+  #lo-hero {
+    background: linear-gradient(155deg,#1F3864 0%,#2d5a9e 60%,#1a4a7a 100%);
+    color: #fff;
+    padding: 80px 20px 70px;
+    text-align: center;
+  }
+  #lo-hero .badge {
+    display:inline-block;background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.3);border-radius:20px;
+    padding:5px 16px;font-size:12px;letter-spacing:1px;margin-bottom:20px;
+  }
+  #lo-hero h1 {
+    font-size:clamp(28px,6vw,46px);font-weight:900;letter-spacing:-1px;
+    margin-bottom:10px;line-height:1.2;
+  }
+  #lo-hero h1 span { color:#93c5fd; }
+  #lo-hero .slogan {
+    font-size:clamp(14px,3vw,18px);color:rgba(255,255,255,0.75);
+    margin-bottom:0;line-height:1.7;
+  }
+  .lo-section { max-width:720px;margin:0 auto;padding:52px 20px; }
+  .lo-section h2 { font-size:22px;font-weight:700;color:#1F3864;margin-bottom:8px; }
+  .lo-section .lead { font-size:15px;color:#555;line-height:1.85;margin-bottom:28px; }
+  .lo-story { background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:20px; }
+  .lo-story p { font-size:14px;color:#444;line-height:2;margin-bottom:12px; }
+  .lo-story p:last-child { margin-bottom:0; }
+  .lo-story strong { color:#1F3864; }
+  .lo-hope { background:linear-gradient(135deg,#EEF4FF,#F5F0FF);border-radius:16px;padding:24px 28px;border-left:4px solid #1F3864; }
+  .lo-hope p { font-size:14px;color:#333;line-height:2; }
+  .lo-divider { border:none;border-top:1px solid #E0E6F0;margin:0; }
+  .lo-steps { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-top:8px; }
+  .lo-step { background:#fff;border-radius:14px;padding:22px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.07);text-align:center; }
+  .lo-step .icon { font-size:28px;margin-bottom:10px; }
+  .lo-step .num { font-size:11px;font-weight:700;color:#93c5fd;letter-spacing:1px;margin-bottom:6px; }
+  .lo-step h3 { font-size:14px;font-weight:700;color:#1F3864;margin-bottom:6px; }
+  .lo-step p { font-size:12px;color:#666;line-height:1.8; }
+  #lo-login-section { background:#fff;padding:56px 20px 72px; }
+  #lo-login-section .inner { max-width:420px;margin:0 auto;text-align:center; }
+  #lo-login-section h2 { font-size:20px;font-weight:700;color:#1F3864;margin-bottom:6px; }
+  #lo-login-section .sub { font-size:13px;color:#888;margin-bottom:28px; }
+  .lo-center-btns { display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px; }
+  .lo-center-btn { padding:12px 8px;border:2px solid #E0E6F0;border-radius:10px;background:#fff;
+    font-size:13px;font-weight:600;color:#555;cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif;transition:.15s; }
+  .lo-center-btn:hover { border-color:#1F3864;color:#1F3864; }
+  .lo-center-btn.active { border-color:#1F3864;background:#1F3864;color:#fff; }
+  #lo-key { width:100%;padding:13px 16px;border:1.5px solid #C5CAE9;border-radius:10px;
+    font-size:15px;font-family:'Noto Sans KR',sans-serif;text-align:center;
+    letter-spacing:3px;box-sizing:border-box;margin-bottom:10px; }
+  #lo-key:focus { outline:none;border-color:#1F3864; }
+  #lo-enter-btn { width:100%;padding:14px;background:#1F3864;color:#fff;border:none;
+    border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;
+    font-family:'Noto Sans KR',sans-serif;transition:.15s; }
+  #lo-enter-btn:hover { background:#2d5a9e; }
+  #lo-error { font-size:12px;color:#E24B4A;margin-bottom:10px;display:none; }
+  .lo-note { font-size:11px;color:#bbb;margin-top:14px;line-height:1.7; }
+  .lo-scroll-hint {
+    font-size:13px;color:rgba(255,255,255,0.45);
+    margin-top:28px;animation:bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)}
+  }
+</style>
+
+  <!-- 히어로: 첫 화면 -->
+  <div id="lo-hero">
+    <div class="badge">주야간보호센터 AI 문서 자동화</div>
+    <h1>하루를 기록하면<br><span>문서가 됩니다</span></h1>
+    <p class="slogan">급여제공기록지 한 장으로<br>욕구사정 · 결과평가 · 급여제공계획서까지<br>AI가 자동으로 완성해 드립니다</p>
+    <p class="lo-scroll-hint">↓ 아래로 스크롤하세요</p>
+  </div>
+
+  <!-- 만든 이유 -->
+  <div class="lo-section">
+    <h2>📖 데이음을 만들게 된 이유</h2>
+    <p class="lead">주야간보호센터에서 직접 일하며 느꼈던 불편함에서 시작했습니다.</p>
+    <div class="lo-story">
+      <p>주야간보호센터의 사회복지사는 매일 어르신들을 직접 돌보면서도, <strong>퇴근 후 혹은 주말에 문서 작성에 수 시간을 쏟아야 하는 현실</strong>이 있습니다. 욕구사정, 결과평가, 급여제공계획서… 한 분 한 분의 상태를 정성껏 기록해야 하지만, 반복되는 서식과 형식에 지쳐가는 것도 사실이었습니다.</p>
+      <p>어르신들과의 하루 속에서 상담과 사례회의는 이미 자연스럽게 이루어지고 있습니다. 하지만 <strong>이를 문서로 남기기엔 업무량도 많고, 작성 방법 또한 어디에도 명확히 제시되어 있지 않아</strong> 막막한 경우가 많습니다. 평가지표에 따라 준비하고 평가를 받아야 한다는 부담은 있지만, 그 방향과 방법을 스스로 찾아야 하는 현실. 결국 문서의 완성도는 개인의 역량 차이로 이어지고, 그 간극을 좁힐 방법이 없었습니다.</p>
+      <p>관리자의 입장에서도 마찬가지였습니다. <strong>서류에 시간을 빼앗겨 정작 어르신 곁에 있어야 할 순간을 놓치는 일</strong>이 반복될 때마다 아쉬움이 남았습니다.</p>
+      <p>이미 <strong>급여제공기록지에는 어르신의 하루가 모두 담겨 있습니다.</strong> 그 기록을 다시 한번 정리해서 문서로 옮기는 작업이 자동화된다면 어떨까, 라는 질문에서 데이음이 시작됐습니다.</p>
+      <p>AI가 초안을 만들고, 사람이 검토·완성하는 구조. <strong>돌봄의 본질에 더 집중할 수 있도록</strong> 돕고 싶었습니다.</p>
+    </div>
+    <div class="lo-hope">
+      <p>💬 <strong>바라는 점이 있다면,</strong> 데이음이 단순히 "문서를 빠르게 만드는 도구"가 아니라, 누구든 일정 수준 이상의 문서를 작성할 수 있도록 돕고, 기록의 가치를 높여 <strong style="color:#1F3864;font-size:15px;">어르신 한 분 한 분에게 더 나은 케어가 이어지는 연결고리</strong>가 되었으면 합니다. 처음엔 불완전할 수 있습니다. 사용하시면서 불편한 점, 아쉬운 점을 언제든 말씀해 주세요. 현장의 목소리가 데이음을 완성해 갑니다.</p>
+    </div>
+  </div>
+
+  <hr class="lo-divider">
+
+  <!-- 사용방법 -->
+  <div class="lo-section">
+    <h2>🗺️ 이렇게 사용하세요</h2>
+    <p class="lead">복잡한 설치 없이, 브라우저에서 바로 사용할 수 있습니다.</p>
+    <div class="lo-steps">
+      <div class="lo-step">
+        <div class="icon">📄</div>
+        <div class="num">STEP 1</div>
+        <h3>기록지 업로드</h3>
+        <p>급여제공기록지 등 PDF를 올려주세요</p>
+      </div>
+      <div class="lo-step">
+        <div class="icon">⚙️</div>
+        <div class="num">STEP 2</div>
+        <h3>문서 선택</h3>
+        <p>월간·정기·수시 중 필요한 문서를 선택하세요</p>
+      </div>
+      <div class="lo-step">
+        <div class="icon">🤖</div>
+        <div class="num">STEP 3</div>
+        <h3>AI 자동 생성</h3>
+        <p>버튼 하나로 AI가 초안을 완성합니다. 보통 1~2분 소요</p>
+      </div>
+      <div class="lo-step">
+        <div class="icon">✍️</div>
+        <div class="num">STEP 4</div>
+        <h3>검토 후 완성</h3>
+        <p>내용을 확인하고 Word 다운로드 또는 복사해서 사용하세요</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="lo-divider">
+
+  <!-- 로그인 (맨 아래) -->
+  <div id="lo-login-section">
+    <div class="inner">
+      <div style="font-size:32px;margin-bottom:12px">🔐</div>
+      <h2>데이음 시작하기</h2>
+      <p class="sub">센터를 선택하고 접속키를 입력해주세요</p>
+      <div class="lo-center-btns">
+        <button class="lo-center-btn" data-code="sapgyo" onclick="selectCenter(this)">삽교<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
+        <button class="lo-center-btn" data-code="center2" onclick="selectCenter(this)">덕산<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
+        <button class="lo-center-btn" data-code="center3" onclick="selectCenter(this)">내포소망<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
+      </div>
+      <input id="lo-key" type="password" placeholder="접속키 입력"
+        onkeydown="if(event.key==='Enter')checkKey()">
+      <div id="lo-error">❌ 접속키가 올바르지 않습니다</div>
+      <button id="lo-enter-btn" onclick="checkKey()">입장하기</button>
+      <p class="lo-note">접속키는 담당자에게 문의해주세요<br>테스트 기간: ~2026-12-31</p>
+    </div>
+  </div>
+
+</div>
+<!-- /랜딩 페이지 끝 -->
+
+<!-- ══════════════════════════════════════
+     메인 앱 (인증 후 표시)
+══════════════════════════════════════ -->
+<div id="main-app" style="display:none;">
+
 <div class="header">
   <svg width="100" height="28" viewBox="0 0 120 32" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -4144,247 +4307,9 @@ const urlParams = new URLSearchParams(window.location.search);
 const centerCode = urlParams.get('center') || 'sapgyo';
 const CENTER = CENTERS[centerCode] || CENTERS['sapgyo'];
 
-// ────── 접속 인증 ──────
-(function() {
-  const cfg = CENTERS[centerCode];
-  if (!cfg) { showLockScreen('잘못된 접속 경로입니다.'); return; }
+// ────── 접속 인증 (랜딩 페이지로 이전됨) ──────
 
-  // 만료일 체크
-  const today = new Date().toISOString().slice(0,10);
-  if (today > cfg.expires) {
-    showLockScreen(`테스트 기간이 종료되었습니다.\n(만료일: ${cfg.expires})`);
-    return;
-  }
-
-  // 저장된 키 확인
-  const savedKey = sessionStorage.getItem(`ium-auth-${centerCode}`);
-  if (savedKey === cfg.key) return; // 이미 인증됨
-
-  // 잠금 화면 표시
-  showLockScreen(null);
-})();
-
-// ────── 랜딩 + 인증 통합 화면 ──────
-function showLockScreen(msg) {
-  document.body.style.overflow = 'hidden';
-  const overlay = document.createElement('div');
-  overlay.id = 'lock-overlay';
-  overlay.style.cssText = `
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:#F0F4FA;z-index:99999;
-    overflow-y:auto;
-    font-family:'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
-  `;
-
-  const isExpired = !!msg;
-
-  if (isExpired) {
-    overlay.innerHTML = `
-      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;">
-        <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;width:100%;
-          text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.10)">
-          <div style="font-size:36px;margin-bottom:12px">🔒</div>
-          <div style="font-size:18px;font-weight:700;color:#1F3864;margin-bottom:16px">데이음</div>
-          <div style="background:#FCEBEB;border-radius:10px;padding:14px;
-            font-size:13px;color:#791F1F;line-height:1.7;white-space:pre-line">${msg}</div>
-          <div style="margin-top:16px;font-size:12px;color:#aaa">담당자에게 문의해주세요.</div>
-        </div>
-      </div>`;
-    document.body.appendChild(overlay);
-    return;
-  }
-
-  overlay.innerHTML = `
-    <style>
-      #lo-hero { background:linear-gradient(155deg,#1F3864 0%,#2d5a9e 60%,#1a4a7a 100%); color:#fff; padding:64px 20px 56px; text-align:center; }
-      #lo-hero .badge { display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 16px;font-size:12px;letter-spacing:1px;margin-bottom:20px; }
-      #lo-hero h1 { font-size:clamp(28px,6vw,46px);font-weight:800;letter-spacing:-1px;margin-bottom:10px;line-height:1.2; }
-      #lo-hero h1 span { color:#93c5fd; }
-      #lo-hero .slogan { font-size:clamp(14px,3vw,18px);color:rgba(255,255,255,0.75);margin-bottom:32px;line-height:1.7; }
-      #lo-hero .cta-btn { display:inline-block;background:#fff;color:#1F3864;font-weight:800;font-size:16px;
-        padding:14px 40px;border-radius:50px;cursor:pointer;border:none;font-family:inherit;
-        box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:transform .15s,box-shadow .15s; }
-      #lo-hero .cta-btn:hover { transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.25); }
-
-      .lo-section { max-width:720px;margin:0 auto;padding:52px 20px; }
-      .lo-section h2 { font-size:22px;font-weight:700;color:#1F3864;margin-bottom:8px; }
-      .lo-section .lead { font-size:15px;color:#555;line-height:1.85;margin-bottom:28px; }
-
-      .lo-story { background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:20px; }
-      .lo-story p { font-size:14px;color:#444;line-height:2;margin-bottom:12px; }
-      .lo-story p:last-child { margin-bottom:0; }
-      .lo-story strong { color:#1F3864; }
-
-      .lo-hope { background:linear-gradient(135deg,#EEF4FF,#F5F0FF);border-radius:16px;padding:24px 28px;border-left:4px solid #1F3864;margin-bottom:0; }
-      .lo-hope p { font-size:14px;color:#333;line-height:2; }
-
-      .lo-steps { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:8px; }
-      .lo-step { background:#fff;border-radius:14px;padding:22px 18px;box-shadow:0 2px 10px rgba(0,0,0,0.07);text-align:center; }
-      .lo-step .icon { font-size:28px;margin-bottom:10px; }
-      .lo-step .num { font-size:11px;font-weight:700;color:#93c5fd;letter-spacing:1px;margin-bottom:6px; }
-      .lo-step h3 { font-size:14px;font-weight:700;color:#1F3864;margin-bottom:6px; }
-      .lo-step p { font-size:12px;color:#666;line-height:1.8; }
-
-      .lo-divider { border:none;border-top:1px solid #E0E6F0;margin:0; }
-
-      #lo-login { background:#fff;padding:48px 20px 64px; }
-      #lo-login .inner { max-width:420px;margin:0 auto;text-align:center; }
-      #lo-login h2 { font-size:20px;font-weight:700;color:#1F3864;margin-bottom:6px; }
-      #lo-login .sub { font-size:13px;color:#888;margin-bottom:28px; }
-      .lo-center-btns { display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px; }
-      .lo-center-btn { padding:12px 8px;border:2px solid #E0E6F0;border-radius:10px;background:#fff;
-        font-size:13px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:.15s; }
-      .lo-center-btn:hover { border-color:#1F3864;color:#1F3864; }
-      .lo-center-btn.active { border-color:#1F3864;background:#1F3864;color:#fff; }
-      #lo-key-wrap { margin-bottom:12px; }
-      #lo-key { width:100%;padding:13px 16px;border:1.5px solid #C5CAE9;border-radius:10px;
-        font-size:15px;font-family:inherit;text-align:center;letter-spacing:3px;box-sizing:border-box; }
-      #lo-key:focus { outline:none;border-color:#1F3864; }
-      #lo-enter-btn { width:100%;padding:14px;background:#1F3864;color:#fff;border:none;border-radius:10px;
-        font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s; }
-      #lo-enter-btn:hover { background:#2d5a9e; }
-      #lo-error { font-size:12px;color:#E24B4A;margin-bottom:10px;display:none; }
-      .lo-note { font-size:11px;color:#bbb;margin-top:14px;line-height:1.7; }
-    </style>
-
-    <!-- 히어로 섹션 -->
-    <div id="lo-hero">
-      <div class="badge">주야간보호센터 AI 문서 자동화</div>
-      <h1>하루를 기록하면<br><span>문서가 됩니다</span></h1>
-      <p class="slogan">급여제공기록지 한 장으로<br>욕구사정 · 결과평가 · 급여제공계획서까지<br>AI가 자동으로 완성해 드립니다</p>
-      <button class="cta-btn" onclick="document.getElementById('lo-login').scrollIntoView({behavior:'smooth'})">
-        시작하기 →
-      </button>
-    </div>
-
-    <!-- 만든 이유 섹션 -->
-    <div class="lo-section">
-      <h2>📖 데이음을 만들게 된 이유</h2>
-      <p class="lead">주야간보호센터에서 직접 일하며 느꼈던 불편함에서 시작했습니다.</p>
-
-      <div class="lo-story">
-        <p>주야간보호센터의 사회복지사는 매일 어르신들을 직접 돌보면서도, <strong>퇴근 후 혹은 주말에 문서 작성에 수 시간을 쏟아야 하는 현실</strong>이 있습니다. 욕구사정, 결과평가, 급여제공계획서… 한 분 한 분의 상태를 정성껏 기록해야 하지만, 반복되는 서식과 형식에 지쳐가는 것도 사실이었습니다.</p>
-        <p>어르신들과의 하루 속에서 상담과 사례회의는 이미 자연스럽게 이루어지고 있습니다. 하지만 <strong>이를 문서로 남기기엔 업무량도 많고, 작성 방법 또한 어디에도 명확히 제시되어 있지 않아</strong> 막막한 경우가 많습니다. 평가지표에 따라 준비하고 평가를 받아야 한다는 부담은 있지만, 그 방향과 방법을 스스로 찾아야 하는 현실. 결국 문서의 완성도는 개인의 역량 차이로 이어지고, 그 간극을 좁힐 방법이 없었습니다.</p>
-        <p>관리자의 입장에서도 마찬가지였습니다. <strong>서류에 시간을 빼앗겨 정작 어르신 곁에 있어야 할 순간을 놓치는 일</strong>이 반복될 때마다 아쉬움이 남았습니다.</p>
-        <p>이미 <strong>급여제공기록지에는 어르신의 하루가 모두 담겨 있습니다.</strong> 그 기록을 다시 한번 정리해서 문서로 옮기는 작업이 자동화된다면 어떨까, 라는 질문에서 데이음이 시작됐습니다.</p>
-        <p>AI가 초안을 만들고, 사람이 검토·완성하는 구조. <strong>돌봄의 본질에 더 집중할 수 있도록</strong> 돕고 싶었습니다.</p>
-      </div>
-
-      <div class="lo-hope" style="margin-top:16px;">
-        <p>💬 <strong>바라는 점이 있다면,</strong> 데이음이 단순히 "문서를 빠르게 만드는 도구"가 아니라, 누구든 일정 수준 이상의 문서를 작성할 수 있도록 돕고, 기록의 가치를 높여 <strong style="color:#1F3864;font-size:15px;">어르신 한 분 한 분에게 더 나은 케어가 이어지는 연결고리</strong>가 되었으면 합니다. 처음엔 불완전할 수 있습니다. 사용하시면서 불편한 점, 아쉬운 점을 언제든 말씀해 주세요. 현장의 목소리가 데이음을 완성해 갑니다.</p>
-      </div>
-    </div>
-
-    <hr class="lo-divider">
-
-    <!-- 사용 방법 섹션 -->
-    <div class="lo-section">
-      <h2>🗺️ 이렇게 사용하세요</h2>
-      <p class="lead">복잡한 설치 없이, 브라우저에서 바로 사용할 수 있습니다.</p>
-      <div class="lo-steps">
-        <div class="lo-step">
-          <div class="icon">📄</div>
-          <div class="num">STEP 1</div>
-          <h3>기록지 업로드</h3>
-          <p>급여제공기록지 등 PDF를 올려주세요</p>
-        </div>
-        <div class="lo-step">
-          <div class="icon">⚙️</div>
-          <div class="num">STEP 2</div>
-          <h3>문서 선택</h3>
-          <p>월간·정기·수시 중 필요한 문서를 선택하세요</p>
-        </div>
-        <div class="lo-step">
-          <div class="icon">🤖</div>
-          <div class="num">STEP 3</div>
-          <h3>AI 자동 생성</h3>
-          <p>버튼 하나로 AI가 초안을 완성합니다. 보통 1~2분 소요</p>
-        </div>
-        <div class="lo-step">
-          <div class="icon">✍️</div>
-          <div class="num">STEP 4</div>
-          <h3>검토 후 완성</h3>
-          <p>내용을 확인하고 Word 다운로드 또는 복사해서 사용하세요</p>
-        </div>
-      </div>
-    </div>
-
-    <hr class="lo-divider">
-
-    <!-- 로그인 섹션 -->
-    <div id="lo-login">
-      <div class="inner">
-        <div style="font-size:32px;margin-bottom:12px">🔐</div>
-        <h2>데이음 시작하기</h2>
-        <p class="sub">센터를 선택하고 접속키를 입력해주세요</p>
-
-        <div class="lo-center-btns">
-          <button class="lo-center-btn" data-code="sapgyo" onclick="selectCenter(this)">삽교<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
-          <button class="lo-center-btn" data-code="center2" onclick="selectCenter(this)">덕산<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
-          <button class="lo-center-btn" data-code="center3" onclick="selectCenter(this)">내포소망<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
-        </div>
-
-        <div id="lo-key-wrap">
-          <input id="lo-key" type="password" placeholder="접속키 입력"
-            onkeydown="if(event.key==='Enter')checkKey()">
-        </div>
-        <div id="lo-error">❌ 접속키가 올바르지 않습니다</div>
-        <button id="lo-enter-btn" onclick="checkKey()">입장하기</button>
-        <p class="lo-note">접속키는 담당자에게 문의해주세요<br>테스트 기간: ~2026-12-31</p>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  // URL에 센터코드가 있으면 미리 선택
-  const preBtn = overlay.querySelector(`[data-code="${centerCode}"]`);
-  if (preBtn) preBtn.classList.add('active');
-
-  setTimeout(() => document.getElementById('lo-key')?.focus(), 300);
-}
-
-let selectedCenterForLogin = centerCode;
-
-function selectCenter(btn) {
-  document.querySelectorAll('.lo-center-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedCenterForLogin = btn.dataset.code;
-  document.getElementById('lo-error').style.display = 'none';
-  document.getElementById('lo-key').value = '';
-  document.getElementById('lo-key').focus();
-}
-
-function checkKey() {
-  const input = document.getElementById('lo-key')?.value?.trim();
-  const code = selectedCenterForLogin || centerCode;
-  const cfg = CENTERS[code];
-
-  if (!cfg) {
-    document.getElementById('lo-error').style.display = 'block';
-    return;
-  }
-
-  if (input === cfg.key) {
-    // 선택한 센터로 centerCode 업데이트
-    if (code !== centerCode) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('center', code);
-      window.history.replaceState({}, '', url);
-      // 페이지 리로드로 센터 적용
-      sessionStorage.setItem(`ium-auth-${code}`, input);
-      window.location.reload();
-      return;
-    }
-    sessionStorage.setItem(`ium-auth-${centerCode}`, input);
-    document.getElementById('lock-overlay')?.remove();
-    document.body.style.overflow = '';
-  } else {
-    document.getElementById('lo-error').style.display = 'block';
-    document.getElementById('lo-key').value = '';
-    document.getElementById('lo-key').focus();
-  }
-}
+// ────── 인증 함수 (하단 랜딩 스크립트로 이전됨) ──────
 
 // 센터별 DB 키 분리 (데이터 완전 분리)
 const DB_KEY = `ium-residents-${centerCode}`;
@@ -4607,6 +4532,99 @@ function togCI(el) {
     document.getElementById('nd-ov').textContent=`D-${diff}`;
   }
 }
+</script>
+
+</div>
+<!-- /메인 앱 끝 -->
+
+<script>
+// ────── 랜딩 페이지 인증 로직 ──────
+let selectedCenterForLogin = centerCode;
+
+function showLanding() {
+  const lp = document.getElementById('landing-page');
+  const ma = document.getElementById('main-app');
+  lp.style.cssText = 'display:block;position:fixed;top:0;left:0;width:100%;height:100%;overflow-y:auto;z-index:99999;background:#F0F4FA;';
+  ma.style.display = 'none';
+  const preBtn = document.querySelector('.lo-center-btn[data-code="' + centerCode + '"]');
+  if (preBtn) preBtn.classList.add('active');
+  setTimeout(() => { const k = document.getElementById('lo-key'); if(k) k.focus(); }, 200);
+}
+
+function showApp() {
+  const lp = document.getElementById('landing-page');
+  const ma = document.getElementById('main-app');
+  lp.style.display = 'none';
+  ma.style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function selectCenter(btn) {
+  document.querySelectorAll('.lo-center-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedCenterForLogin = btn.dataset.code;
+  const err = document.getElementById('lo-error');
+  const key = document.getElementById('lo-key');
+  if(err) err.style.display = 'none';
+  if(key) { key.value = ''; key.focus(); }
+}
+
+function checkKey() {
+  const input = (document.getElementById('lo-key')?.value || '').trim();
+  const code = selectedCenterForLogin || centerCode;
+  const cfg = CENTERS[code];
+  const err = document.getElementById('lo-error');
+
+  if (!cfg) { if(err) err.style.display = 'block'; return; }
+
+  if (input === cfg.key) {
+    if (code !== centerCode) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('center', code);
+      window.history.replaceState({}, '', url);
+      sessionStorage.setItem('ium-auth-' + code, input);
+      window.location.reload();
+      return;
+    }
+    sessionStorage.setItem('ium-auth-' + centerCode, input);
+    showApp();
+  } else {
+    if(err) err.style.display = 'block';
+    const key = document.getElementById('lo-key');
+    if(key) { key.value = ''; key.focus(); }
+  }
+}
+
+// DOM 완전히 로드된 후 인증 상태 체크
+document.addEventListener('DOMContentLoaded', function() {
+  const cfg = CENTERS[centerCode];
+
+  // 만료 체크
+  const today = new Date().toISOString().slice(0,10);
+  if (cfg && today > cfg.expires) {
+    document.getElementById('landing-page').style.display = 'none';
+    document.getElementById('main-app').style.display = 'none';
+    const exp = document.createElement('div');
+    exp.style.cssText = 'position:fixed;inset:0;background:#F5F6FA;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:Noto Sans KR,sans-serif;';
+    exp.innerHTML = '<div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.10)">'
+      + '<div style="font-size:36px;margin-bottom:12px">🔒</div>'
+      + '<div style="font-size:18px;font-weight:700;color:#1F3864;margin-bottom:16px">데이음</div>'
+      + '<div style="background:#FCEBEB;border-radius:10px;padding:14px;font-size:13px;color:#791F1F;line-height:1.7">테스트 기간이 종료되었습니다.<br>(만료일: ' + cfg.expires + ')</div>'
+      + '<div style="margin-top:16px;font-size:12px;color:#aaa">담당자에게 문의해주세요.</div></div>';
+    document.body.appendChild(exp);
+    return;
+  }
+
+  // 이미 인증된 경우
+  const savedKey = sessionStorage.getItem('ium-auth-' + centerCode);
+  if (cfg && savedKey === cfg.key) {
+    showApp();
+    return;
+  }
+
+  // 미인증 → 랜딩 표시
+  showLanding();
+});
 </script>
 </body>
 </html>
