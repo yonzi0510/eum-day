@@ -815,6 +815,25 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
               <span class="dbadge db-need">연 1회</span>
             </div>
           </div>
+          <!-- 욕구사정 선택 시 추가 옵션 -->
+          <div id="p4-options" style="display:none;margin:6px 0 10px 0;background:#F0F4FF;border-radius:10px;padding:12px 14px;border:1px solid #C5CAE9;">
+            <div style="font-size:12px;font-weight:600;color:#1F3864;margin-bottom:10px;">📋 욕구사정 구분 및 작성일자</div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <button id="p4-type-new" onclick="setAssessType('new')"
+                style="flex:1;padding:8px;border:2px solid #C5CAE9;border-radius:8px;background:#fff;font-size:12px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:.15s;">
+                신규사정
+              </button>
+              <button id="p4-type-re" onclick="setAssessType('re')"
+                style="flex:1;padding:8px;border:2px solid #C5CAE9;border-radius:8px;background:#fff;font-size:12px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:.15s;">
+                재사정
+              </button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <label style="font-size:12px;color:#555;white-space:nowrap;">작성일자</label>
+              <input type="date" id="p4-date"
+                style="flex:1;padding:7px 10px;border:1.5px solid #C5CAE9;border-radius:8px;font-size:12px;font-family:inherit;">
+            </div>
+          </div>
           <div class="doc-item" onclick="toggleDoc(this,'p5')">
             <input type="checkbox" id="p5">
             <div class="doc-item-text">
@@ -3059,6 +3078,7 @@ function buildMonthlyPrompt(opinion) {
   if (docList.length === 0) docList.push('1. 분기별 상담일지 (기본)');
 
   return `당신은 주야간보호센터 사회복지사를 돕는 문서 자동화 AI입니다.
+${assessSection}
 
 [사전 작업 — 순서대로]
 1. 기록지 전체를 읽고 날짜별 실제 기재 내용 파악
@@ -3091,9 +3111,20 @@ ${docList.join('\n')}
 function buildPeriodicPrompt(opinion) {
   const hasPlan = document.getElementById('p6') && document.getElementById('p6').checked;
   const hasResult = document.getElementById('p5') && document.getElementById('p5').checked;
+  const hasAssess = document.getElementById('p4') && document.getElementById('p4').checked;
   const reason = document.querySelector('input[name="change-reason"]:checked');
   const reasonVal = reason ? reason.value : null;
   const otherText = document.getElementById('other-reason-text') ? document.getElementById('other-reason-text').value.trim() : '';
+
+  // 욕구사정 사정구분 및 작성일자
+  const assessInfo = hasAssess ? getAssessInfo() : null;
+  const assessSection = assessInfo ? `
+[욕구사정 작성 정보]
+- 사정 구분: ${assessInfo.type}
+- 작성일자: ${assessInfo.date}
+- 욕구사정 양식 상단 "사정구분" 항목에 반드시 "${assessInfo.type}" 으로 기재할 것
+- 작성일자는 ${assessInfo.date} 로 기재할 것
+` : '';
 
   let changeReasonSection = '';
   if (hasPlan && !hasResult && reasonVal === 'other' && otherText) {
@@ -3387,8 +3418,46 @@ function toggleDoc(el, id) {
   const cb = document.getElementById(id);
   cb.checked = !cb.checked;
   el.classList.toggle('selected', cb.checked);
+  // 욕구사정(p4) 선택 시 옵션 박스 표시/숨김
+  if (id === 'p4') {
+    const opts = document.getElementById('p4-options');
+    if (opts) opts.style.display = cb.checked ? 'block' : 'none';
+    // 오늘 날짜 기본값
+    if (cb.checked) {
+      const today = new Date().toISOString().slice(0,10);
+      const dateEl = document.getElementById('p4-date');
+      if (dateEl && !dateEl.value) dateEl.value = today;
+    }
+  }
   // 정기문서: 계획서(p6) 또는 결과평가(p5) 변경 시 사유 박스 업데이트
   if (id === 'p5' || id === 'p6') checkReasonBox();
+}
+
+function setAssessType(type) {
+  const btnNew = document.getElementById('p4-type-new');
+  const btnRe  = document.getElementById('p4-type-re');
+  if (!btnNew || !btnRe) return;
+  if (type === 'new') {
+    btnNew.style.cssText += ';border-color:#1F3864;background:#1F3864;color:#fff;';
+    btnRe.style.cssText  += ';border-color:#C5CAE9;background:#fff;color:#555;';
+    btnNew.dataset.selected = 'true';
+    btnRe.dataset.selected  = '';
+  } else {
+    btnRe.style.cssText  += ';border-color:#1F3864;background:#1F3864;color:#fff;';
+    btnNew.style.cssText += ';border-color:#C5CAE9;background:#fff;color:#555;';
+    btnRe.dataset.selected  = 'true';
+    btnNew.dataset.selected = '';
+  }
+}
+
+function getAssessInfo() {
+  const btnNew = document.getElementById('p4-type-new');
+  const btnRe  = document.getElementById('p4-type-re');
+  const dateEl = document.getElementById('p4-date');
+  const type = btnNew?.dataset.selected === 'true' ? '신규사정' :
+               btnRe?.dataset.selected  === 'true' ? '재사정'   : '신규사정';
+  const date = dateEl?.value || new Date().toISOString().slice(0,10);
+  return { type, date };
 }
 
 function checkReasonBox() {
