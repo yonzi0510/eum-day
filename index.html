@@ -940,7 +940,99 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         </div>
 
       </div>
-      <button class="gen-btn" onclick="startGenerate('periodic')" style="background:#0D6E55">📋 AI로 정기 문서 자동 생성하기</button>
+
+      <!-- ── 급여제공계획서 작성 정보 (p6 선택 시 표시) ── -->
+      <div id="plan-meta-card" style="display:none">
+        <div class="card" style="border:2px solid #0D6E55;background:#F0FBF7">
+          <div class="card-title" style="color:#085041">
+            <div class="num" style="background:#0D6E55">📄</div>
+            급여제공계획서 작성 정보
+            <span style="font-size:10px;font-weight:400;color:#0D6E55;margin-left:6px">엑셀 업로드에 직접 반영됩니다</span>
+          </div>
+
+          <div style="background:#E1F5EE;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#085041;line-height:1.7">
+            📌 아래 정보는 공단 업로드용 엑셀 파일에 그대로 입력됩니다.<br>
+            정확히 입력해 주세요. 비워두면 엑셀에 공란으로 생성됩니다.
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <!-- 작성자명 -->
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#085041;margin-bottom:5px">
+                👤 작성자 (사회복지사명) <span style="color:#E24B4A">*필수</span>
+              </div>
+              <input type="text" id="plan-author" placeholder="예) 홍길동"
+                style="width:100%;padding:9px 11px;border:1.5px solid #9FE1CB;border-radius:7px;font-size:13px;font-family:inherit;color:#333;outline:none"
+                oninput="updatePlanMetaPreview()">
+            </div>
+            <!-- 면허번호 -->
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#085041;margin-bottom:5px">
+                🪪 사회복지사 면허번호 <span style="color:#E24B4A">*필수</span>
+              </div>
+              <input type="text" id="plan-license" placeholder="예) 12345"
+                style="width:100%;padding:9px 11px;border:1.5px solid #9FE1CB;border-radius:7px;font-size:13px;font-family:inherit;color:#333;outline:none"
+                oninput="updatePlanMetaPreview()">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+            <!-- 작성일 -->
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#085041;margin-bottom:5px">
+                📅 작성일 <span style="color:#E24B4A">*필수</span>
+              </div>
+              <input type="date" id="plan-date"
+                style="width:100%;padding:9px 11px;border:1.5px solid #9FE1CB;border-radius:7px;font-size:13px;font-family:inherit;color:#333;outline:none"
+                oninput="updatePlanMetaPreview()">
+            </div>
+            <!-- 적용시작일 -->
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#085041;margin-bottom:5px">
+                📆 적용기간 시작일 <span style="color:#E24B4A">*필수</span>
+              </div>
+              <input type="date" id="plan-start"
+                style="width:100%;padding:9px 11px;border:1.5px solid #9FE1CB;border-radius:7px;font-size:13px;font-family:inherit;color:#333;outline:none"
+                oninput="updatePlanMetaPreview()">
+            </div>
+            <!-- 적용종료일 -->
+            <div>
+              <div style="font-size:11px;font-weight:600;color:#085041;margin-bottom:5px">
+                📆 적용기간 종료일 <span style="color:#E24B4A">*필수</span>
+              </div>
+              <input type="date" id="plan-end"
+                style="width:100%;padding:9px 11px;border:1.5px solid #9FE1CB;border-radius:7px;font-size:13px;font-family:inherit;color:#333;outline:none"
+                oninput="updatePlanMetaPreview()">
+            </div>
+          </div>
+
+          <!-- 기능회복훈련 제공 프로그램 -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:600;color:#085041;margin-bottom:5px">
+              🏋️ 기능회복훈련 세부제공 내용 <span style="font-weight:400;color:#aaa;font-size:10px;margin-left:4px">(선택 — 입력 시 더 정확한 계획서 생성)</span>
+            </div>
+            <textarea id="plan-rehab" rows="3"
+              placeholder="센터에서 실제 제공하는 훈련 내용을 입력하면 AI가 세부제공내용에 반영합니다.&#10;예) 백세체조, 슬링재활운동, 이구동성 레크레이션, 빙고게임, 이야기여행, 대왕윷놀이, 노래활동, 인지미술&#10;예) 체위변경 훈련, 균형·보행 훈련, 앉았다 일어서기, 일어서기 훈련 등"
+              style="width:100%;padding:9px 11px;border:1.5px solid #9FE1CB;border-radius:7px;font-size:12px;font-family:inherit;color:#333;resize:vertical;line-height:1.6;outline:none"
+              oninput="updatePlanMetaPreview()"></textarea>
+            <div style="font-size:10px;color:#555;margin-top:5px;line-height:1.8;background:#f8fbff;border:1px solid #d0e8f0;border-radius:6px;padding:7px 10px">
+              📋 <b>지표27 기능회복훈련 핵심</b> (2026년 평가매뉴얼 기준)<br>
+              · 급여제공계획서에 기능회복훈련 계획을 <b>연 1회 이상 수립</b>해야 함 (기록 확인)<br>
+              · <b>기본동작훈련(T52) 세부제공내용은 필수 기재</b> — 미기재 시 불인정(N)<br>
+              · 신체기능훈련(T51) / 일상생활동작훈련(T53) 중 1개 이상 선택 수립<br>
+              · 세부제공내용은 수급자 신체기능상태에 맞게 구체적으로 작성해야 인정
+            </div>
+          </div>
+
+          <!-- 미리보기 -->
+          <div id="plan-meta-preview" style="display:none;background:#fff;border:1px solid #9FE1CB;border-radius:7px;padding:10px 13px;font-size:11px;color:#333;line-height:1.8">
+            <div style="font-weight:600;color:#085041;margin-bottom:4px">✅ 입력 확인</div>
+            <div id="plan-meta-preview-text"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="gen-btn" onclick="startPeriodicWithCheck()" style="background:#0D6E55">📋 AI로 정기 문서 자동 생성하기</button>
     </div>
 
     <!-- 정기 진행 -->
@@ -3396,113 +3488,203 @@ function buildPeriodicPrompt(opinion) {
 `;
   }
 
+  const selectedDocs = [
+    document.getElementById('p1')?.checked ? '낙상위험도평가' : '',
+    document.getElementById('p2')?.checked ? '욕창위험도평가' : '',
+    document.getElementById('p3')?.checked ? '인지기능평가(CIST)' : '',
+    document.getElementById('p4')?.checked ? '욕구사정' : '',
+    document.getElementById('p5')?.checked ? '급여제공결과평가' : '',
+    document.getElementById('p6')?.checked ? '급여제공계획서' : '',
+  ].filter(Boolean);
+
+  // 급여제공계획서 작성 정보 읽기
+  const planAuthor   = document.getElementById('plan-author')?.value.trim() || '';
+  const planLicense  = document.getElementById('plan-license')?.value.trim() || '';
+  const planDate     = document.getElementById('plan-date')?.value || '';
+  const planStart    = document.getElementById('plan-start')?.value || '';
+  const planEnd      = document.getElementById('plan-end')?.value || '';
+  const planRehab    = document.getElementById('plan-rehab')?.value.trim() || '';
+
   return `당신은 주야간보호센터 경력 30년차 베테랑 사회복지사이자 문서 자동화 AI입니다.
+업로드된 자료를 분석하여 아래 지침대로 정확하게 문서를 작성해주세요.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[STEP 1 — 자료 사전 분석 (내부 처리, 출력하지 말 것)]
+[STEP 1 — 사전 분석 (내부 처리, 출력 금지)]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1단계: 업로드된 자료 전체 읽기 — 실제 기재된 수치·날짜·상태만 목록화
-2단계: 낙상(Huhn) 8개 항목 / 욕창(Braden) 6개 항목 / 인지(CIST) 각 영역 점수 기록지에서 확인
-3단계: 확인된 사실만 사용 — 추측·임의 수치·날짜 절대 금지
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[STEP 2 — 공통 작성 규칙]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-· 모든 문장: 공문서 어미 (~하였음. ~확인됨. ~판단됨. ~제공하였음.)
-· 실제 기재 데이터만 사용, 추측 금지
-· 2026년도 장기요양기관 평가지표(주야간보호) 기준 준수
-· 문서 간 행 구분 명확히 — 각 항목마다 줄바꿈 처리
-· 빈 초안 금지 — 각 문서는 실제 내용이 있어야 함
+1. 자료 전체 읽기 — 수치·날짜·이름·상태 목록화
+2. 수급자명·장기요양인정번호·등급·급여개시일·본인부담률 추출
+3. 이전 평가일 확인 (비교표 작성용)
+4. 추측·임의 수치 절대 금지 — 확인된 사실만 사용
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[STEP 3 — 문서별 작성 지침]
+[STEP 2 — 공통 규칙]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+· 공문서 어미: ~하였음. ~확인됨. ~판단됨. ~제공하였음.
+· 실제 기재 데이터만 사용
 
-【낙상위험도평가 (Huhn Scale)】
-  8개 항목 각각 점수 기재: 연령/정신상태/배변/낙상경험/활동/걸음걸이/약복용/기타
-  총점 및 위험도 판정 (저위험<6/중위험6-13/고위험14-24)
-  판단근거: 기록지에서 확인된 실제 사실 기반으로 서술
+■ 급여제공계획서 작성 정보 (사용자가 직접 입력한 값 — 반드시 그대로 사용):
+  작성자: ${planAuthor || '(미입력 — 공란)'}
+  면허번호: ${planLicense || '(미입력 — 공란)'}
+  작성일: ${planDate || '(미입력 — 공란)'}
+  적용기간: ${planStart || '(미입력)'} ~ ${planEnd || '(미입력)'}
+  
+■ 기능회복훈련 제공 프로그램 (사용자 입력 — JSON의 세부제공내용에 반드시 반영):
+  ${planRehab || '(미입력 — 백세체조, 슬링재활운동, 빙고게임, 이야기여행 등 일반적 프로그램 사용)'}
 
-【욕창위험도평가 (Braden Scale)】
-  6개 항목 각각 점수: 감각/습기/활동/움직임/영양/마찰력
-  총점 및 위험도 판정 (고위험≤9/중위험10-12/저위험13-14/위험없음≥15)
-  판단근거 서술
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[STEP 3 — 욕구사정 HTML 출력 구조 (예시파일과 동일하게)]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+욕구사정은 아래 CSS와 구조를 그대로 사용할 것.
 
-【욕구사정 (9개 항목 전체)】
-  1)보유질환 및 건강상태 2)영양상태 3)신체상태(보행·신체기능·배뇨배변) 
-  4)일상생활기능 5)인지 및 행동증상(BPSD 포함) 6)구강상태(2026 신설)
-  7)기피식품(2026 신설) 8)가족 및 생활환경 9)기타 욕구 및 의견
-  각 항목별 구체적 서술, 행 구분 명확히
+<style>
+body{font-family:'맑은 고딕',sans-serif;font-size:13px;color:#111;max-width:900px;margin:0 auto;padding:20px;line-height:1.7}
+h1{text-align:center;font-size:22px;margin-bottom:4px}
+.center-sub{text-align:center;font-size:15px;color:#333;margin-bottom:16px}
+table.info{width:100%;border-collapse:collapse;margin-bottom:20px}
+table.info td{border:1px solid #aaa;padding:5px 10px}
+table.info td.label{background:#f0f0f0;font-weight:bold;width:14%;white-space:nowrap}
+.sec-title{background:#1a1a1a;color:#fff;font-size:15px;font-weight:bold;padding:7px 14px;margin-top:28px;margin-bottom:10px}
+.sel{color:#000;font-weight:bold}
+.unsel{color:#999}
+.judge-box{background:#f5f5f5;border-left:4px solid #888;padding:12px 16px;margin-top:10px;border-radius:2px}
+.judge-box p{margin:6px 0}
+.adl-block{background:#fafafa;border:1px solid #ddd;padding:12px 16px;margin-bottom:10px;line-height:2.2}
+.adl-row{margin-bottom:2px}
+.adl-label{display:inline-block;min-width:130px;font-weight:bold}
+.risk-table{width:100%;border-collapse:collapse;margin:8px 0}
+.risk-table th{background:#444;color:#fff;padding:6px 10px;font-size:12px}
+.risk-table td{border:1px solid #ccc;padding:5px 10px;font-size:12px;vertical-align:top}
+.risk-table td.sel-cell{background:#bde0ff;font-weight:bold}
+.summary-box{background:#fffbe6;border:1px solid #e0c840;padding:14px 18px;margin-top:10px;border-radius:3px}
+.compare-table{width:100%;border-collapse:collapse;margin:12px 0 20px 0}
+.compare-table th{background:#2e4e8e;color:#fff;padding:7px 10px;font-size:12px;text-align:center}
+.compare-table td{border:1px solid #bbb;padding:7px 10px;font-size:12px;vertical-align:top}
+.compare-table tr:nth-child(even) td{background:#f8f8f8}
+.change-badge{display:inline-block;background:#d9534f;color:#fff;border-radius:3px;padding:1px 6px;font-size:11px;margin-left:4px}
+.maint-badge{display:inline-block;background:#5b9bd5;color:#fff;border-radius:3px;padding:1px 6px;font-size:11px;margin-left:4px}
+/* 급여제공결과평가 체크박스 */
+.result-check{font-size:14px;margin:6px 0;line-height:2.0}
+.check-sel{font-weight:bold;color:#000}
+.check-unsel{color:#aaa}
+</style>
 
-【급여제공결과평가】
-  상태변화 영역별(신체·인지·건강·정서·환경) 서술
-  급여제공계획 재작성 필요 여부 및 근거
-  향후 서비스 방향 제시
+욕구사정 HTML 구조 순서 (반드시 이 순서 준수):
+① 기본정보 table.info (수급자명/생년월일·성별/본인부담률/인정번호/급여개시일/등급/인정유효기간/작성일(공란)/작성자(공란))
+② 이전 평가 대비 주요 변화 비교표 (compare-table — 영역/이전평가/현재평가/변화(유지badge/변화badge))
+③ 1. 영양상태 — 체크박스 표시 + judge-box(①현상명명·임상해석 / ②변화분析)
+④ 2. 구강상태 — 체크박스 표시 + judge-box
+⑤ 3. 질병상태 — 체크박스(만성질환/순환기계/신경계/근골격계/정신행동/호흡기계/만성신장/기타/욕창) + judge-box
+⑥ 4. 신체상태 (일상생활 동작 수행능력)
+   - adl-block: 10항목 각각 ●/○ 표시 (완전자립/부분도움/완전도움)
+   - judge-box: 각 ADL 항목별 '왜' 그 수준인지 구체 근거 한 줄씩 필수 기술
+     예) "옷 벗고 입기: 관절염으로 인해 상하의 착탈의 시 관절 가동 범위 제한이 있어 부분적 지지가 필요함"
+     예) "세수하기: 어르신 스스로 수행 가능하며, 센터 도착 시 이미 깔끔히 준비된 상태로 오심"
+   - ①현상명명·임상해석 / ②변화분析
+⑦ 5. 인지상태 — BPSD 8항목 체크박스 + judge-box
+⑧ 6. 의사소통 — 청력/의사소통/발음 항목별 체크박스 + judge-box
+⑨ 7. 가족 및 환경상태 — 동거인/자녀수/주수발자/경제상태/수발부담 체크박스 + judge-box
+⑩ 8. 자원이용 욕구 — 정기진료/복지용구/종교/지역사회자원 체크박스 + judge-box
+⑪ 9. 주관적 욕구 — 어르신 및 보호자 희망사항 서술 + judge-box
+⑫ 10. 총평 — summary-box 안에 종합 분석
 
-【급여제공계획서】
-  ※ 공단 업로드용 엑셀 전용 양식으로 생성합니다. 아래 지침 엄수.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[STEP 4 — 급여제공결과평가 출력 구조]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+급여제공결과평가는 반드시 아래 4개 체크박스 항목을 맨 위에 출력:
 
-  출력 형식: 아래 15개 컬럼의 JSON 배열만 출력 (HTML 없이, 코드블록 없이 순수 JSON)
-  [
-    {
-      "순번": null, "상태코드": "U", "추가위치": "",
-      "장기요양관리번호": "기록지의 수급자 장기요양인정번호(L로 시작)",
-      "모니터링구분코드": "영역코드",
-      "필요내용코드": "서비스코드",
-      "필요내용_수기": "서비스명(최대250자)",
-      "세부제공내용_수기": "어르신 상태 반영한 구체적 제공방법(최대1000자, ~지원하겠음.)",
-      "작성자": "담당 사회복지사명",
-      "면허번호": "면허번호",
-      "주기그룹코드": "주기그룹코드",
-      "주기": 3, "횟수": 1, "시간": 30,
-      "세부목표내용": "해당 영역 장기목표(최대500자)"
-    }
-  ]
+<div style="background:#fff;border:1px solid #ccc;padding:16px 20px;margin-bottom:16px;font-size:13px;line-height:2.2">
+<div style="font-weight:bold;margin-bottom:8px;font-size:14px">급여제공결과평가</div>
+<div class="result-check">① 수급자의 기능상태에 맞는 급여제공계획으로 진행된 급여 서비스</div>
+<div style="padding-left:16px">
+  <span class="check-sel">(■)신체활동지원</span>&nbsp;&nbsp;
+  <span class="check-sel">(■)인지관리지원,정서지원</span>&nbsp;&nbsp;
+  <span class="check-sel">(■)건강관리,간호처치</span>&nbsp;&nbsp;
+  <span class="check-sel">(■)기능회복훈련</span>
+</div>
+<div class="result-check">② 수급자나 보호자의 욕구가 반영되었는지 여부</div>
+<div style="padding-left:16px">
+  <span class="check-sel">(■)반영</span>&nbsp;&nbsp;
+  <span class="check-unsel">(  )미반영</span>
+</div>
+<div class="result-check">③ 급여제공계획 이후 어르신의 상태 변화 여부</div>
+<div style="padding-left:16px">
+  <!-- 상태변화 여부는 자료 기반으로 ■ 위치 결정 -->
+  <span class="check-sel">(■)상태변화</span>&nbsp;&nbsp;
+  <span class="check-unsel">(  )기능유지</span>
+  <!-- 또는 기능유지인 경우 반대로 표시 -->
+</div>
+<div class="result-check">④ 평가결과에 따라 급여제공계획서 재작성 필요 여부</div>
+<div style="padding-left:16px">
+  <!-- 재작성 여부는 자료 기반으로 ■ 위치 결정 -->
+  <span class="check-sel">(■)30일 이내 재작성</span>&nbsp;&nbsp;
+  <span class="check-unsel">(  )필요없음(급여계획유지)</span>
+</div>
+</div>
 
-  모니터링구분코드 → 서비스코드 대응:
-  A10(개인위생): A51세면지시/B04틀니/B52몸씻기/C02머리감기/C50몸단장/C51손발톱
-  A20(식사): E15식사지시/E13틀니관찰  A30(피부): F02욕창호발부위사정
-  A50(이동): G06부축/G07보조기구/G50낙상예방  A60(배설): H01화장실지시/H02화장실도움/H04기저귀교환
-  A80(복약): J01정확한복약도움  B30(인지): K01인지활동형프로그램/K02인지기능악화예방
-  C10(행동): K60정서적환경조성/K62행동변화예방  D10(정서): L05말벗/L02욕구파악관찰
-  G10(외출): M01외출동행/M02병원동행  K10(투약관리): N50투약관리지도
-  K30(건강관찰): O50건강상태관찰/O56치매간호  L20(피부간호): P51피부간호상처간호
-  L40(통증간호): Q50통증간호  L50(배뇨간호): R02배뇨문제간호
-  M10(기능회복훈련 — 반드시포함): T50신체인지향상/T51신체기능훈련/T52기본동작/T53ADL/T55물리치료/T58여가/T60인지기능/T61사회적응/T62가족프로그램
-  M20(응급): U01응급서비스  M30(환경): U50침구/U51환경/U52물품/U53세탁/U54송영
+이후 총평(이전계획서 적용기간 언급 → 영역별 변화 분석 → 재작성 근거 → 향후 방향)을 서술.
+박선오 어르신 결과평가 예시처럼 서술체로 작성.
 
-  주기그룹코드 예시: A10P03, A10P04, A50P08, B10R99, C10A99, M10L50_1~9, M30A50, M30A12_1~4
-  주기값: 1=매주 / 2=2주마다 / 3=3주마다 / 4=매월  (횟수 없으면 null)
-  기능회복훈련(M10) 반드시 포함 — 지표27 평가 필수
-  세부제공내용: 어르신 진단명·상태 구체 반영, 공문서 어미 (~지원하겠음.)
-  ▶ 다른 문서와 별도로, 이 JSON만 단독 출력할 것 (HTML 섞지 말 것)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[STEP 5 — 급여제공계획서 (엑셀 JSON)]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+급여제공계획서 선택 시:
+욕구사정·결과평가에서 확인된 어르신 상태를 완전히 반영한 새로운 계획서를 작성.
+이전 계획서를 그대로 복사하지 말고, 상태 변화에 따라 신규·변경·삭제 항목을 반영.
 
-${opinion ? `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[작성자 현장 의견 — 반영 필수]\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${opinion}\n` : ''}
+출력: 15컬럼 JSON 배열 (HTML 없이, 코드블록 없이 순수 JSON만)
+- "작성자": "${planAuthor}" (STEP 2에서 입력받은 값 그대로)
+- "면허번호": "${planLicense}" (STEP 2에서 입력받은 값 그대로)
+- "장기요양관리번호": 자료에서 추출한 실제 번호
+- 기능회복훈련(M10) 반드시 포함 — 아래 세부 지침 필수 적용
+- 어르신 진단명·상태변화 구체 반영한 세부제공내용 작성
+
+■ 기능회복훈련(M10) 필수 작성 지침 (지표27):
+  T50(신체인지향상), T51(신체기능훈련), T52(기본동작), T53(ADL훈련),
+  T55(물리치료), T58(여가정서), T60(인지기능), T61(사회적응), T62(가족프로그램)
+  중 어르신 상태에 맞는 항목 선택하여 작성.
+  
+  세부제공내용_수기에 반드시 포함할 내용:
+  · 실제 제공 프로그램명: "${planRehab || '백세체조, 슬링재활운동, 빙고게임, 이야기여행 등'}"
+  · 어르신 기능 상태 반영 (예: "관절염으로 인한 관절가동범위 제한을 고려하여...")
+  · 제공 빈도·방법 명시 (예: "주 3회, 1회 60분 이상 제공")
+  · 기대효과 서술 (~유지하겠음. ~강화하겠음.)
+
+모니터링구분코드 대응표:
+A10(개인위생):A51세면/B04틀니/B52몸씻기/C02머리감기/C50몸단장/C51손발톱
+A20(식사):E15식사지시/E13틀니관찰  A30(피부):F02욕창호발부위사정
+A50(이동):G06부축/G07보조기구/G50낙상예방  A60(배설):H01화장실지시/H02화장실도움/H04기저귀교환
+A80(복약):J01복약도움  B30(인지):K01인지활동형프로그램/K02인지기능악화예방
+C10(행동):K60정서환경조성/K62행동변화예방  D10(정서):L05말벗/L02욕구파악
+G10(외출):M01외출동행/M02병원동행  K10(투약):N50투약관리지도
+K30(건강관찰):O50건강상태관찰/O56치매간호  L20(피부간호):P51피부간호
+L40(통증간호):Q50통증간호  L50(배뇨간호):R02배뇨문제간호
+M10(기능회복훈련):T50신체인지향상/T51신체기능훈련/T52기본동작/T53ADL/T55물리치료/T58여가/T60인지기능/T61사회적응/T62가족프로그램
+M20(응급):U01응급서비스  M30(환경):U50침구/U51환경/U52물품/U53세탁/U54송영
+
+${opinion ? `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[작성자 현장 의견 — 반영 필수]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${opinion}
+` : ''}
 ${changeReasonSection}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[출력 형식]
+[출력 형식 및 문서 순서]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-HTML로 출력. 각 문서를 <div class="doc-section" style="margin-bottom:40px;padding:30px 40px;background:#fff;border:1px solid #ddd;border-radius:8px;line-height:2.0;font-size:10.5pt"> 태그로 구분.
-문서 내 각 항목은 <p style="margin-bottom:12px"> 또는 <div style="margin-bottom:10px">로 행 구분 명확히.
-표 사용 시 border-collapse:collapse, 각 셀에 padding:6px 12px, border:1px solid #aaa 적용.
-항목 제목은 <strong style="color:#1a3a6e"> 또는 <strong style="color:#085041"> 사용.
+작성할 문서: ${selectedDocs.join(', ')}
 
-문서 순서:
-${[
-  document.getElementById('p1')?.checked ? '1)낙상위험도평가' : '',
-  document.getElementById('p2')?.checked ? '2)욕창위험도평가' : '',
-  document.getElementById('p3')?.checked ? '3)인지기능평가(CIST — 직접면담 필요 안내만 출력)' : '',
-  document.getElementById('p4')?.checked ? '4)욕구사정(9개 항목 전체)' : '',
-  document.getElementById('p5')?.checked ? '5)급여제공결과평가' : '',
-  document.getElementById('p6')?.checked ? '6)급여제공계획서 초안' : '',
-].filter(Boolean).join('\n')}
+출력 규칙:
+· 낙상/욕창/결과평가/계획서: 각 문서를 <div class="doc-section" style="max-width:900px;margin:0 auto 40px;padding:30px 40px;background:#fff;border:1px solid #ccc;border-radius:6px;font-size:13px;line-height:1.9"> 태그로 구분
+· 욕구사정: STEP 3의 CSS와 구조 그대로 사용 (<style> 태그 포함하여 독립 출력)
+· 급여제공계획서: JSON 배열만 단독 출력 (HTML 섞지 말 것)
+· 인지기능(CIST): 직접면담 필요 안내문만 출력
 
-문서 맨 끝에 반드시 출처 보고 추가:
-<div style="background:#F0F4FF;border:1px solid #C5CAE9;border-radius:10px;padding:14px;margin-top:20px;font-size:11px;line-height:2.0">
+문서 맨 끝:
+<div style="background:#F0F4FF;border:1px solid #C5CAE9;border-radius:8px;padding:14px;margin-top:20px;font-size:11px;line-height:2.0;max-width:900px;margin-left:auto;margin-right:auto">
 <strong>📋 작성 근거 출처 보고</strong><br>
-[사용된 수치] 낙상·욕창·인지 점수 각 항목 근거<br>
-[욕구사정 근거] 항목별 판단 근거<br>
-[미확인 처리] 자료에 없어서 제외하거나 추정한 내용 (반드시 명시)
+[수급자] 이름·인정번호·등급 확인 여부<br>
+[사용 수치] 낙상·욕창 점수 근거 항목<br>
+[ADL 판단근거] 각 항목별 판단 근거 요약<br>
+[미확인 처리] 자료에 없어 공란 또는 추정한 항목 명시
 </div>`;
 }
 
@@ -3647,6 +3829,11 @@ async function downloadPlanExcel() {
     '필요내용코드','필요내용_수기(250)','세부제공내용_수기(1000)','작성자(20)','면허번호(20)',
     '주기그룹코드','주기','횟수','시간','세부목표내용(500)'];
 
+  // 사용자가 입력한 작성 정보 읽기
+  const planAuthorDl  = document.getElementById('plan-author')?.value.trim() || '';
+  const planLicenseDl = document.getElementById('plan-license')?.value.trim() || '';
+  const planDateDl    = document.getElementById('plan-date')?.value || '';
+
   const rows = [headers];
   data.forEach(item => {
     rows.push([
@@ -3658,8 +3845,8 @@ async function downloadPlanExcel() {
       item['필요내용코드'] || '',
       item['필요내용_수기'] || '',
       item['세부제공내용_수기'] || '',
-      item['작성자'] || '',
-      item['면허번호'] || '',
+      planAuthorDl || item['작성자'] || '',
+      planLicenseDl || item['면허번호'] || '',
       item['주기그룹코드'] || '',
       item['주기'] || null,
       item['횟수'] || null,
@@ -3680,9 +3867,11 @@ async function downloadPlanExcel() {
   window.XLSX.utils.book_append_sheet(wb, ws, '급여제공계획서');
 
   const elderName = window.currentLinkedName || window.currentLinkedNamePeriodic || '수급자';
-  const now = new Date();
-  const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
-  window.XLSX.writeFile(wb, `${elderName}_급여제공계획서_${dateStr}.xlsx`);
+  const fileDateStr = planDateDl ? planDateDl.replace(/-/g,'') : (() => {
+    const n = new Date();
+    return `${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}`;
+  })();
+  window.XLSX.writeFile(wb, `${elderName}_급여제공계획서_${fileDateStr}.xlsx`);
 
   const btn = document.getElementById('plan-excel-btn');
   const origText = btn.textContent;
@@ -4018,11 +4207,30 @@ function checkReasonBox() {
   const hasPlan = document.getElementById('p6') && document.getElementById('p6').checked;
   const hasResult = document.getElementById('p5') && document.getElementById('p5').checked;
   const box = document.getElementById('change-reason-box');
-  // 계획서 선택 여부에 따라 엑셀 섹션 힌트 표시 (결과 렌더링 전)
   const planHint = document.getElementById('plan-excel-hint');
   if (planHint) planHint.style.display = hasPlan ? 'block' : 'none';
+  // 계획서 선택 시 작성 정보 카드 표시
+  const planMetaCard = document.getElementById('plan-meta-card');
+  if (planMetaCard) {
+    planMetaCard.style.display = hasPlan ? 'block' : 'none';
+    // 오늘 날짜 자동 입력 (비어있을 때만)
+    if (hasPlan) {
+      const today = new Date().toISOString().split('T')[0];
+      const dateEl = document.getElementById('plan-date');
+      if (dateEl && !dateEl.value) dateEl.value = today;
+      const startEl = document.getElementById('plan-start');
+      if (startEl && !startEl.value) startEl.value = today;
+      // 종료일: 시작일 +4개월 기본값
+      const endEl = document.getElementById('plan-end');
+      if (endEl && !endEl.value) {
+        const endDate = new Date(today);
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        endDate.setDate(endDate.getDate() - 1);
+        endEl.value = endDate.toISOString().split('T')[0];
+      }
+    }
+  }
   if (!box) return;
-  // 계획서 선택 + 결과평가 미선택 → 사유 박스 표시
   if (hasPlan && !hasResult) {
     box.style.display = 'block';
   } else {
@@ -4521,6 +4729,59 @@ function selectAdhocResident(id, btn) {
     const r = list.find(x => x.id === id);
     if (r) { window.adhocResidentData = r; window.adhocFileData = null; }
   });
+}
+
+// ────── 급여제공계획서 작성 정보 미리보기 업데이트 ──────
+function updatePlanMetaPreview() {
+  const author = document.getElementById('plan-author')?.value.trim() || '';
+  const license = document.getElementById('plan-license')?.value.trim() || '';
+  const date = document.getElementById('plan-date')?.value || '';
+  const start = document.getElementById('plan-start')?.value || '';
+  const end = document.getElementById('plan-end')?.value || '';
+  const rehab = document.getElementById('plan-rehab')?.value.trim() || '';
+
+  const preview = document.getElementById('plan-meta-preview');
+  const previewText = document.getElementById('plan-meta-preview-text');
+  if (!preview || !previewText) return;
+
+  if (author || date || start) {
+    preview.style.display = 'block';
+    previewText.innerHTML = [
+      author ? `<span style="color:#085041;font-weight:600">작성자:</span> ${author}${license ? ' (면허번호: '+license+')' : ''}` : '<span style="color:#E24B4A">⚠ 작성자 미입력</span>',
+      date ? `<span style="color:#085041;font-weight:600">작성일:</span> ${date}` : '<span style="color:#E24B4A">⚠ 작성일 미입력</span>',
+      (start && end) ? `<span style="color:#085041;font-weight:600">적용기간:</span> ${start} ~ ${end}` : '<span style="color:#E24B4A">⚠ 적용기간 미입력</span>',
+      rehab ? `<span style="color:#085041;font-weight:600">기능회복훈련:</span> ${rehab.slice(0,60)}${rehab.length>60?'...':''}` : '<span style="color:#aaa">기능회복훈련 프로그램명 미입력</span>',
+    ].join('<br>');
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+// ────── 정기문서 생성 전 유효성 검사 ──────
+function startPeriodicWithCheck() {
+  const hasPlan = document.getElementById('p6')?.checked;
+  if (hasPlan) {
+    const author = document.getElementById('plan-author')?.value.trim();
+    const date = document.getElementById('plan-date')?.value;
+    const start = document.getElementById('plan-start')?.value;
+    const end = document.getElementById('plan-end')?.value;
+    const license = document.getElementById('plan-license')?.value.trim();
+    if (!author) {
+      alert('급여제공계획서 작성자(사회복지사명)를 입력해주세요.');
+      document.getElementById('plan-author')?.focus();
+      return;
+    }
+    if (!license) {
+      alert('사회복지사 면허번호를 입력해주세요.');
+      document.getElementById('plan-license')?.focus();
+      return;
+    }
+    if (!date || !start || !end) {
+      alert('급여제공계획서 작성일 및 적용기간을 모두 입력해주세요.');
+      return;
+    }
+  }
+  startGenerate('periodic');
 }
 
 function selectAdhocType(type, el) {
