@@ -3266,7 +3266,7 @@ function getApiKey() {
   return key;
 }
 
-async function callClaude(systemPrompt, userContent) {
+async function callClaude(systemPrompt, userContent, retryCount = 0) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -3276,13 +3276,22 @@ async function callClaude(systemPrompt, userContent) {
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-6',
       max_tokens: 16000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }]
     })
   });
-  if (!response.ok) throw new Error(`API 오류: ${response.status}`);
+
+  // 429 Rate Limit — 자동 재시도 (최대 3회, 지수 백오프)
+  if (response.status === 429 && retryCount < 3) {
+    const wait = (retryCount + 1) * 15000; // 15초 → 30초 → 45초
+    console.log('429 Rate Limit — ' + (wait/1000) + '초 후 재시도...');
+    await new Promise(r => setTimeout(r, wait));
+    return callClaude(systemPrompt, userContent, retryCount + 1);
+  }
+
+  if (!response.ok) throw new Error('API 오류: ' + response.status);
   const data = await response.json();
   return data.content[0].text;
 }
@@ -4262,6 +4271,7 @@ async function startGenerate(type) {
 
     // ② 급여제공결과평가
     if (p5) {
+      await new Promise(r => setTimeout(r, 1000));
       stepRun('pp5'); updatePct(50, '급여제공결과평가 작성 중...');
       const needsSummary = needsText ? extractTextFromHtml(needsText).slice(0,2000) : '';
       const resultEval = await callClaude(buildResultEvalPrompt(ctx, needsSummary), userContent);
@@ -4272,6 +4282,7 @@ async function startGenerate(type) {
 
     // ③ 급여제공계획서 JSON (목표+종합의견+급여항목 통합 구조)
     if (p6) {
+      await new Promise(r => setTimeout(r, 1000));
       stepRun('pp6'); updatePct(70, '급여제공계획서 작성 중...');
       const needsSummary = needsText ? extractTextFromHtml(needsText).slice(0,1500) : '';
       const resultSummary = resultText ? extractTextFromHtml(resultText).slice(0,800) : '';
@@ -4342,6 +4353,7 @@ async function startGenerate(type) {
 
     // ④ 낙상·욕창·CIST (체크박스+점수만)
     if (p1chk || p2chk || p3chk) {
+      await new Promise(r => setTimeout(r, 1000));
       stepRun('pp7'); updatePct(88, '기초평가 작성 중...');
       const needsSummary = needsText ? extractTextFromHtml(needsText).slice(0,1200) : '';
       const basicPrompt = buildBasicEvalPrompt(ctx, needsSummary);
