@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>이음 — 삽교주간보호센터</title>
+<title>Day:음</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px;background:#F5F6FA;color:#1a1a2e;min-height:100vh}
@@ -424,9 +424,9 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <circle cx="18" cy="16" r="3" fill="#5de8c0"/>
     <text x="26" y="22"
           font-family="Apple SD Gothic Neo, Malgun Gothic, sans-serif"
-          font-size="18" font-weight="800" fill="#ffffff" letter-spacing="-1">이음</text>
+          font-size="18" font-weight="800" fill="#ffffff" letter-spacing="-1">Day:음</text>
   </svg>
-  <div style="font-size:11px;opacity:.55;margin-left:4px;margin-top:1px">기록하면 문서가 되도록, 이음이 잇겠습니다</div>
+  <div style="font-size:11px;opacity:.55;margin-left:4px;margin-top:1px">하루의 기록이 문서를 만듭니다</div>
   <div class="header-right">삽교주간보호센터 · 2026년 6월</div>
 </div>
 
@@ -1703,7 +1703,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 <div class="main">
 
   <div class="card">
-    <div class="card-title" style="margin-bottom:4px">💬 이음 사용평</div>
+    <div class="card-title" style="margin-bottom:4px">💬 Day:음 사용평</div>
     <div style="font-size:12px;color:#888;margin-bottom:16px">쓰면서 불편했던 점, 개선사항, 요청사항을 자유롭게 적어주세요.<br>작성 후 복사해서 담당자에게 카톡/문자로 전달해주시면 반영할게요!</div>
 
     <!-- 센터 정보 자동 표시 -->
@@ -2766,7 +2766,7 @@ function updateFbPreview() {
   const cats = [...document.querySelectorAll('.fb-cat-btn.on')].map(b=>b.textContent).join(', ') || '(미선택)';
   const feature = document.getElementById('fb-feature')?.value || '(미선택)';
   const content = document.getElementById('fb-content')?.value?.trim() || '';
-  const preview = `[이음 사용평]
+  const preview = `[Day:음 사용평]
 센터: ${center}
 일시: ${date}
 카테고리: ${cats}
@@ -4135,9 +4135,9 @@ function togSec(btn) {
 
 // ────── 센터 설정 ──────
 const CENTERS = {
-  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '6598', expires: '2026-12-31' },
-  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '6598', expires: '2026-12-31' },
-  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '6598', expires: '2026-12-31' },
+  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '0101', expires: '2026-12-31' },
+  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '0202', expires: '2026-12-31' },
+  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31' },
 };
 
 // URL 파라미터에서 센터 코드 읽기 (?center=sapgyo)
@@ -4152,7 +4152,7 @@ const CENTER = CENTERS[centerCode] || CENTERS['sapgyo'];
 
   const today = new Date().toISOString().slice(0,10);
   if (today > cfg.expires) {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Noto Sans KR,sans-serif;background:#F5F6FA"><div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.1)"><div style="font-size:36px;margin-bottom:12px">🔒</div><div style="font-size:18px;font-weight:700;color:#1F3864;margin-bottom:16px">데이음</div><div style="background:#FCEBEB;border-radius:10px;padding:14px;font-size:13px;color:#791F1F;line-height:1.7">테스트 기간이 종료되었습니다.<br>(만료일: ' + cfg.expires + ')</div><div style="margin-top:16px;font-size:12px;color:#aaa">담당자에게 문의해주세요.</div></div></div>';
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Noto Sans KR,sans-serif;background:#F5F6FA"><div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.1)"><div style="font-size:36px;margin-bottom:12px">🔒</div><div style="font-size:18px;font-weight:700;color:#1F3864;margin-bottom:16px">Day:음</div><div style="background:#FCEBEB;border-radius:10px;padding:14px;font-size:13px;color:#791F1F;line-height:1.7">테스트 기간이 종료되었습니다.<br>(만료일: ' + cfg.expires + ')</div><div style="margin-top:16px;font-size:12px;color:#aaa">담당자에게 문의해주세요.</div></div></div>';
     return;
   }
 
@@ -4166,7 +4166,7 @@ const CENTER = CENTERS[centerCode] || CENTERS['sapgyo'];
 const DB_KEY = `ium-residents-${centerCode}`;
 
 // 헤더·타이틀 센터명 반영
-document.title = `이음 — ${CENTER.name}`;
+document.title = `Day:음 — ${CENTER.name}`;
 document.querySelector('.header-right').textContent = `${CENTER.name} · 2026년 6월`;
 document.querySelector('.header').style.background = CENTER.color;
 
