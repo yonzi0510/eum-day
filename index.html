@@ -5528,13 +5528,22 @@ const CENTERS = {
 
 // URL 파라미터에서 센터 코드 읽기 (?center=sapgyo)
 const urlParams = new URLSearchParams(window.location.search);
-const centerCode = urlParams.get('center') || 'sapgyo';
+// 이전 세션에서 선택한 센터 복원, 없으면 null (로그인 화면에서 선택)
+const savedCenterInSession = sessionStorage.getItem('ium-selected-center');
+const centerCode = urlParams.get('center') || savedCenterInSession || 'sapgyo';
 const CENTER = CENTERS[centerCode] || CENTERS['sapgyo'];
 
 // ────── 접속 인증 ──────
 function initAuth() {
+  // URL에 center 파라미터 없으면 → 센터 선택 로그인 화면
+  const urlCenter = urlParams.get('center');
+  if (!urlCenter && !savedCenterInSession) {
+    showLockScreen(null);
+    return;
+  }
+
   const cfg = CENTERS[centerCode];
-  if (!cfg) { showLockScreen('잘못된 접속 경로입니다.'); return; }
+  if (!cfg) { showLockScreen(null); return; }
 
   const today = new Date().toISOString().slice(0,10);
   if (today > cfg.expires) {
@@ -5544,7 +5553,7 @@ function initAuth() {
 
   const savedKey = sessionStorage.getItem('ium-auth-' + centerCode);
   if (savedKey === cfg.key) {
-    renderOverview(); // 이미 인증됐으면 바로 초기화
+    renderOverview();
     return;
   }
 
@@ -5552,75 +5561,118 @@ function initAuth() {
 }
 document.addEventListener('DOMContentLoaded', initAuth);
 
+// 선택된 센터코드 (로그인 화면에서 설정)
+let selectedCenterCode = centerCode;
+
+function selectCenter(code) {
+  selectedCenterCode = code;
+  const c = CENTERS[code];
+  // 버튼 선택 강조
+  Object.keys(CENTERS).forEach(k => {
+    const btn = document.getElementById('center-btn-' + k);
+    if (btn) {
+      btn.style.background = k === code ? c.color : '#F8F9FB';
+      btn.style.color = k === code ? '#fff' : '#333';
+      btn.style.borderColor = k === code ? c.color : '#E0E6F0';
+    }
+  });
+  // 접속키 입력창 표시
+  const keySection = document.getElementById('key-section');
+  if (keySection) {
+    keySection.style.display = 'block';
+    setTimeout(() => document.getElementById('lock-input')?.focus(), 100);
+  }
+}
+
 function showLockScreen(msg) {
   document.body.style.overflow = 'hidden';
   const overlay = document.createElement('div');
   overlay.id = 'lock-overlay';
-  overlay.style.cssText = `
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:#F5F6FA;z-index:99999;
-    display:flex;align-items:center;justify-content:center;
-  `;
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1F3864 0%,#0D6E55 100%);z-index:99999;display:flex;align-items:center;justify-content:center;';
 
-  const cfg = CENTERS[centerCode] || {};
   const isExpired = !!msg;
+  const centerEntries = Object.entries(CENTERS);
 
   overlay.innerHTML = `
-    <div style="background:#fff;border-radius:16px;border:1px solid #E0E6F0;
-      padding:36px 32px;max-width:380px;width:90%;text-align:center;
-      box-shadow:0 8px 32px rgba(0,0,0,0.10)">
-      <div style="font-size:36px;margin-bottom:12px">🔒</div>
-      <div style="font-size:18px;font-weight:700;color:#1F3864;margin-bottom:6px">데이음</div>
-      <div style="font-size:13px;color:#888;margin-bottom:20px">
-        ${cfg.name || '알 수 없는 센터'}
-      </div>
+    <div style="background:#fff;border-radius:20px;border:none;
+      padding:36px 28px;max-width:360px;width:92%;text-align:center;
+      box-shadow:0 16px 48px rgba(0,0,0,0.20)">
+      <div style="font-size:28px;margin-bottom:6px">🌿</div>
+      <div style="font-size:22px;font-weight:800;color:#1F3864;margin-bottom:3px;letter-spacing:-0.5px">데이음</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:24px">하루를 기록하면 문서가 됩니다</div>
+
       ${isExpired ? `
-        <div style="background:#FCEBEB;border-radius:10px;padding:14px;
-          font-size:13px;color:#791F1F;line-height:1.7;white-space:pre-line">${msg}</div>
-        <div style="margin-top:16px;font-size:12px;color:#aaa">
-          담당자에게 문의해주세요.
-        </div>
+        <div style="background:#FCEBEB;border-radius:10px;padding:14px;font-size:13px;color:#791F1F;line-height:1.7">${msg}</div>
+        <div style="margin-top:14px;font-size:12px;color:#aaa">담당자에게 문의해주세요.</div>
       ` : `
-        <div style="font-size:13px;color:#555;margin-bottom:16px">
-          접속키를 입력해주세요
+        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:10px;text-align:left">센터 선택</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px">
+          ${centerEntries.map(([code, c]) => `
+            <button onclick="selectCenter('${code}')"
+              id="center-btn-${code}"
+              style="width:100%;padding:12px 16px;border:1.5px solid #E0E6F0;border-radius:10px;
+                background:#F8F9FB;color:#333;font-size:13px;font-weight:500;
+                cursor:pointer;font-family:inherit;text-align:left;
+                display:flex;align-items:center;gap:10px;transition:all .15s">
+              <span style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0;display:inline-block"></span>
+              <span>${c.name}</span>
+            </button>
+          `).join('')}
         </div>
-        <input id="lock-input" type="password" placeholder="접속키 입력"
-          style="width:100%;padding:11px 14px;border:1.5px solid #C5CAE9;
-          border-radius:9px;font-size:14px;font-family:inherit;text-align:center;
-          letter-spacing:2px;margin-bottom:10px;box-sizing:border-box"
-          onkeydown="if(event.key==='Enter')checkKey()">
-        <div id="lock-error" style="font-size:12px;color:#E24B4A;margin-bottom:10px;display:none">
-          ❌ 접속키가 올바르지 않습니다
-        </div>
-        <button onclick="checkKey()"
-          style="width:100%;padding:12px;background:#1F3864;color:#fff;
-          border:none;border-radius:9px;font-size:14px;font-weight:600;
-          cursor:pointer;font-family:inherit">
-          입장하기
-        </button>
-        <div style="margin-top:14px;font-size:11px;color:#bbb;line-height:1.6">
-          테스트 기간: ~${CENTERS[centerCode]?.expires || ''}<br>
-          접속키는 담당자에게 문의해주세요
+
+        <div id="key-section" style="display:none">
+          <div style="font-size:12px;color:#888;margin-bottom:10px">접속키를 입력해주세요</div>
+          <input id="lock-input" type="password" placeholder="접속키 입력"
+            style="width:100%;padding:11px 14px;border:1.5px solid #C5CAE9;
+            border-radius:9px;font-size:15px;font-family:inherit;text-align:center;
+            letter-spacing:3px;margin-bottom:8px;box-sizing:border-box;outline:none"
+            onkeydown="if(event.key==='Enter')checkKey()">
+          <div id="lock-error" style="font-size:12px;color:#E24B4A;margin-bottom:8px;display:none">
+            ❌ 접속키가 올바르지 않습니다
+          </div>
+          <button onclick="checkKey()"
+            style="width:100%;padding:12px;background:#1F3864;color:#fff;
+            border:none;border-radius:9px;font-size:14px;font-weight:600;
+            cursor:pointer;font-family:inherit;transition:opacity .15s">
+            입장하기
+          </button>
+          <div style="margin-top:12px;font-size:11px;color:#ccc;line-height:1.6">
+            접속키는 담당자에게 문의해주세요
+          </div>
         </div>
       `}
     </div>
   `;
   document.body.appendChild(overlay);
-  if (!isExpired) setTimeout(() => document.getElementById('lock-input')?.focus(), 100);
 }
 
 function checkKey() {
   const input = document.getElementById('lock-input')?.value?.trim();
-  const cfg = CENTERS[centerCode];
+  const cfg = CENTERS[selectedCenterCode];
+  if (!cfg) { alert('센터를 먼저 선택해주세요.'); return; }
   if (input === cfg?.key) {
-    sessionStorage.setItem('ium-auth-' + centerCode, input);
+    // URL을 선택한 센터 코드로 업데이트
+    const url = new URL(window.location.href);
+    url.searchParams.set('center', selectedCenterCode);
+    window.history.replaceState({}, '', url.toString());
+    // 전역 centerCode 업데이트
+    Object.defineProperty(window, '_selectedCenter', { value: selectedCenterCode, writable: true });
+    sessionStorage.setItem('ium-auth-' + selectedCenterCode, input);
+    sessionStorage.setItem('ium-selected-center', selectedCenterCode);
     document.getElementById('lock-overlay')?.remove();
     document.body.style.overflow = '';
+    // 헤더 센터명 업데이트
+    const headerRight = document.querySelector('.header-right');
+    if (headerRight) headerRight.textContent = cfg.name + ' · 2026년 6월';
+    const header = document.querySelector('.header');
+    if (header) header.style.background = cfg.color;
+    document.title = '데이음 — ' + cfg.name;
     renderOverview();
   } else {
-    document.getElementById('lock-error').style.display = 'block';
-    document.getElementById('lock-input').value = '';
-    document.getElementById('lock-input').focus();
+    const errEl = document.getElementById('lock-error');
+    const inputEl = document.getElementById('lock-input');
+    if (errEl) errEl.style.display = 'block';
+    if (inputEl) { inputEl.value = ''; inputEl.focus(); }
   }
 }
 
