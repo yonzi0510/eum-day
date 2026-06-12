@@ -1163,7 +1163,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
           <div style="background:#E8EAF0;border-radius:6px;height:8px;overflow:hidden">
             <div id="periodic-prog-bar" style="height:100%;background:linear-gradient(90deg,#0D6E55,#1D9E75);border-radius:6px;width:0%;transition:width .5s ease"></div>
           </div>
-          <div style="font-size:10px;color:#aaa;margin-top:3px;text-align:right">AI 응답을 기다리는 중... 보통 40~90초 소요됩니다</div>
+          <div style="font-size:10px;color:#aaa;margin-top:3px;text-align:right">AI 응답을 기다리는 중... 보통 60~120초 소요 (파일 많을수록 길어짐)</div>
         </div>
         <div class="prog-steps">
           <div class="prog-step" id="pp1"><div class="picon">📂</div>자료 및 누적 데이터 분석 중...</div>
@@ -3296,21 +3296,35 @@ async function callClaude(systemPrompt, userContent, retryCount = 0) {
       ensureApiKey(() => reject(new Error('API 키를 저장했어요. 다시 버튼을 눌러주세요.')));
     });
   }
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 16000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userContent }]
-    })
-  });
+
+  // 120초 타임아웃
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000);
+
+  let response;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 16000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+  } catch (e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') throw new Error('응답 시간 초과(120초). 파일 수를 줄이거나 다시 시도해주세요.');
+    throw e;
+  }
+  clearTimeout(timeout);
 
   // 429 Rate Limit — 자동 재시도 (최대 3회, 지수 백오프)
   if (response.status === 429 && retryCount < 3) {
@@ -4452,11 +4466,20 @@ async function startGenerate(type) {
     document.getElementById(type === 'monthly' ? 'monthly-input' : 'periodic-input').style.display = 'block';
     steps.forEach(id => {
       const el = document.getElementById(id);
-      el.classList.remove('running', 'complete');
-      el.querySelector('.picon').textContent = '○';
+      if (el) {
+        el.classList.remove('running', 'complete');
+        const picon = el.querySelector('.picon');
+        if (picon) picon.textContent = '○';
+      }
     });
-    alert('문서 생성 중 오류가 발생했습니다.\n' + err.message);
-    console.error(err);
+    // 화면 내 에러 표시 (alert 차단 대비)
+    const errMsg = err?.message || String(err);
+    const errBox = document.createElement('div');
+    errBox.style.cssText = 'margin:12px 0;padding:14px;background:#FCEBEB;border:1.5px solid #E24B4A;border-radius:8px;font-size:13px;color:#791F1F;line-height:1.7';
+    errBox.innerHTML = `<strong>❌ 문서 생성 오류</strong><br>${errMsg}<br><span style="font-size:11px;color:#aaa">브라우저 콘솔(F12)에서 상세 오류를 확인할 수 있어요</span>`;
+    const inputDiv = document.getElementById(type === 'monthly' ? 'monthly-input' : 'periodic-input');
+    if (inputDiv) inputDiv.prepend(errBox);
+    console.error('[데이음 오류]', err);
   }
 }
 
