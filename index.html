@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>데이음 — 하루의 기록이 문서를 만듭니다</title>
+<title>Day:음 — 하루의 기록이 문서를 만듭니다</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -185,7 +185,7 @@
 
 <!-- 만든 이유 -->
 <div class="section">
-  <h2>📖 데이음을 만들게 된 이유</h2>
+  <h2>📖 Day:음을 만들게 된 이유</h2>
   <p class="lead">주야간보호센터에서 직접 일하며 느꼈던 불편함에서 시작했습니다.</p>
   <div class="story">
     <p>주야간보호센터의 사회복지사는 매일 어르신들을 직접 돌보면서도, <strong>퇴근 후 혹은 주말에 문서 작성에 수 시간을 쏟아야 하는 현실</strong>이 있습니다. 욕구사정, 결과평가, 급여제공계획서… 한 분 한 분의 상태를 정성껏 기록해야 하지만, 반복되는 서식과 형식에 지쳐가는 것도 사실이었습니다.</p>
@@ -239,58 +239,51 @@
 <div id="login-section">
   <div class="login-inner">
     <div style="font-size:32px;margin-bottom:14px">🔐</div>
-    <h2>데이음 시작하기</h2>
-    <p class="login-sub">센터를 선택하고 접속키를 입력해주세요</p>
-    <div class="center-btns">
-      <button class="center-btn" data-code="sapgyo" onclick="selectCenter(this)">삽교<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
-      <button class="center-btn" data-code="center2" onclick="selectCenter(this)">덕산<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
-      <button class="center-btn" data-code="center3" onclick="selectCenter(this)">내포소망<br><span style="font-size:11px;font-weight:400">주간보호센터</span></button>
-    </div>
+    <h2>Day:음 시작하기</h2>
+    <p class="login-sub">발급받은 접속키를 입력해주세요</p>
     <input id="key-input" type="password" placeholder="접속키 입력"
       onkeydown="if(event.key==='Enter')doLogin()">
     <div id="login-error">❌ 접속키가 올바르지 않습니다</div>
     <button id="enter-btn" onclick="doLogin()">입장하기</button>
     <p class="login-note">접속키는 담당자에게 문의해주세요<br>테스트 기간: ~2026-12-31</p>
+
+    <div style="margin-top:28px;padding-top:24px;border-top:1px solid #F0F0F0;">
+      <p style="font-size:13px;color:#aaa;margin-bottom:12px;">아직 접속키가 없으신가요?</p>
+      <a href="promo.html" style="display:inline-block;padding:13px 32px;background:#F97316;color:white;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;font-family:'Noto Sans KR',sans-serif;">
+        무료 테스트 신청하기 →
+      </a>
+    </div>
   </div>
 </div>
 
 <script>
 const CENTERS = {
-  sapgyo:  { name: '삽교주간보호센터',    key: '6598', expires: '2026-12-31' },
-  center2: { name: '덕산주간보호센터',    key: '6598', expires: '2026-12-31' },
-  center3: { name: '내포소망주간보호센터', key: '6598', expires: '2026-12-31' },
+  sapgyo:  { name: '삽교주간보호센터',    key: '0101', expires: '2026-12-31' },
+  center2: { name: '덕산주간보호센터',    key: '0202', expires: '2026-12-31' },
+  center3: { name: '내포소망주간보호센터', key: '0303', expires: '2026-12-31' },
 };
 
 const urlParams = new URLSearchParams(window.location.search);
-let selectedCode = urlParams.get('center') || 'sapgyo';
+const urlCenter = urlParams.get('center');
 
-// URL에 센터코드 있으면 미리 선택
-const preBtn = document.querySelector('.center-btn[data-code="' + selectedCode + '"]');
-if (preBtn) preBtn.classList.add('active');
-
-// 이미 인증된 경우 바로 앱으로
-const saved = sessionStorage.getItem('ium-auth-' + selectedCode);
-if (CENTERS[selectedCode] && saved === CENTERS[selectedCode].key) {
-  location.href = 'app.html?center=' + selectedCode;
-}
-
-function selectCenter(btn) {
-  document.querySelectorAll('.center-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedCode = btn.dataset.code;
-  document.getElementById('login-error').style.display = 'none';
-  document.getElementById('key-input').value = '';
-  document.getElementById('key-input').focus();
+// URL에 센터코드 + 이미 인증된 경우 바로 앱으로
+if (urlCenter && CENTERS[urlCenter]) {
+  const saved = sessionStorage.getItem('ium-auth-' + urlCenter);
+  if (saved === CENTERS[urlCenter].key) {
+    location.href = 'app.html?center=' + urlCenter;
+  }
 }
 
 function doLogin() {
   const input = document.getElementById('key-input').value.trim();
-  const cfg = CENTERS[selectedCode];
-  if (!cfg) return;
+  if (!input) return;
 
-  if (input === cfg.key) {
-    sessionStorage.setItem('ium-auth-' + selectedCode, input);
-    location.href = 'app.html?center=' + selectedCode;
+  // 접속키로 센터 자동 판별
+  const matched = Object.entries(CENTERS).find(([code, cfg]) => input === cfg.key);
+  if (matched) {
+    const [code] = matched;
+    sessionStorage.setItem('ium-auth-' + code, input);
+    location.href = 'app.html?center=' + code;
   } else {
     document.getElementById('login-error').style.display = 'block';
     document.getElementById('key-input').value = '';
