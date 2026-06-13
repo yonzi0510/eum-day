@@ -406,6 +406,79 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 </head>
 <body>
 
+<!-- ══ 랜딩 페이지 ══ -->
+<div id="landing-page" style="display:none">
+  <style>
+    #landing-page { font-family:'Noto Sans KR','맑은 고딕',sans-serif; background:#0f1c36; color:#fff; min-height:100vh; }
+    .lo-hero { background:linear-gradient(155deg,#1F3864 0%,#2d5a9e 60%,#1a4a7a 100%); padding:72px 24px 64px; text-align:center; }
+    .lo-hero .badge { display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:20px; padding:5px 16px; font-size:12px; letter-spacing:1px; margin-bottom:20px; }
+    .lo-hero h1 { font-size:36px; font-weight:800; line-height:1.3; margin-bottom:14px; }
+    .lo-hero h1 span { color:#5de8c0; }
+    .lo-hero .slogan { font-size:15px; color:rgba(255,255,255,0.75); line-height:1.9; }
+    .lo-section { max-width:680px; margin:0 auto; padding:56px 24px; }
+    .lo-section h2 { font-size:22px; font-weight:700; margin-bottom:16px; color:#fff; }
+    .lo-section .lead { font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:20px; }
+    .lo-story p { font-size:13px; color:rgba(255,255,255,0.75); line-height:2.0; margin-bottom:14px; }
+    .lo-story strong { color:#fff; }
+    .lo-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); margin:0; }
+    .lo-steps { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
+    .lo-step { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:18px 16px; }
+    .lo-step .num { font-size:22px; font-weight:800; color:#5de8c0; margin-bottom:6px; }
+    .lo-step .title { font-size:13px; font-weight:600; margin-bottom:4px; }
+    .lo-step .desc { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.7; }
+    .lo-login-section { max-width:400px; margin:0 auto; padding:56px 24px 80px; text-align:center; }
+    .lo-login-section h2 { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .lo-login-section .sub { font-size:13px; color:rgba(255,255,255,0.6); margin-bottom:28px; }
+    .lo-login-box { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:28px 24px; }
+    .lo-login-box input { width:100%; padding:13px 16px; border:1.5px solid rgba(255,255,255,0.2); border-radius:10px; background:rgba(255,255,255,0.1); color:#fff; font-size:16px; font-family:inherit; text-align:center; letter-spacing:4px; box-sizing:border-box; margin-bottom:10px; outline:none; }
+    .lo-login-box input::placeholder { color:rgba(255,255,255,0.35); letter-spacing:1px; font-size:13px; }
+    .lo-login-box input:focus { border-color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.15); }
+    .lo-login-btn { width:100%; padding:14px; background:#5de8c0; color:#0f1c36; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .lo-login-btn:hover { background:#3dd4aa; }
+    .lo-err { font-size:12px; color:#ff8080; margin-bottom:10px; display:none; }
+    .lo-footer { text-align:center; padding:20px; font-size:11px; color:rgba(255,255,255,0.3); }
+  </style>
+  <div class="lo-hero">
+    <div class="badge">주야간보호센터 AI 문서 자동화</div>
+    <h1>하루의 기록이<br><span>문서를 만듭니다</span></h1>
+    <p class="slogan">급여제공기록지 한 장으로<br>욕구사정 · 결과평가 · 급여제공계획서까지<br>AI가 자동으로 완성해 드립니다</p>
+  </div>
+  <hr class="lo-divider">
+  <div class="lo-section">
+    <h2>📖 데이음을 만들게 된 이유</h2>
+    <p class="lead">주야간보호센터에서 직접 일하며 느꼈던 불편함에서 시작했습니다.</p>
+    <div class="lo-story">
+      <p>주야간보호센터의 사회복지사는 매일 어르신들을 직접 돌보면서도, <strong>퇴근 후 혹은 주말에 문서 작성에 수 시간을 쏟아야 하는 현실</strong>이 있습니다. 욕구사정, 결과평가, 급여제공계획서… 반복되는 서식과 형식에 지쳐가는 것도 사실이었습니다.</p>
+      <p><strong>이미 급여제공기록지에는 어르신의 하루가 모두 담겨 있습니다.</strong> 그 기록을 다시 정리해서 문서로 옮기는 작업이 자동화된다면 어떨까, 라는 질문에서 데이음이 시작됐습니다.</p>
+      <p>AI가 초안을 만들고, 사람이 검토·완성하는 구조. <strong>돌봄의 본질에 더 집중할 수 있도록</strong> 돕고 싶었습니다.</p>
+      <p style="background:rgba(255,255,255,0.07);border-left:3px solid #5de8c0;padding:12px 16px;border-radius:0 8px 8px 0;font-size:12px;color:rgba(255,255,255,0.8)">💬 데이음이 단순한 도구가 아닌, 기록의 가치를 높여 <strong style="color:#5de8c0">어르신 한 분 한 분에게 더 나은 케어가 이어지는 연결고리</strong>가 되었으면 합니다.</p>
+    </div>
+  </div>
+  <hr class="lo-divider">
+  <div class="lo-section">
+    <h2>🚀 이렇게 사용하세요</h2>
+    <p class="lead">4단계로 간단하게 문서를 완성할 수 있습니다.</p>
+    <div class="lo-steps">
+      <div class="lo-step"><div class="num">01</div><div class="title">기록지 업로드</div><div class="desc">케어포에서 내보낸 급여제공기록지 PDF를 업로드하세요</div></div>
+      <div class="lo-step"><div class="num">02</div><div class="title">문서 선택</div><div class="desc">생성할 문서를 선택하세요. 월간·정기·수시 문서 모두 지원합니다</div></div>
+      <div class="lo-step"><div class="num">03</div><div class="title">AI 자동 생성</div><div class="desc">버튼 하나로 AI가 기록지를 분석해 문서 초안을 완성합니다</div></div>
+      <div class="lo-step"><div class="num">04</div><div class="title">검토 후 완성</div><div class="desc">내용을 확인하고 Word 다운로드 또는 케어포에 붙여넣어 완성하세요</div></div>
+    </div>
+  </div>
+  <hr class="lo-divider">
+  <div class="lo-login-section">
+    <h2>🔑 접속하기</h2>
+    <p class="sub">담당자에게 받은 접속코드를 입력해주세요</p>
+    <div class="lo-login-box">
+      <input id="lo-key-input" type="password" placeholder="접속코드 입력" onkeydown="if(event.key===\'Enter\')doLanding()">
+      <div id="lo-err" class="lo-err">❌ 접속코드가 올바르지 않습니다</div>
+      <button class="lo-login-btn" onclick="doLanding()">입장하기</button>
+    </div>
+  </div>
+  <div class="lo-footer">Day:음 (데이음) · 하루의 기록이 문서를 만듭니다</div>
+</div>
+<!-- ══ 랜딩 페이지 끝 ══ -->
+
 <div class="header">
   <svg width="100" height="28" viewBox="0 0 120 32" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -4687,21 +4760,61 @@ const urlParams = new URLSearchParams(window.location.search);
 let centerCode = urlParams.get('center') || sessionStorage.getItem('ium-center') || '';
 const CENTER = CENTERS[centerCode] || CENTERS['sapgyo'];
 
-// ────── 접속 인증 ──────
+// ────── 접속 인증 + 랜딩 페이지 ──────
 (function() {
   const today = new Date().toISOString().slice(0,10);
+  const appEl = document.getElementById('landing-page');
 
   // 이미 인증된 센터 확인
   if (centerCode && CENTERS[centerCode]) {
     const cfg = CENTERS[centerCode];
-    if (today > cfg.expires) { showLockScreen(`테스트 기간이 종료되었습니다.\n(만료일: ${cfg.expires})`); return; }
+    if (today > cfg.expires) { showExpired(cfg.expires); return; }
     const saved = sessionStorage.getItem(`ium-auth-${centerCode}`);
-    if (saved === cfg.key) return; // 인증됨
+    if (saved === cfg.key) { enterApp(); return; } // 바로 앱 진입
   }
 
-  // 인증 안 됐으면 잠금 화면
-  showLockScreen(null);
+  // 인증 안 됐으면 랜딩 페이지 표시
+  if (appEl) appEl.style.display = 'block';
 })();
+
+function enterApp() {
+  const appEl = document.getElementById('landing-page');
+  if (appEl) appEl.style.display = 'none';
+  applyCenterUI();
+}
+
+function showExpired(expires) {
+  const appEl = document.getElementById('landing-page');
+  if (appEl) {
+    appEl.style.display = 'block';
+    const loginBox = appEl.querySelector('.lo-login-box');
+    if (loginBox) loginBox.innerHTML = `<div style="background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.4);border-radius:10px;padding:16px;font-size:13px;color:#ff8080;line-height:1.7">테스트 기간이 종료되었습니다.<br>(만료일: ${expires})<br><br>담당자에게 문의해주세요.</div>`;
+  }
+}
+
+function doLanding() {
+  const input = document.getElementById('lo-key-input')?.value?.trim();
+  const errEl = document.getElementById('lo-err');
+  if (!input) return;
+
+  const matched = Object.entries(CENTERS).find(([code, cfg]) => input === cfg.key);
+  if (matched) {
+    const [code, cfg] = matched;
+    const today = new Date().toISOString().slice(0,10);
+    if (today > cfg.expires) {
+      if (errEl) { errEl.textContent = `테스트 기간이 종료됐어요. (${cfg.expires})`; errEl.style.display = 'block'; }
+      return;
+    }
+    sessionStorage.setItem(`ium-auth-${code}`, input);
+    sessionStorage.setItem('ium-center', code);
+    centerCode = code;
+    enterApp();
+  } else {
+    if (errEl) errEl.style.display = 'block';
+    document.getElementById('lo-key-input').value = '';
+    document.getElementById('lo-key-input').focus();
+  }
+}
 
 function showLockScreen(msg) {
   document.body.style.overflow = 'hidden';
