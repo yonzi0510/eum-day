@@ -3742,7 +3742,7 @@ A60(일상생활): A60P10 / A80(인지활동지원): A80A03 / A90(의사소통):
 B10(기본간호): B10R99 / C10(치매관리): C10A99 / G10(정서지원): G10S77_1~3
 M10(기능회복훈련): T50→M10L50_1, T51→M10L50_2, T52→M10L50_3, T53→M10L50_4, T60→M10L50_5, T58→M10L50_6, T61→M10L50_7, T62→M10L50_8, T55→M10L50_9, T57→M10L50_10
 
-HTML 출력 후 반드시 아래 JSON 포함:
+HTML 출력 후 반드시 아래 형식으로 JSON을 출력할 것. 이 JSON이 없으면 엑셀 다운로드가 불가능함. 절대 누락 금지:
 <!--PLAN_JSON_START-->
 [{"순번":null,"상태코드":"U","추가위치":"","장기요양관리번호":"자료에서추출(L로시작)","모니터링구분코드":"영역코드","필요내용코드":"서비스코드","필요내용_수기":"서비스명","세부제공내용_수기":"어르신상태반영구체적내용(~지원하겠음.)","작성자":"${planAuthor}","면허번호":"${planLicense}","주기그룹코드":"매핑참고","주기":3,"횟수":1,"시간":30,"세부목표내용":"목표내용"}]
 <!--PLAN_JSON_END-->
@@ -4140,6 +4140,15 @@ async function startGenerate(type) {
       }
       stepComplete('pp5'); stepRun('pp6'); setPct(curPct);
 
+      // 앞 단계 HTML에서 핵심 텍스트만 추출 (context 절약)
+      function extractSummary(html) {
+        if (!html) return '';
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const text = tmp.innerText || tmp.textContent || '';
+        return text.slice(0, 800).trim();
+      }
+
       // 3단계: 급여제공결과평가
       if (hasResult) {
         startPctTimer(curPct, curPct + pctPerStep - 1);
@@ -4150,7 +4159,7 @@ async function startGenerate(type) {
 - 작성자: ${planAuthor || '(미입력)'}
 - 면허번호: ${planLicense || '(미입력)'}
 - 작성일: ${planDate || '(미입력)'}
-${result2 ? '[앞 단계 욕구사정 참고]\n' + result2 : ''}`;
+${result2 ? '[앞 단계 욕구사정 핵심 참고 — 수급자 기본정보 확인용]\n' + extractSummary(result2) : ''}`;
         result3 = await callClaude(prompt3, userContent, '결과평가');
         stopPctTimer(); renderPeriodicBox(3, result3);
         curPct += pctPerStep;
@@ -4163,29 +4172,51 @@ ${result2 ? '[앞 단계 욕구사정 참고]\n' + result2 : ''}`;
         const prompt4 = buildPeriodicPrompt(opinion) + `
 
 [이번 호출 작성 대상] 급여제공계획서 만 작성할 것. 다른 문서는 작성하지 않을 것.
-반드시 <!--PLAN_JSON_START--> ~ <!--PLAN_JSON_END--> JSON 포함.
-${result2 ? '[앞 단계 욕구사정 참고]\n' + result2 : ''}
-${result3 ? '[앞 단계 결과평가 참고]\n' + result3 : ''}`;
+반드시 HTML 출력 완료 후 <!--PLAN_JSON_START--> ~ <!--PLAN_JSON_END--> 마커 안에 JSON 배열 포함. 누락 시 엑셀 다운로드 불가. 절대 생략 금지.
+${result2 ? '[앞 단계 욕구사정 핵심 참고 — 수급자 기본정보 확인용]\n' + extractSummary(result2) : ''}
+${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\n' + extractSummary(result3) : ''}`;
         result4 = await callClaude(prompt4, userContent, '계획서');
         stopPctTimer();
 
-        // JSON 추출 및 제거
+        // JSON 추출 및 제거 — 완전 강화
         let cleanResult4 = result4;
         window._planJsonData = [];
+
+        // 1) 마커 있는 경우
         const jsonStart = result4.indexOf('<!--PLAN_JSON_START-->');
         const jsonEnd   = result4.indexOf('<!--PLAN_JSON_END-->');
         if (jsonStart !== -1 && jsonEnd !== -1) {
           const jsonStr = result4.slice(jsonStart + 22, jsonEnd).trim();
-          try { window._planJsonData = JSON.parse(jsonStr); } catch(e) {}
+          try { window._planJsonData = JSON.parse(jsonStr); } catch(e) { console.warn('JSON 파싱 오류(마커):', e); }
           cleanResult4 = result4.slice(0, jsonStart) + result4.slice(jsonEnd + 20);
-        } else {
-          const jsonMatch = result4.match(/(\[\s*\{[\s\S]*?"장기요양관리번호"[\s\S]*?\}\s*\])/);
-          if (jsonMatch) {
-            try { window._planJsonData = JSON.parse(jsonMatch[1]); cleanResult4 = result4.replace(jsonMatch[1], ''); } catch(e) {}
-          }
-          const htmlIdx = cleanResult4.indexOf('<');
-          if (htmlIdx > 100) cleanResult4 = cleanResult4.slice(htmlIdx);
         }
+
+        // 2) JSON 배열 패턴 추출 시도 (마커 없는 경우)
+        if (window._planJsonData.length === 0) {
+          const jsonMatch = cleanResult4.match(/\[\s*\{[\s\S]*?"장기요양관리번호"[\s\S]*?\}\s*\]/);
+          if (jsonMatch) {
+            try {
+              window._planJsonData = JSON.parse(jsonMatch[0]);
+              cleanResult4 = cleanResult4.replace(jsonMatch[0], '');
+            } catch(e) { console.warn('JSON 파싱 오류(패턴):', e); }
+          }
+        }
+
+        // 3) HTML 이전의 불필요한 텍스트 제거 (코드 매핑 근거, 미확인 처리 등)
+        const firstTag = cleanResult4.indexOf('<');
+        if (firstTag > 0) cleanResult4 = cleanResult4.slice(firstTag);
+
+        // 4) HTML 이후의 불필요한 텍스트 제거
+        const lastTag = cleanResult4.lastIndexOf('>');
+        if (lastTag !== -1 && lastTag < cleanResult4.length - 1) cleanResult4 = cleanResult4.slice(0, lastTag + 1);
+
+        // 5) HTML 내부의 텍스트 블록 제거 (```json, [코드 매핑 근거] 등이 body 안에 있는 경우)
+        cleanResult4 = cleanResult4
+          .replace(/```json[\s\S]*?```/gi, '')
+          .replace(/\[코드 매핑 근거\][\s\S]*?(?=<)/g, '')
+          .replace(/\[미확인\/수정 처리\][\s\S]*?(?=<)/g, '')
+          .replace(/\[미확인[^\]]*\][\s\S]*?(?=<)/g, '');
+
         renderPeriodicBox(4, cleanResult4);
       }
       stepComplete('pp7'); stepRun('pp8'); setPct(95);
@@ -5311,9 +5342,19 @@ function printLinkageDoc() {
 
 // 급여제공계획서 엑셀 다운로드
 async function downloadPlanExcel() {
-  const data = window._planJsonData;
+  let data = window._planJsonData;
+
+  // JSON 데이터 없으면 박스4 결과에서 재추출 시도
   if (!data || data.length === 0) {
-    alert('생성된 급여제공계획서 데이터가 없습니다.\n먼저 정기문서를 생성해주세요.');
+    const html4 = window._periodicHtml4 || '';
+    const jsonMatch = html4.match(/\[\s*\{[\s\S]*?"장기요양관리번호"[\s\S]*?\}\s*\]/);
+    if (jsonMatch) {
+      try { data = JSON.parse(jsonMatch[0]); window._planJsonData = data; } catch(e) {}
+    }
+  }
+
+  if (!data || data.length === 0) {
+    alert('급여제공계획서 엑셀 데이터를 찾을 수 없습니다.\n계획서 생성 결과를 확인하고 다시 시도해주세요.');
     return;
   }
   if (!window.XLSX) {
@@ -5957,7 +5998,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.57
+  Day:음 · v2026.06.13.60
 </div>
 </body>
 </html>
