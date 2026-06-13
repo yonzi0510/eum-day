@@ -4196,6 +4196,7 @@ function zoneDrop(e, prefix) {
   zone.style.background = '';
   const files = e.dataTransfer.files;
   if (!files || files.length === 0) return;
+
   // file input에 파일 주입
   const input = document.getElementById(prefix+'-file');
   try {
@@ -4203,12 +4204,23 @@ function zoneDrop(e, prefix) {
     Array.from(files).forEach(f => dt.items.add(f));
     input.files = dt.files;
   } catch(err) { /* Safari fallback */ }
+
   zone._dropped = true;
-  const names = Array.from(files).map(f=>f.name);
-  document.getElementById(prefix+'-fn').textContent = names.length > 1 ? `${names[0]} 외 ${names.length-1}개` : names[0];
-  document.getElementById(prefix+'-fname').style.display='block';
+
+  // 파일 리스트 표시 (handleFile과 동일 방식)
+  const fnameEl = document.getElementById(prefix+'-fname');
+  if (fnameEl) {
+    const fileArr = Array.from(files);
+    if (fileArr.length === 1) {
+      fnameEl.innerHTML = '<span class="file-tag">✓ ' + fileArr[0].name + '</span>';
+    } else {
+      fnameEl.innerHTML = fileArr.map(f => '<span class="file-tag" style="margin:2px 2px 0 0;display:inline-flex">✓ ' + f.name + '</span>').join('');
+    }
+    fnameEl.style.display = 'block';
+  }
   zone.classList.add('has-file');
-  // 실제 파일 참조 저장 (p의 경우 다중파일)
+
+  // 실제 파일 참조 저장
   if (prefix === 'p') window._pDropFiles = Array.from(files);
   if (prefix === 'm') window._mDropFiles = [files[0]];
 }
@@ -5830,7 +5842,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.42
+  Day:음 · v2026.06.13.43
 </div>
 </body>
 </html>
