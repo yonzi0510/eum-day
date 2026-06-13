@@ -654,7 +654,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
           <div style="font-size:26px;margin-bottom:5px">📋</div>
           <div style="font-size:13px;color:#555;margin-bottom:2px">급여제공기록지 파일 업로드</div>
           <div style="font-size:11px;color:#999">클릭하거나 파일을 여기로 끌어다 놓으세요<br>케어포 내보내기 PDF · Excel · 이미지</div>
-          <div id="m-fname" style="display:none"><span class="file-tag">✓ <span id="m-fn"></span></span></div>
+          <div id="m-fname" style="display:none;flex-wrap:wrap;gap:4px"></div>
         </div>
         <input type="file" id="m-file" style="display:none" onchange="handleFile('m',this)">
 
@@ -862,7 +862,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
             📄 기타 관련 서류 (낙상·욕창·인지 평가지 등)
           </div>
           <div style="font-size:11px;color:#aaa;margin-top:6px">클릭하거나 파일을 여기로 끌어다 놓으세요 · 여러 파일 동시 선택 가능</div>
-          <div id="p-fname" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="p-fn"></span></span></div>
+          <div id="p-fname" style="display:none;margin-top:8px;flex-wrap:wrap;gap:4px"></div>
         </div>
         <input type="file" id="p-file" style="display:none" onchange="handleFile('p',this)" multiple>
 
@@ -1066,7 +1066,14 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <!-- 정기 진행 -->
     <div class="prog-wrap" id="periodic-prog">
       <div class="card">
-        <div class="card-title"><div class="num" style="background:#0D6E55">⚡</div> AI 분석 중...</div>
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:6px"><div class="num" style="background:#0D6E55">⚡</div> AI 분석 중...</span>
+          <span id="periodic-pct" style="font-size:13px;font-weight:700;color:#0D6E55">0%</span>
+        </div>
+        <!-- 진행 바 -->
+        <div style="height:4px;background:#E0F2EE;border-radius:2px;margin:6px 0 10px">
+          <div id="periodic-pct-bar" style="height:100%;background:#0D6E55;border-radius:2px;width:0%;transition:width .4s"></div>
+        </div>
         <div class="prog-steps">
           <div class="prog-step" id="pp1"><div class="picon">📂</div>자료 및 누적 데이터 분석 중...</div>
           <div class="prog-step" id="pp2"><div class="picon">🔍</div>상태 변화 및 위험도 판단 중...</div>
@@ -1167,17 +1174,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         </div>
       </div>
 
-      <!-- 날짜 검증 -->
-      <div class="date-verify-box" id="date-verify-periodic" style="display:none">
-        <div class="date-verify-title">🔍 AI 날짜 검증 중...</div>
-        <div style="font-size:12px;color:#9A7400">문서에 사용된 날짜를 기록지와 대조하고 있어요</div>
-      </div>
-      <div class="date-confirmed" id="date-confirmed-periodic" style="display:none;flex-direction:column;align-items:flex-start;gap:8px">
-        <div style="font-size:13px;font-weight:700;color:#1B5E20;display:flex;align-items:center;gap:6px">✅ AI 날짜 검증 완료</div>
-        <div id="date-verify-report-periodic" style="font-size:12px;color:#333;line-height:1.8;width:100%"></div>
-      </div>
-
-      <!-- 급여제공계획서 엑셀 다운로드 -->
+      <!-- 급여제공계획서 엑셀 다운로드 (박스4 바로 아래) -->
       <div id="plan-excel-section" style="display:none;margin-bottom:8px;background:#FFF8E1;border:1.5px solid #FFE082;border-radius:10px;padding:12px 14px">
         <div style="font-size:12px;font-weight:600;color:#854F0B;margin-bottom:6px;display:flex;align-items:center;gap:6px">
           📊 공단 업로드용 엑셀 다운로드
@@ -1189,6 +1186,16 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         <button id="plan-excel-btn" onclick="downloadPlanExcel()" style="background:#854F0B;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
           📥 급여제공계획서 엑셀 다운로드
         </button>
+      </div>
+
+      <!-- 날짜 검증 -->
+      <div class="date-verify-box" id="date-verify-periodic" style="display:none">
+        <div class="date-verify-title">🔍 AI 날짜 검증 중...</div>
+        <div style="font-size:12px;color:#9A7400">문서에 사용된 날짜를 기록지와 대조하고 있어요</div>
+      </div>
+      <div class="date-confirmed" id="date-confirmed-periodic" style="display:none;flex-direction:column;align-items:flex-start;gap:8px">
+        <div style="font-size:13px;font-weight:700;color:#1B5E20;display:flex;align-items:center;gap:6px">✅ AI 날짜 검증 완료</div>
+        <div id="date-verify-report-periodic" style="font-size:12px;color:#333;line-height:1.8;width:100%"></div>
       </div>
 
       <div class="dl-row">
@@ -2301,10 +2308,11 @@ function selectLinkedElder(name, month, clickedChip) {
   // 업로드존에 선택된 어르신 표시
   const zone = document.getElementById('m-upload');
   const fname = document.getElementById('m-fname');
-  const fn = document.getElementById('m-fn');
   if (zone) zone.classList.add('has-file');
-  if (fname) fname.style.display = 'block';
-  if (fn) fn.textContent = `${month}월 ${name} 기록지 연동됨`;
+  if (fname) {
+    fname.style.display = 'block';
+    fname.innerHTML = '<span class="file-tag">✓ ' + month + '월 ' + name + ' 기록지 연동됨</span>';
+  }
 
   // 해당 어르신 파일을 현재 작업 파일로 설정
   window.currentLinkedFile = window.splitLinkedFiles[name];
@@ -3728,10 +3736,18 @@ function renderMonthlyResult(html) {
   const bodyEl = document.getElementById('m-r1');
   const bodyEl2 = document.getElementById('m-r2');
 
+  // HTML 앞의 텍스트 설명 제거
+  let cleanHtml = html
+    .replace(/^[\s\S]*?```html\s*/i, '')
+    .replace(/```[\s]*$/i, '')
+    .trim();
+  const firstTag = cleanHtml.indexOf('<');
+  if (firstTag > 0) cleanHtml = cleanHtml.slice(firstTag);
+
   // CSS 주입
-  let finalHtml = html;
-  if (!html.includes('<style>')) {
-    finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${DOC_CSS}</style></head><body>${html}</body></html>`;
+  let finalHtml = cleanHtml;
+  if (!cleanHtml.includes('<style>')) {
+    finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${DOC_CSS}</style></head><body>${cleanHtml}</body></html>`;
   }
   window._monthlyHtml = finalHtml;
 
@@ -3793,7 +3809,16 @@ function renderPeriodicBox(boxNum, html) {
   const fbArea = document.getElementById(`fb-area-p${boxNum}`);
   if (!bodyEl) return;
 
-  const finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${html}</body></html>`;
+  // HTML 앞의 텍스트 설명 제거 (```html 코드블록 및 앞 텍스트)
+  let cleanHtml = html
+    .replace(/^[\s\S]*?```html\s*/i, '')   // ```html 앞 텍스트 제거
+    .replace(/```[\s]*$/i, '')              // 닫는 ``` 제거
+    .trim();
+  // <로 시작하지 않으면 첫 < 태그부터 자르기
+  const firstTag = cleanHtml.indexOf('<');
+  if (firstTag > 0) cleanHtml = cleanHtml.slice(firstTag);
+
+  const finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${cleanHtml}</body></html>`;
 
   // 박스별 HTML 저장
   window[`_periodicHtml${boxNum}`] = finalHtml;
@@ -3959,6 +3984,30 @@ async function startGenerate(type) {
 
     } else {
       // ── 정기문서: 4단계 순차 API 호출 ──
+      // 작성자 정보 미리 읽기
+      const planAuthor  = document.getElementById('plan-author')?.value.trim() || '';
+      const planLicense = document.getElementById('plan-license')?.value.trim() || '';
+      const planDate    = document.getElementById('plan-date')?.value || '';
+
+      let currentPct = 0;
+      let pctTimer = null;
+      const setPct = (pct) => {
+        currentPct = pct;
+        const el = document.getElementById('periodic-pct');
+        const bar = document.getElementById('periodic-pct-bar');
+        if (el) el.textContent = pct + '%';
+        if (bar) bar.style.width = pct + '%';
+      };
+      // API 호출 중 퍼센트 서서히 증가 (목표치까지만)
+      const startPctTimer = (from, to) => {
+        if (pctTimer) clearInterval(pctTimer);
+        let cur = from;
+        pctTimer = setInterval(() => {
+          if (cur < to - 1) { cur += 1; setPct(cur); }
+          else clearInterval(pctTimer);
+        }, 800);
+      };
+      const stopPctTimer = () => { if (pctTimer) { clearInterval(pctTimer); pctTimer = null; } };
       const stepComplete = (id) => {
         const el = document.getElementById(id);
         if (el) { el.classList.remove('running'); el.classList.add('complete'); el.querySelector('.picon').textContent = '✓'; }
@@ -3977,37 +4026,52 @@ async function startGenerate(type) {
       const hasPlan6   = document.getElementById('p6')?.checked;
       const hasEval123 = document.getElementById('p1')?.checked || document.getElementById('p2')?.checked || document.getElementById('p3')?.checked;
 
-      // 1단계: 기초평가 (낙상+욕창+인지 — 선택된 경우)
       stepComplete('pp1'); stepComplete('pp2'); stepRun('pp3');
       await new Promise(r => setTimeout(r, 500));
-      stepComplete('pp3'); stepRun('pp4');
+      stepComplete('pp3'); stepRun('pp4'); setPct(5);
+      startPctTimer(5, 24);
 
       const prompt1 = buildPeriodicPrompt(opinion) + `
 
-[이번 호출 작성 대상] 낙상위험도평가(Huhn) + 욕창위험도평가(Braden) + 인지기능평가(CIST 안내) 만 작성할 것. 다른 문서는 작성하지 않을 것.`;
+[이번 호출 작성 대상] 낙상위험도평가(Huhn) + 욕창위험도평가(Braden) + 인지기능평가(CIST 안내) 만 작성할 것. 다른 문서는 작성하지 않을 것.
+[작성자 정보 — 반드시 그대로 사용]
+- 작성자: ${planAuthor || '(미입력)'}
+- 면허번호: ${planLicense || '(미입력)'}
+- 작성일: ${planDate || '(미입력)'}`;
       const result1 = await callClaude(prompt1, userContent, '기초평가');
-      renderPeriodicBox(1, result1);
-      stepComplete('pp4'); stepRun('pp5');
+      stopPctTimer(); renderPeriodicBox(1, result1);
+      stepComplete('pp4'); stepRun('pp5'); setPct(25);
+      startPctTimer(25, 49);
 
-      // 2단계: 욕구사정 (선택된 경우)
+      // 2단계: 욕구사정
       const prompt2 = buildPeriodicPrompt(opinion) + `
 
-[이번 호출 작성 대상] 욕구사정 평가지(10개 항목 전체) 만 작성할 것. 낙상/욕창/결과평가/계획서는 작성하지 않을 것.`;
+[이번 호출 작성 대상] 욕구사정 평가지(10개 항목 전체) 만 작성할 것. 낙상/욕창/결과평가/계획서는 작성하지 않을 것.
+[작성자 정보 — 반드시 그대로 사용]
+- 작성자: ${planAuthor || '(미입력)'}
+- 면허번호: ${planLicense || '(미입력)'}
+- 작성일: ${planDate || '(미입력)'}`;
       const result2 = await callClaude(prompt2, userContent, '욕구사정');
-      renderPeriodicBox(2, result2);
-      stepComplete('pp5'); stepRun('pp6');
+      stopPctTimer(); renderPeriodicBox(2, result2);
+      stepComplete('pp5'); stepRun('pp6'); setPct(50);
+      startPctTimer(50, 74);
 
-      // 3단계: 급여제공결과평가 (선택된 경우)
+      // 3단계: 급여제공결과평가
       const prompt3 = buildPeriodicPrompt(opinion) + `
 
 [이번 호출 작성 대상] 급여제공결과평가 만 작성할 것. 다른 문서는 작성하지 않을 것.
+[급여제공결과평가 작성자 정보 — 반드시 그대로 사용]
+- 작성자: ${planAuthor || '(미입력)'}
+- 면허번호: ${planLicense || '(미입력)'}
+- 작성일: ${planDate || '(미입력)'}
 [앞 단계 욕구사정 참고]
 ${result2}`;
       const result3 = await callClaude(prompt3, userContent, '결과평가');
-      renderPeriodicBox(3, result3);
-      stepComplete('pp6'); stepRun('pp7');
+      stopPctTimer(); renderPeriodicBox(3, result3);
+      stepComplete('pp6'); stepRun('pp7'); setPct(75);
+      startPctTimer(75, 94);
 
-      // 4단계: 급여제공계획서 (선택된 경우)
+      // 4단계: 급여제공계획서
       const prompt4 = buildPeriodicPrompt(opinion) + `
 
 [이번 호출 작성 대상] 급여제공계획서 만 작성할 것. 다른 문서는 작성하지 않을 것.
@@ -4017,23 +4081,32 @@ ${result2}
 [앞 단계 결과평가 참고]
 ${result3}`;
       const result4 = await callClaude(prompt4, userContent, '계획서');
+      stopPctTimer();
 
-      // JSON 추출
+      // JSON 추출 및 제거
       const jsonStart = result4.indexOf('<!--PLAN_JSON_START-->');
       const jsonEnd   = result4.indexOf('<!--PLAN_JSON_END-->');
+      let cleanResult4 = result4;
       if (jsonStart !== -1 && jsonEnd !== -1) {
         const jsonStr = result4.slice(jsonStart + 22, jsonEnd).trim();
         try {
           window._planJsonData = JSON.parse(jsonStr);
         } catch(e) { window._planJsonData = []; }
-        renderPeriodicBox(4, result4.slice(0, jsonStart) + result4.slice(jsonEnd + 20));
+        cleanResult4 = result4.slice(0, jsonStart) + result4.slice(jsonEnd + 20);
       } else {
+        // 마커 없이 JSON 배열이 포함된 경우 제거
+        cleanResult4 = result4.replace(/\[\s*\{[^[\]]*"상태코드"[\s\S]*?\}\s*\]/g, '');
         window._planJsonData = [];
-        renderPeriodicBox(4, result4);
+        // JSON 파싱 시도 (텍스트에서 추출)
+        const jsonMatch = result4.match(/\[\s*\{[\s\S]*?"세부목표내용"[\s\S]*?\}\s*\]/);
+        if (jsonMatch) {
+          try { window._planJsonData = JSON.parse(jsonMatch[0]); } catch(e) {}
+        }
       }
-      stepComplete('pp7'); stepRun('pp8');
+      renderPeriodicBox(4, cleanResult4);
+      stepComplete('pp7'); stepRun('pp8'); setPct(95);
       await new Promise(r => setTimeout(r, 400));
-      stepComplete('pp8');
+      stepComplete('pp8'); setPct(100);
 
       // Word 다운로드용 합본 - 기초평가+욕구사정+결과평가 3개만 (계획서는 엑셀)
       const combined = result1 + result2 + result3;
@@ -4086,14 +4159,17 @@ ${result3}`;
 function handleFile(prefix, input) {
   if(!input.files[0]) return;
   const files = Array.from(input.files);
+  const fnameEl = document.getElementById(prefix+'-fname');
   const fnEl = document.getElementById(prefix+'-fn');
-  // 파일 목록 표시
   if (files.length === 1) {
-    fnEl.innerHTML = `<span class="file-tag">✓ ${files[0].name}</span>`;
+    // 단일 파일: 기존 file-tag 구조 그대로
+    fnEl.textContent = files[0].name;
+    fnameEl.innerHTML = '<span class="file-tag">✓ ' + files[0].name + '</span>';
   } else {
-    fnEl.innerHTML = files.map(f => `<span class="file-tag" style="display:inline-flex;margin:2px">✓ ${f.name}</span>`).join('');
+    // 다중 파일: 파일 태그 여러 개
+    fnameEl.innerHTML = files.map(f => '<span class="file-tag" style="margin:2px 2px 0 0;display:inline-flex">✓ ' + f.name + '</span>').join('');
   }
-  document.getElementById(prefix+'-fname').style.display='block';
+  fnameEl.style.display = 'block';
   document.getElementById(prefix+'-upload').classList.add('has-file');
 }
 
@@ -4353,13 +4429,27 @@ async function sendFeedback(docId, inputId, revId) {
   const text = input.value.trim();
   if (!text) { alert('수정 요청 내용을 입력해주세요.'); return; }
 
-  const btn = input.nextElementSibling.querySelector('.feedback-send-btn');
+  const btnWrap = input.closest('.feedback-body') || input.parentElement.parentElement;
+  const btn = btnWrap.querySelector('.feedback-send-btn');
+  if (!btn) return;
   btn.disabled = true;
-  btn.textContent = '⏳ 수정 중...';
 
-  // 원본 문서 가져오기 — HTML 양식 버전 우선, 없으면 innerText
+  // 진행률 표시 추가
+  let pct = 0;
+  btn.innerHTML = '⏳ 수정 중... <span id="fb-pct-' + docId + '">0%</span>';
+  const pctTimer = setInterval(() => {
+    if (pct < 90) { pct += 2; const el = document.getElementById('fb-pct-' + docId); if(el) el.textContent = pct + '%'; }
+  }, 600);
+
+  // 박스별 HTML 우선 참조
   let currentDoc = '';
-  if (docId.startsWith('m')) {
+  const boxHtml = window['_periodicHtml' + docId.replace('p','')];
+  if (boxHtml) {
+    const temp = document.createElement('div');
+    temp.innerHTML = boxHtml;
+    temp.querySelectorAll('style,script').forEach(el => el.remove());
+    currentDoc = temp.innerText || temp.textContent || '';
+  } else if (docId.startsWith('m')) {
     if (window._monthlyHtml) {
       const temp = document.createElement('div');
       temp.innerHTML = window._monthlyHtml;
@@ -4374,12 +4464,11 @@ async function sendFeedback(docId, inputId, revId) {
       temp.innerHTML = window._periodicHtml;
       temp.querySelectorAll('style,script').forEach(el => el.remove());
       currentDoc = temp.innerText || temp.textContent || '';
-    } else {
-      currentDoc = document.getElementById('p-r1')?.innerText || '';
     }
   }
 
   if (!currentDoc.trim()) {
+    clearInterval(pctTimer);
     btn.disabled = false;
     btn.textContent = '✈ 수정 요청 전송';
     alert('원본 문서를 찾을 수 없어요. 문서를 먼저 생성해주세요.');
@@ -4388,25 +4477,39 @@ async function sendFeedback(docId, inputId, revId) {
 
   try {
     const result = await callClaude(
-      `당신은 장기요양 문서 수정 전문가입니다.
-아래 원본 문서에서 사용자가 요청한 부분만 수정하여 전체 문서를 다시 출력해주세요.
-- 공문서 어미(~하였음. ~확인됨.) 유지
-- 수정 요청한 부분만 변경하고 나머지는 그대로 유지
-- HTML 형식으로 출력`,
-      `[원본 문서]\n${currentDoc}\n\n[수정 요청]\n${text}`
+      '당신은 장기요양 문서 수정 전문가입니다.\n'
+      + '아래 원본 문서에서 사용자가 요청한 부분만 수정하여 전체 문서를 다시 출력해주세요.\n'
+      + '- 공문서 어미(~하였음. ~확인됨.) 유지\n'
+      + '- 수정 요청한 부분만 변경하고 나머지는 그대로 유지\n'
+      + '- HTML 형식으로만 출력 (설명 텍스트 없이)',
+      '[원본 문서]\n' + currentDoc + '\n\n[수정 요청]\n' + text
     );
 
+    clearInterval(pctTimer);
     btn.disabled = false;
     btn.textContent = '✈ 수정 요청 전송';
-
-    const revArea = document.getElementById(revId);
-    const revBody = document.getElementById(revId + '-body');
-    if (revBody) revBody.innerHTML = result;
-    if (revArea) revArea.classList.add('show');
     input.value = '';
-    revArea?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // 해당 박스 iframe 직접 교체
+    const boxNum = docId.startsWith('p') ? parseInt(docId.replace('p', '')) : null;
+    if (boxNum && boxNum >= 1 && boxNum <= 4) {
+      renderPeriodicBox(boxNum, result);
+      const badge = document.getElementById('badge-p' + boxNum);
+      if (badge) { badge.textContent = '✓ 수정 완료'; badge.style.background = 'rgba(255,210,0,0.5)'; }
+    } else if (docId.startsWith('m')) {
+      renderMonthlyResult(result);
+    }
+
+    // 수정 요청 영역 닫기
+    const fbBody = document.getElementById('fb-' + docId);
+    if (fbBody) {
+      fbBody.style.display = 'none';
+      const toggle = fbBody.closest('.feedback-area')?.querySelector('.feedback-toggle');
+      if (toggle) toggle.textContent = '펼치기 ▾';
+    }
 
   } catch (err) {
+    clearInterval(pctTimer);
     btn.disabled = false;
     btn.textContent = '✈ 수정 요청 전송';
     alert('수정 요청 중 오류가 발생했습니다.\n' + err.message);
@@ -4500,21 +4603,41 @@ async function saveResidentFromResult(type, resultHtml) {
     }
 
     if (!name) {
-      // HTML 결과에서 수급자명 추출 시도 - 다양한 패턴
+      // HTML에서 직접 파싱 (DOM 렌더링 없이)
+      // <td class="label">수급자</td><td>이동주</td> 패턴
+      const tdMatch = resultHtml.match(/<td[^>]*>수급자<\/td>\s*<td[^>]*>([가-힣]{2,5})<\/td>/);
+      if (tdMatch) name = tdMatch[1];
+    }
+
+    if (!name) {
+      // HTML 결과에서 수급자명 추출 시도 - innerText 기반
       const temp = document.createElement('div');
       temp.innerHTML = resultHtml;
-      const text = temp.innerText || '';
+      // 테이블 셀에서 직접 추출
+      const cells = temp.querySelectorAll('td');
+      for (let i = 0; i < cells.length - 1; i++) {
+        const cellText = cells[i].textContent.trim();
+        if (cellText === '수급자' || cellText === '수급자명') {
+          const nextVal = cells[i+1]?.textContent.trim();
+          if (nextVal && /^[가-힣]{2,5}$/.test(nextVal)) { name = nextVal; break; }
+        }
+      }
+    }
+
+    if (!name) {
+      // fallback: 텍스트 패턴 매칭
+      const temp = document.createElement('div');
+      temp.innerHTML = resultHtml;
+      const text = (temp.innerText || '').replace(/\s+/g, ' ');
       const patterns = [
-        /수\s*급\s*자\s*명?\s*[:\|]?\s*([가-힣]{2,5})/,   // 수급자명: 박영애
-        /수\s*급\s*자\s+([가-힣]{2,5})/,                    // 수급자 박영애
-        /수급자\s*[:\|]\s*([가-힣]{2,5})/,                  // 수급자: 박영애
-        /성\s*명\s*[:\|]?\s*([가-힣]{2,5})/,               // 성명: 박영애
+        /수급자명?\s*[:\|]?\s*([가-힣]{2,5})/,
+        /수급자\s+([가-힣]{2,5})/,
+        /성명\s*[:\|]?\s*([가-힣]{2,5})/,
       ];
       for (const pat of patterns) {
         const match = text.match(pat);
         if (match && match[1] && match[1] !== '수급자' && match[1] !== '어르신') {
-          name = match[1];
-          break;
+          name = match[1]; break;
         }
       }
     }
@@ -5707,7 +5830,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.33
+  Day:음 · v2026.06.13.42
 </div>
 </body>
 </html>
