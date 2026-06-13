@@ -3521,10 +3521,13 @@ function buildPeriodicPrompt(opinion) {
 ---
 
 ## 작성 규칙
+- **급여제공기록지에 있는 내용이 욕구사정의 유일한 근거이자 충분한 근거임** — 자료 부족을 이유로 작성을 거부하거나 추가 자료를 요청하지 말 것
+- **작성자 의견(현장 관찰)이 있으면 반드시 반영** — 기록지에 담기지 않은 현장 관찰이므로 욕구사정 각 항목 판단에 우선적으로 활용할 것
+- 기록지에서 확인된 내용을 근거로 최선을 다해 작성하고, 확인 불가한 항목은 "미확인" 또는 "기록 상 확인 불가"로 처리
 - 모든 문장: 경어체 문서체 (~하고 있음. ~할 계획임. ~으로 판단됨. ~하셨음.)
 - 수급자 지칭: "어르신"
 - 전문용어 영어 병기 금지
-- 날짜·사건 인용: 반드시 두 번 이상 교차 확인 후 확실한 경우에만 명시
+- 날짜·사건 인용: 기록지에 기재된 내용 기반으로 작성
 - "기록지 상 확인됨" 표현 사용 금지
 - 치매안심센터 등 타 기관 연계 직접 언급 금지
 
@@ -3748,12 +3751,18 @@ function renderMonthlyResult(html) {
   const bodyEl2 = document.getElementById('m-r2');
 
   // HTML 앞의 텍스트 설명 제거
-  let cleanHtml = html
-    .replace(/^[\s\S]*?```html\s*/i, '')
-    .replace(/```[\s]*$/i, '')
-    .trim();
+  // HTML 정제 - 앞뒤 텍스트/마크다운 모두 제거
+  let cleanHtml = html.trim();
+  if (cleanHtml.includes('```html')) {
+    cleanHtml = cleanHtml.replace(/^[\s\S]*?```html\s*/i, '').replace(/\s*```[\s\S]*$/i, '');
+  } else if (cleanHtml.includes('```')) {
+    cleanHtml = cleanHtml.replace(/^[\s\S]*?```\s*/i, '').replace(/\s*```[\s\S]*$/i, '');
+  }
   const firstTag = cleanHtml.indexOf('<');
   if (firstTag > 0) cleanHtml = cleanHtml.slice(firstTag);
+  const lastTag = cleanHtml.lastIndexOf('>');
+  if (lastTag !== -1 && lastTag < cleanHtml.length - 1) cleanHtml = cleanHtml.slice(0, lastTag + 1);
+  cleanHtml = cleanHtml.trim();
 
   // CSS 주입
   let finalHtml = cleanHtml;
@@ -3820,14 +3829,25 @@ function renderPeriodicBox(boxNum, html) {
   const fbArea = document.getElementById(`fb-area-p${boxNum}`);
   if (!bodyEl) return;
 
-  // HTML 앞의 텍스트 설명 제거 (```html 코드블록 및 앞 텍스트)
-  let cleanHtml = html
-    .replace(/^[\s\S]*?```html\s*/i, '')   // ```html 앞 텍스트 제거
-    .replace(/```[\s]*$/i, '')              // 닫는 ``` 제거
-    .trim();
-  // <로 시작하지 않으면 첫 < 태그부터 자르기
+  // HTML 정제 - 앞뒤 텍스트/마크다운 모두 제거
+  let cleanHtml = html.trim();
+
+  // ```html 코드블록 처리
+  if (cleanHtml.includes('```html')) {
+    cleanHtml = cleanHtml.replace(/^[\s\S]*?```html\s*/i, '').replace(/\s*```[\s\S]*$/i, '');
+  } else if (cleanHtml.includes('```')) {
+    cleanHtml = cleanHtml.replace(/^[\s\S]*?```\s*/i, '').replace(/\s*```[\s\S]*$/i, '');
+  }
+
+  // 첫 번째 < 태그 이전 텍스트 제거
   const firstTag = cleanHtml.indexOf('<');
   if (firstTag > 0) cleanHtml = cleanHtml.slice(firstTag);
+
+  // 마지막 > 태그 이후 텍스트 제거 (마크다운, 요약 텍스트 등)
+  const lastTag = cleanHtml.lastIndexOf('>');
+  if (lastTag !== -1 && lastTag < cleanHtml.length - 1) cleanHtml = cleanHtml.slice(0, lastTag + 1);
+
+  cleanHtml = cleanHtml.trim();
 
   const finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${cleanHtml}</body></html>`;
 
@@ -4094,24 +4114,31 @@ ${result3}`;
       const result4 = await callClaude(prompt4, userContent, '계획서');
       stopPctTimer();
 
-      // JSON 추출 및 제거
+      // JSON 추출 및 제거 — 다양한 출력 패턴 처리
+      let cleanResult4 = result4;
+      window._planJsonData = [];
+
+      // 1) 마커 있는 경우
       const jsonStart = result4.indexOf('<!--PLAN_JSON_START-->');
       const jsonEnd   = result4.indexOf('<!--PLAN_JSON_END-->');
-      let cleanResult4 = result4;
       if (jsonStart !== -1 && jsonEnd !== -1) {
         const jsonStr = result4.slice(jsonStart + 22, jsonEnd).trim();
-        try {
-          window._planJsonData = JSON.parse(jsonStr);
-        } catch(e) { window._planJsonData = []; }
+        try { window._planJsonData = JSON.parse(jsonStr); } catch(e) {}
         cleanResult4 = result4.slice(0, jsonStart) + result4.slice(jsonEnd + 20);
       } else {
-        // 마커 없이 JSON 배열이 포함된 경우 제거
-        cleanResult4 = result4.replace(/\[\s*\{[^[\]]*"상태코드"[\s\S]*?\}\s*\]/g, '');
-        window._planJsonData = [];
-        // JSON 파싱 시도 (텍스트에서 추출)
-        const jsonMatch = result4.match(/\[\s*\{[\s\S]*?"세부목표내용"[\s\S]*?\}\s*\]/);
+        // 2) JSON 배열 추출 시도 (마커 없는 경우)
+        const jsonMatch = result4.match(/(\[\s*\{[\s\S]*?"장기요양관리번호"[\s\S]*?\}\s*\])/);
         if (jsonMatch) {
-          try { window._planJsonData = JSON.parse(jsonMatch[0]); } catch(e) {}
+          try {
+            window._planJsonData = JSON.parse(jsonMatch[1]);
+            cleanResult4 = result4.replace(jsonMatch[1], '');
+          } catch(e) {}
+        }
+        // 3) 텍스트로 시작하고 HTML이 뒤에 있는 경우 — HTML 부분만 추출
+        const htmlIdx = cleanResult4.indexOf('<');
+        if (htmlIdx > 100) {
+          // 앞에 긴 텍스트(JSON 포함)가 있으면 HTML 시작부터 자르기
+          cleanResult4 = cleanResult4.slice(htmlIdx);
         }
       }
       renderPeriodicBox(4, cleanResult4);
@@ -4123,9 +4150,9 @@ ${result3}`;
       const combined = result1 + result2 + result3;
       window._periodicHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${combined}</body></html>`;
 
-      // 엑셀 버튼
+      // 엑셀 버튼 — 계획서 선택됐으면 항상 표시
       const excelSection = document.getElementById('plan-excel-section');
-      if (excelSection) excelSection.style.display = (hasPlan6 && window._planJsonData?.length > 0) ? 'block' : 'none';
+      if (excelSection) excelSection.style.display = hasPlan6 ? 'block' : 'none';
 
       await new Promise(r => setTimeout(r, 300));
       prog.classList.remove('show');
@@ -5356,44 +5383,36 @@ const CENTERS = {
 
 const urlParams = new URLSearchParams(window.location.search);
 let centerCode = urlParams.get('center') || sessionStorage.getItem('ium-center') || '';
-const CENTER = CENTERS[centerCode] || CENTERS['sapgyo'];
 
 // ────── app.html 인증 체크 ──────
-(function() {
+// sessionStorage에서 유효한 인증 찾기
+function findValidAuth() {
   const today = new Date().toISOString().slice(0,10);
-
-  // 1) URL에 center 파라미터 있으면 sessionStorage에 저장
-  if (urlParams.get('center') && CENTERS[urlParams.get('center')]) {
-    const code = urlParams.get('center');
+  // URL 파라미터 center 우선
+  const paramCode = urlParams.get('center');
+  if (paramCode && CENTERS[paramCode]) {
+    const cfg = CENTERS[paramCode];
+    if (sessionStorage.getItem('ium-auth-' + paramCode) === cfg.key && today <= cfg.expires) {
+      return paramCode;
+    }
+  }
+  // sessionStorage 전체 확인
+  for (const code of Object.keys(CENTERS)) {
     const cfg = CENTERS[code];
-    const saved = sessionStorage.getItem(`ium-auth-${code}`);
-    if (saved === cfg.key) {
-      if (today > cfg.expires) { alert(`테스트 기간이 종료됐습니다. (${cfg.expires})`); location.href = 'index.html'; return; }
-      centerCode = code;
-      applyCenterUI();
-      return;
+    if (sessionStorage.getItem('ium-auth-' + code) === cfg.key && today <= cfg.expires) {
+      return code;
     }
   }
+  return null;
+}
 
-  // 2) sessionStorage에 저장된 인증 확인
-  for (const [code, cfg] of Object.entries(CENTERS)) {
-    const saved = sessionStorage.getItem(`ium-auth-${code}`);
-    if (saved === cfg.key) {
-      if (today > cfg.expires) { alert(`테스트 기간이 종료됐습니다. (${cfg.expires})`); location.href = 'index.html'; return; }
-      centerCode = code;
-      applyCenterUI();
-      return;
-    }
-  }
-
-  // 3) 인증 없으면 index.html로 (단, 이미 index.html에서 온 경우 루프 방지)
-  if (!sessionStorage.getItem('ium-redirecting')) {
-    sessionStorage.setItem('ium-redirecting', '1');
-    location.href = 'index.html';
-  } else {
-    sessionStorage.removeItem('ium-redirecting');
-  }
-})()
+const validCode = findValidAuth();
+if (validCode) {
+  centerCode = validCode;
+} else {
+  // 인증 없으면 index.html로 — 단순하게 한 번만
+  location.replace('index.html');
+}
 
 function showLockScreen(msg) {
   document.body.style.overflow = 'hidden';
@@ -5876,7 +5895,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.46
+  Day:음 · v2026.06.13.50
 </div>
 </body>
 </html>
