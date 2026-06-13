@@ -1052,9 +1052,9 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
             </div>
           </div>
           <div>
-            <div style="font-size:11px;color:#555;margin-bottom:3px">🏋️ 센터 기능회복훈련 프로그램명</div>
-            <input id="plan-rehab" type="text" placeholder="예) 백세체조, 슬링재활운동, 빙고게임, 이야기여행" style="width:100%;border:1px solid #9AAECC;border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit" oninput="updatePlanMetaPreview()">
-            <div style="font-size:10px;color:#888;margin-top:3px">센터에서 실제 제공하는 프로그램명 입력 시 계획서에 자동 반영됩니다 (지표27)</div>
+            <div style="font-size:11px;color:#555;margin-bottom:3px">🏋️ 센터 추가 프로그램명 <span style="font-size:10px;color:#aaa">(선택)</span></div>
+            <input id="plan-rehab" type="text" placeholder="기록지에 없는 추가 프로그램명 입력 (선택사항)" style="width:100%;border:1px solid #9AAECC;border-radius:7px;padding:7px 10px;font-size:13px;font-family:inherit" oninput="updatePlanMetaPreview()">
+            <div style="font-size:10px;color:#888;margin-top:3px">AI가 기록지에서 실제 프로그램 활동을 자동 분석해 기능회복훈련 계획에 반영합니다 (지표27)</div>
           </div>
           <div id="plan-meta-preview" style="display:none;background:#fff;border:1px solid #9AAECC;border-radius:7px;padding:8px 12px;font-size:11px;color:#1a3a6e;line-height:1.8"></div>
         </div>
@@ -3674,10 +3674,21 @@ CIST 평가 시행 여부 명시
 현황·상태 설명 단순 나열 금지.
 
 기능회복훈련 필수 기준 (지표27):
-T52(기본동작훈련) 세부제공내용 필수: 체위변경/일어나기/앉아있기/균형/이동/보행/휠체어조작 중 어르신 상태에 맞는 항목 명시
-T51(신체기능훈련): 근력증강운동/연하운동/팔운동/손가락운동/조화운동/지구력훈련
-T53(일상생활동작훈련): 식사/배설/옷갈아입기/목욕/몸단장/요리
-센터 프로그램명(${planRehab || '백세체조 등'}) 세부제공내용에 반드시 포함
+[기록지 기반 프로그램 분석 — 반드시 수행]
+급여제공기록지에서 실제 제공된 프로그램 활동(슬링재활운동, 백세체조, 빙고게임, 이야기여행, 대왕윷놀이 등)과 그 활동 묘사를 모두 파악할 것.
+
+[세부제공내용 작성 방식 — 핵심]
+프로그램명을 단순 나열하지 말고, 그 활동에서 어르신이 실제로 사용한 신체·인지 기능을 해석하여 서술할 것.
+예시:
+- "빙고게임 — 빙고판 자르고 붙이고 찾으며 참여" → "가위질(소근육 조작), 숫자 찾기·판단(인지기능) 등을 활용하여 지원하겠음."
+- "슬링재활운동 — 어깨·팔 들어올리기 반복" → "상지 근력 강화 및 관절가동범위 유지를 위한 운동을 지원하겠음."
+- "백세체조 — 앉아서 팔다리 움직임" → "균형 유지 및 지구력 향상을 위한 체조 활동을 지원하겠음."
+
+각 프로그램을 아래 훈련 영역에 매핑:
+- T51(신체기능훈련): 근력·연하·팔·손가락·조화·지구력 관련 활동
+- T52(기본동작훈련): 체위변경/일어나기/앉아있기/균형/이동/보행/휠체어조작 [필수]
+- T53(일상생활동작훈련): 식사/배설/옷갈아입기/목욕/몸단장/요리 관련 지원
+${planRehab ? '추가 센터 프로그램: ' + planRehab : ''}
 5등급(인지지원등급): K01 인지활동형 프로그램 실시 주기=3(일), 횟수=1, 시간=60
 
 주기그룹코드 매핑:
@@ -5350,15 +5361,39 @@ const CENTER = CENTERS[centerCode] || CENTERS['sapgyo'];
 // ────── app.html 인증 체크 ──────
 (function() {
   const today = new Date().toISOString().slice(0,10);
-  if (centerCode && CENTERS[centerCode]) {
-    const cfg = CENTERS[centerCode];
-    if (today > cfg.expires) { alert(`테스트 기간이 종료되었습니다. (${cfg.expires})`); return; }
-    const saved = sessionStorage.getItem(`ium-auth-${centerCode}`);
-    if (saved === cfg.key) { applyCenterUI(); return; }
+
+  // 1) URL에 center 파라미터 있으면 sessionStorage에 저장
+  if (urlParams.get('center') && CENTERS[urlParams.get('center')]) {
+    const code = urlParams.get('center');
+    const cfg = CENTERS[code];
+    const saved = sessionStorage.getItem(`ium-auth-${code}`);
+    if (saved === cfg.key) {
+      if (today > cfg.expires) { alert(`테스트 기간이 종료됐습니다. (${cfg.expires})`); location.href = 'index.html'; return; }
+      centerCode = code;
+      applyCenterUI();
+      return;
+    }
   }
-  // 인증 없으면 index.html로
-  location.href = 'index.html';
-})();
+
+  // 2) sessionStorage에 저장된 인증 확인
+  for (const [code, cfg] of Object.entries(CENTERS)) {
+    const saved = sessionStorage.getItem(`ium-auth-${code}`);
+    if (saved === cfg.key) {
+      if (today > cfg.expires) { alert(`테스트 기간이 종료됐습니다. (${cfg.expires})`); location.href = 'index.html'; return; }
+      centerCode = code;
+      applyCenterUI();
+      return;
+    }
+  }
+
+  // 3) 인증 없으면 index.html로 (단, 이미 index.html에서 온 경우 루프 방지)
+  if (!sessionStorage.getItem('ium-redirecting')) {
+    sessionStorage.setItem('ium-redirecting', '1');
+    location.href = 'index.html';
+  } else {
+    sessionStorage.removeItem('ium-redirecting');
+  }
+})()
 
 function showLockScreen(msg) {
   document.body.style.overflow = 'hidden';
@@ -5456,7 +5491,6 @@ function applyCenterUI() {
   const hd = document.querySelector('.header');
   if (hd) hd.style.background = cfg.color;
 }
-applyCenterUI();
 
 // ────── 어르신 데이터 저장·불러오기 ──────
 async function saveResident(data) {
@@ -5842,7 +5876,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.43
+  Day:음 · v2026.06.13.46
 </div>
 </body>
 </html>
