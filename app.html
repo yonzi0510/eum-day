@@ -85,12 +85,19 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px
 .mc-days{font-size:10px;color:#888}
 .mc-events{display:flex;gap:2px;margin-top:3px;flex-wrap:wrap}
 .edot{width:7px;height:7px;border-radius:50%}
-.bp-chart{display:flex;flex-direction:column;gap:3px;margin-top:6px}
-.bp-row{display:flex;align-items:center;gap:8px;font-size:11px}
-.bp-date{width:48px;color:#888;flex-shrink:0}
-.bp-bar-wrap{flex:1;height:12px;background:#F0F0F0;border-radius:3px;overflow:hidden}
-.bp-bar{height:100%;border-radius:3px}
-.bp-val{width:58px;text-align:right;font-size:11px;font-weight:500;flex-shrink:0}
+.bp-chart-wrap{margin-top:6px}
+.bp-chart-title{font-size:11px;font-weight:600;color:#555;margin-bottom:6px}
+.bp-col-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 4px}
+.bp-col-group{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px}
+.bp-col-bars{display:flex;align-items:flex-end;gap:2px;height:90px}
+.bp-col{border-radius:3px 3px 0 0;min-width:10px;transition:height .3s}
+.bp-col-date{font-size:10px;color:#888;margin-top:3px;white-space:nowrap}
+.bp-col-val{font-size:9px;color:#555;margin-bottom:2px}
+.wt-col-chart{display:flex;align-items:flex-end;gap:6px;height:80px;padding:0 4px;margin-top:4px}
+.wt-col{border-radius:3px 3px 0 0;flex:1;background:#5B8AD4;transition:height .3s}
+.wt-col-date{font-size:10px;color:#888;margin-top:3px;white-space:nowrap;text-align:center}
+.wt-col-val{font-size:9px;color:#555;margin-bottom:2px;text-align:center}
+.wt-col-group{display:flex;flex-direction:column;align-items:center;flex:1}
 /* 타임라인 */
 .tl-row{display:grid;grid-template-columns:64px 20px 1fr;gap:0 8px;align-items:stretch}
 .tl-row.past .tl-date{opacity:.4}
@@ -503,15 +510,30 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <div class="sec">
       <button class="sec-btn" onclick="togSec(this)">
         <div class="sec-num">3</div>
-        <span class="sec-lbl">BPSD · 혈압 변화 추이</span>
-        <span class="sec-sum">누적 월별 비교</span>
+        <span class="sec-lbl">건강 변화 추이</span>
+        <span class="sec-sum">혈압 · 체중</span>
         <span class="chev">▾</span>
       </button>
       <div class="sec-body" id="s3-body">
         <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:7px">월별 이력</div>
         <div class="history-grid" id="history-grid"></div>
-        <div style="font-size:12px;font-weight:500;color:#555;margin:12px 0 7px">혈압 추이 (5월)</div>
-        <div class="bp-chart" id="bp-chart"></div>
+        <!-- BPSD 현황 (해당 어르신만 표시) -->
+        <div id="s3-bpsd-wrap" style="display:none;margin:12px 0">
+          <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:7px">행동심리증상 (BPSD) 현황</div>
+          <div id="s3-bpsd-content"></div>
+        </div>
+        <div style="font-size:12px;font-weight:500;color:#555;margin:12px 0 7px">혈압 추이</div>
+        <div class="bp-chart-wrap">
+          <div style="display:flex;gap:8px;font-size:10px;margin-bottom:4px">
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#E24B4A;display:inline-block"></span>수축기</span>
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#378ADD;display:inline-block"></span>이완기</span>
+          </div>
+          <div class="bp-col-chart" id="bp-chart"></div>
+        </div>
+        <div style="font-size:12px;font-weight:500;color:#555;margin:14px 0 7px">체중 변화 추이</div>
+        <div id="wt-chart-wrap">
+          <div class="wt-col-chart" id="wt-chart"></div>
+        </div>
       </div>
     </div>
 
@@ -552,19 +574,36 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
             <div style="background:#EEF2FF;border-radius:8px;padding:9px 12px">
               <div style="font-size:11px;font-weight:700;color:#1F3864;margin-bottom:5px">🏃 T51 신체기능훈련</div>
               <div style="display:flex;flex-wrap:wrap;gap:4px">
-                ${['근력증강운동','연하운동','팔운동','손가락운동','조화운동','지구력훈련'].map(i=>`<span style="background:#fff;border:1px solid #9AAECC;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">${i}</span>`).join('')}
+                <span style="background:#fff;border:1px solid #9AAECC;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">근력증강운동</span>
+                <span style="background:#fff;border:1px solid #9AAECC;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">연하운동</span>
+                <span style="background:#fff;border:1px solid #9AAECC;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">팔운동</span>
+                <span style="background:#fff;border:1px solid #9AAECC;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">손가락운동</span>
+                <span style="background:#fff;border:1px solid #9AAECC;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">조화운동</span>
+                <span style="background:#fff;border:1px solid #9AAECC;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">지구력훈련</span>
               </div>
             </div>
             <div style="background:#E8F5E9;border-radius:8px;padding:9px 12px">
               <div style="font-size:11px;font-weight:700;color:#1B5E20;margin-bottom:5px">🚶 T52 기본동작훈련 <span style="background:#E24B4A;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px">필수</span></div>
               <div style="display:flex;flex-wrap:wrap;gap:4px">
-                ${['체위변경','일어나기','앉아있기','균형','이동','보행','휠체어조작','보장구 장착'].map(i=>`<span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">${i}</span>`).join('')}
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">체위변경</span>
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">일어나기</span>
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">앉아있기</span>
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">균형</span>
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">이동</span>
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">보행</span>
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">휠체어조작</span>
+                <span style="background:#fff;border:1px solid #8abf92;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">보장구 장착</span>
               </div>
             </div>
             <div style="background:#FFF3E0;border-radius:8px;padding:9px 12px">
               <div style="font-size:11px;font-weight:700;color:#E65100;margin-bottom:5px">🍽️ T53 일상생활동작훈련</div>
               <div style="display:flex;flex-wrap:wrap;gap:4px">
-                ${['식사','배설','옷 갈아입기','목욕','몸단장','요리'].map(i=>`<span style="background:#fff;border:1px solid #FFCC80;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">${i}</span>`).join('')}
+                <span style="background:#fff;border:1px solid #FFCC80;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">식사</span>
+                <span style="background:#fff;border:1px solid #FFCC80;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">배설</span>
+                <span style="background:#fff;border:1px solid #FFCC80;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">옷 갈아입기</span>
+                <span style="background:#fff;border:1px solid #FFCC80;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">목욕</span>
+                <span style="background:#fff;border:1px solid #FFCC80;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">몸단장</span>
+                <span style="background:#fff;border:1px solid #FFCC80;border-radius:4px;padding:2px 7px;font-size:10px;color:#333">요리</span>
               </div>
             </div>
           </div>
@@ -2886,19 +2925,13 @@ async function buildDateVerify(docType) {
             role: 'user',
             content: [
               { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } },
-              { type: 'text', text: `아래는 AI가 생성한 문서입니다. 이 문서에 사용된 날짜들이 위 급여제공기록지에 실제로 존재하는지 확인해주세요.
-
-[생성된 문서]
-${docText.slice(0, 3000)}
-
-[검증 규칙]
-1. 문서에서 날짜(YYYY.MM.DD, MM/DD, MM월DD일 등 모든 형식) 추출
-2. 각 날짜가 기록지에 실제 이용일로 존재하는지 확인
-3. 결과를 아래 형식으로만 출력 (다른 설명 없이):
-
-✅ 일치: 날짜1, 날짜2, ...
-⚠️ 불일치: 날짜3 (기록지에 없는 날짜)
-📋 총 ${docText.match(/\d{1,2}[./]\d{1,2}/g)?.length || 0}개 날짜 검증 완료` }
+              { type: 'text', text: '아래는 AI가 생성한 문서입니다. 이 문서에 사용된 날짜들이 위 급여제공기록지에 실제로 존재하는지 확인해주세요.\n\n'
+                + '[생성된 문서]\n' + docText.slice(0, 3000)
+                + '\n\n[검증 규칙]\n1. 문서에서 날짜(YYYY.MM.DD, MM/DD, MM월DD일 등 모든 형식) 추출\n'
+                + '2. 각 날짜가 기록지에 실제 이용일로 존재하는지 확인\n'
+                + '3. 결과를 아래 형식으로만 출력 (다른 설명 없이):\n\n'
+                + '✅ 일치: 날짜1, 날짜2, ...\n⚠️ 불일치: 날짜3 (기록지에 없는 날짜)\n'
+                + '📋 총 ' + (docText.match(/\d{1,2}[./]\d{1,2}/g) || []).length + '개 날짜 검증 완료' }
             ]
           }]
         })
@@ -3669,8 +3702,15 @@ ${['p1','p2','p3','p4','p5','p6'].filter(id => document.getElementById(id)?.chec
 }[id])).join('\n')}
 
 [욕구사정 사정구분 정보]
-${document.getElementById('p4')?.checked ? `사정구분: ${(()=>{const n=document.getElementById('p4-type-new');const r=document.getElementById('p4-type-re');return n?.dataset.selected==='true'?'신규사정':r?.dataset.selected==='true'?'재사정':'신규사정';})()}
-작성일자: ${document.getElementById('assess-date')?.value || ''}` : ''}
+${(function(){
+  const p4 = document.getElementById('p4');
+  if(!p4 || !p4.checked) return '';
+  const radios = document.querySelectorAll('input[name="assess-type"]');
+  let type = '신규사정';
+  radios.forEach(function(r){ if(r.checked) type = r.value === 're' ? '재사정' : '신규사정'; });
+  const date = document.getElementById('assess-date') ? document.getElementById('assess-date').value : '';
+  return '사정구분: ' + type + '\n작성일자: ' + date;
+})()}
 
 [출력] 마크다운 금지. <style> 태그 없이 body 태그부터 시작. CSS 이미 로드됨.
 각 문서는 별도 <div class="page">로 구분.
@@ -4011,7 +4051,9 @@ ${result3}`;
     setTimeout(() => buildDateVerify(type), 600);
 
     // 어르신 정보 저장 - 정기문서는 합본 HTML 사용
-    const resultForSave = type === 'monthly' ? result : (result1 + result2 + result3 + result4);
+    const resultForSave = type === 'monthly'
+      ? (typeof result !== 'undefined' ? result : '')
+      : ((typeof result1 !== 'undefined' ? result1 : '') + (typeof result2 !== 'undefined' ? result2 : '') + (typeof result3 !== 'undefined' ? result3 : '') + (typeof result4 !== 'undefined' ? result4 : ''));
     await saveResidentFromResult(type, resultForSave);
 
     // 샘플 모드일 때만 샘플 어르신 저장 (실제 파일이면 저장 안 함)
@@ -4458,12 +4500,23 @@ async function saveResidentFromResult(type, resultHtml) {
     }
 
     if (!name) {
-      // HTML 결과에서 수급자명 추출 시도
+      // HTML 결과에서 수급자명 추출 시도 - 다양한 패턴
       const temp = document.createElement('div');
       temp.innerHTML = resultHtml;
       const text = temp.innerText || '';
-      const match = text.match(/수급자명?\s*[:\|]?\s*([가-힣]{2,5})/);
-      if (match) name = match[1];
+      const patterns = [
+        /수\s*급\s*자\s*명?\s*[:\|]?\s*([가-힣]{2,5})/,   // 수급자명: 박영애
+        /수\s*급\s*자\s+([가-힣]{2,5})/,                    // 수급자 박영애
+        /수급자\s*[:\|]\s*([가-힣]{2,5})/,                  // 수급자: 박영애
+        /성\s*명\s*[:\|]?\s*([가-힣]{2,5})/,               // 성명: 박영애
+      ];
+      for (const pat of patterns) {
+        const match = text.match(pat);
+        if (match && match[1] && match[1] !== '수급자' && match[1] !== '어르신') {
+          name = match[1];
+          break;
+        }
+      }
     }
 
     if (!name) return; // 이름 못 찾으면 저장 안 함
@@ -4994,7 +5047,7 @@ function openDocViewer(html, title) {
 ${html}
 </div>
 <div class="copy-toast" id="copy-toast">✅ 복사됐어요! 케어포에 붙여넣기 하세요</div>
-<script>
+\x3cscript>
 function copyAll() {
   const el = document.getElementById('doc-content');
   const text = el.innerText || el.textContent || '';
@@ -5296,13 +5349,20 @@ const DEMO_RESIDENTS = [
     id:'demo-kim-soon', name:'김○순', avatar:'김', grade:'4등급', state:'부분도움',
     birth:'1942년생 · 여', lastUpdate:'2026.06.01',
     months:[
-      {month:'2026년 6월',monthKey:'2026-06',days:20,events:[{type:'amber',label:'혈압'},{type:'red',label:'BPSD'}],bpsdLevel:'moderate',bpsdDesc:'반복질문·불안 행동 지속. 농작업 과부하 영향 의심.',docs:['상담일지 2회차']},
-      {month:'2026년 5월',monthKey:'2026-05',days:22,events:[{type:'amber',label:'혈압'}],bpsdLevel:'mild',bpsdDesc:'경미한 배회 1회',docs:['상담일지 2회차','월간현황요약']},
-      {month:'2026년 4월',monthKey:'2026-04',days:21,events:[],docs:['상담일지 1회차','급여제공계획서','급여제공결과평가']}
+      {month:'2026년 6월',monthKey:'2026-06',days:20,events:[{type:'amber',label:'혈압'},{type:'red',label:'BPSD'}],bpsdLevel:'moderate',bpsdDesc:'반복질문·불안 행동 지속. 농번기 과부하 영향 의심.',docs:['상담일지 2회차']},
+      {month:'2026년 5월',monthKey:'2026-05',days:22,events:[{type:'amber',label:'혈압'},{type:'red',label:'BPSD'}],bpsdLevel:'mild',bpsdDesc:'경미한 배회 1회 · 감정기복 증가',docs:['상담일지 2회차','월간현황요약']},
+      {month:'2026년 4월',monthKey:'2026-04',days:21,events:[],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 1회차','급여제공계획서','급여제공결과평가']}
     ],
-    eval:{bp:[{date:'06/03',sys:158,dia:92},{date:'06/10',sys:162,dia:98},{date:'06/17',sys:155,dia:90},{date:'06/24',sys:160,dia:95}]},
+    eval:{
+      bp:[{date:'06/03',sys:158,dia:92},{date:'06/10',sys:162,dia:98},{date:'06/17',sys:155,dia:90},{date:'06/24',sys:160,dia:95}],
+      wt:[{date:'4월',kg:52.3},{date:'5월',kg:51.8},{date:'6월',kg:51.2}],
+      bpsd:[{label:'반복질문',active:true},{label:'배회',active:true},{label:'불안',active:true},{label:'폭력',active:false},{label:'망상',active:false},{label:'환각',active:false},{label:'우울',active:true},{label:'수면장애',active:false}]
+    },
     schedule:{
-      done:[{date:'04/15',title:'급여제공계획서 재작성',sub:'결과평가 반영 완료'},{date:'05/20',title:'보호자 상담',sub:'농번기 과로 관련 조치 논의'}],
+      done:[
+        {date:'04/15',title:'급여제공계획서 재작성',sub:'결과평가 반영 완료'},
+        {date:'05/20',title:'보호자 상담 실시',sub:'농번기 과로 · BPSD 심화 공유'}
+      ],
       deadline:'2026-12-31',
       checklist:[
         {key:'eval3',label:'기초평가 3종 재실시',desc:'낙상·욕창·인지 반기 1회 · 지표 21',done:true},
@@ -5311,11 +5371,7 @@ const DEMO_RESIDENTS = [
         {key:'plan',label:'급여제공계획서 재작성',desc:'결과평가 후 30일 이내 · 지표 22',done:true}
       ]
     },
-    rehab:{
-      body:'슬링재활운동으로 어깨·팔 근력 강화 주 3회 제공\n백세체조(팔운동·손가락운동·지구력훈련) 매일 실시\n관절염 고려하여 무리없는 범위 내 운동 진행',
-      basic:'워커 사용하여 안전한 보행 훈련 주 3회 실시\n균형 유지를 위한 앉았다 일어서기 10회 반복\n이동 시 낙상 위험 고려 동행 지원',
-      adl:'착탈의 시 단추 채우기·지퍼 잠그기 부분 지원\n목욕의자 활용 샤워 보조 주 2회\n소화 상태에 따른 식사 형태 조정 지원'
-    }
+    rehab:{body:'슬링재활운동으로 어깨·팔 근력 강화 주 3회 제공\n백세체조(팔운동·손가락운동·지구력훈련) 매일 실시\n관절염 고려하여 무리없는 범위 내 운동 진행',basic:'워커 사용하여 안전한 보행 훈련 주 3회 실시\n균형 유지를 위한 앉았다 일어서기 10회 반복\n이동 시 낙상 위험 고려 동행 지원',adl:'착탈의 시 단추 채우기·지퍼 잠그기 부분 지원\n목욕의자 활용 샤워 보조 주 2회\n소화 상태에 따른 식사 형태 조정 지원'}
   },
   {
     id:'demo-park-ok', name:'박○옥', avatar:'박', grade:'5등급', state:'와상',
@@ -5323,24 +5379,27 @@ const DEMO_RESIDENTS = [
     months:[
       {month:'2026년 6월',monthKey:'2026-06',days:18,events:[{type:'red',label:'욕창위험'}],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 1회차']},
       {month:'2026년 5월',monthKey:'2026-05',days:20,events:[{type:'red',label:'휠체어전환'},{type:'amber',label:'요실금'}],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 2회차','보호자상담']},
-      {month:'2026년 4월',monthKey:'2026-04',days:19,events:[],docs:['급여제공계획서','급여제공결과평가']}
+      {month:'2026년 4월',monthKey:'2026-04',days:19,events:[],bpsdLevel:'none',bpsdDesc:'',docs:['급여제공계획서','급여제공결과평가']}
     ],
-    eval:{bp:[{date:'06/05',sys:138,dia:82},{date:'06/12',sys:142,dia:86},{date:'06/19',sys:136,dia:80}]},
+    eval:{
+      bp:[{date:'06/05',sys:138,dia:82},{date:'06/12',sys:142,dia:86},{date:'06/19',sys:136,dia:80}],
+      wt:[{date:'4월',kg:58.0},{date:'5월',kg:57.8},{date:'6월',kg:57.9}],
+      bpsd:[]
+    },
     schedule:{
-      done:[{date:'05/10',title:'자립보행 소실 — 휠체어 전환',sub:'보호자 동의·계획서 변경 완료'},{date:'05/18',title:'욕창 예방 교육',sub:'체위변경 2시간마다 실시'}],
+      done:[
+        {date:'05/10',title:'자립보행 소실 — 휠체어 전환',sub:'보호자 동의·계획서 변경 완료'},
+        {date:'05/18',title:'욕창 예방 교육 실시',sub:'체위변경 2시간마다 적용 중'}
+      ],
       deadline:'2026-12-31',
       checklist:[
         {key:'eval3',label:'기초평가 3종 재실시',desc:'낙상·욕창·인지 반기 1회 · 지표 21',done:true},
         {key:'needs',label:'욕구사정 재실시',desc:'연 1회 · 지표 20',done:false},
         {key:'result',label:'급여제공결과평가',desc:'반기 1회 · 지표 34-1',done:true},
-        {key:'plan',label:'급여제공계획서 재작성',desc:'결과평가 후 30일 이내 · 지표 22',done:true}
+        {key:'plan',label:'급여제공계획서 재작성',desc:'결과평가 후 30일 이내 · 지표 22',done:false}
       ]
     },
-    rehab:{
-      body:'탄성밴드(세라밴드) 활용 상지 근력운동 주 3회\n앉아서 하지 운동(무릎 올리기·발목 돌리기) 매일 실시\n연하체조로 흡인 예방',
-      basic:'휠체어 자가 조작 훈련(앞뒤·방향 전환) 주 2회\n체위변경 2시간마다 욕창 예방 실시\n침대↔휠체어 이동 훈련(보조 하에)',
-      adl:'기저귀 교환 시 존엄성 중심 지원\n정시 화장실 유도 프로그램(2시간 간격)\n목욕 시 피부 상태 관찰 및 보습 관리'
-    }
+    rehab:{body:'탄성밴드(세라밴드) 활용 상지 근력운동 주 3회\n앉아서 하지 운동(무릎 올리기·발목 돌리기) 매일 실시\n연하체조로 흡인 예방',basic:'휠체어 자가 조작 훈련(앞뒤·방향 전환) 주 2회\n체위변경 2시간마다 욕창 예방 실시\n침대↔휠체어 이동 훈련(보조 하에)',adl:'기저귀 교환 시 존엄성 중심 지원\n정시 화장실 유도 프로그램(2시간 간격)\n목욕 시 피부 상태 관찰 및 보습 관리'}
   },
   {
     id:'demo-lee-su', name:'이○수', avatar:'이', grade:'인지지원등급', state:'독립',
@@ -5348,11 +5407,17 @@ const DEMO_RESIDENTS = [
     months:[
       {month:'2026년 6월',monthKey:'2026-06',days:16,events:[{type:'amber',label:'통증'}],bpsdLevel:'none',bpsdDesc:'',docs:[]},
       {month:'2026년 5월',monthKey:'2026-05',days:18,events:[{type:'amber',label:'척추통증'}],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 1회차']},
-      {month:'2026년 4월',monthKey:'2026-04',days:20,events:[],docs:['월간현황요약']}
+      {month:'2026년 4월',monthKey:'2026-04',days:20,events:[],bpsdLevel:'none',bpsdDesc:'',docs:['월간현황요약']}
     ],
-    eval:{bp:[{date:'06/02',sys:132,dia:78},{date:'06/09',sys:128,dia:76},{date:'06/16',sys:135,dia:80}]},
+    eval:{
+      bp:[{date:'06/02',sys:132,dia:78},{date:'06/09',sys:128,dia:76},{date:'06/16',sys:135,dia:80}],
+      wt:[{date:'4월',kg:63.5},{date:'5월',kg:62.8},{date:'6월',kg:62.0}],
+      bpsd:[]
+    },
     schedule:{
-      done:[{date:'05/03',title:'척추관 협착증 신규 진단',sub:'통증 만성화 — 이동 보조 항목 추가'}],
+      done:[
+        {date:'05/03',title:'척추관 협착증 신규 진단',sub:'이동 보조 항목 계획서 추가'}
+      ],
       deadline:'2026-12-31',
       checklist:[
         {key:'eval3',label:'기초평가 3종 재실시',desc:'낙상·욕창·인지 반기 1회 · 지표 21',done:false},
@@ -5361,11 +5426,7 @@ const DEMO_RESIDENTS = [
         {key:'plan',label:'급여제공계획서 재작성',desc:'결과평가 후 30일 이내 · 지표 22',done:false}
       ]
     },
-    rehab:{
-      body:'세라밴드 하지운동(통증 허용 범위 내) 주 3회\n통증 완화 후 근력 회복 운동 병행\n빙고게임·소근육 프로그램 연계',
-      basic:'하차 시 비틀거림 고려 균형 훈련 집중\n척추 협착 고려 파행 감안한 보행 훈련\n기립 동작 반복 훈련(통증 체크 포함)',
-      adl:'통증 고려 목욕 환경 조성(의자 목욕)\n외모 관리 자립 유지 지원(면도·로션)\n하의 착탈의 보조(굽히기 제한 고려)'
-    }
+    rehab:{body:'슬링재활운동 주 2회(허리·하지 근력 강화)\n빙고게임·이야기여행 인지활동형 프로그램 매일 60분\n지구력훈련(보행 연습) 평지 5분 왕복',basic:'안전 보행 훈련(척추관 협착 고려 짧은 구간)\n앉았다 일어서기 5회 반복(낙상 위험 고려)\n계단 오르내리기 손잡이 활용 훈련',adl:'하의 착탈의 보조(굽히기 제한 고려)\n외모 관리 자립 유지 지원(면도·로션)\n통증 고려 목욕 환경 조성(의자 목욕)'}
   }
 ];
 
@@ -5407,12 +5468,13 @@ function renderResDetail(r) {
   document.getElementById('s1-sum').textContent = r.eval?.summary || '정기 문서 생성 후 자동 업데이트됩니다';
   const evalGrid = document.getElementById('eval-grid');
   if (r.eval?.fall || r.eval?.pressure || r.eval?.cist) {
-    evalGrid.innerHTML = `
-      ${r.eval.fall ? `<div class="eval-card high"><div class="eval-lbl">낙상(Huhn)</div><div class="eval-score" style="color:#E24B4A">${r.eval.fall.score}점</div><div class="badge b-danger" style="margin-top:4px">${r.eval.fall.level}</div></div>` : ''}
-      ${r.eval.pressure ? `<div class="eval-card mid"><div class="eval-lbl">욕창(Braden)</div><div class="eval-score" style="color:#BA7517">${r.eval.pressure.score}점</div><div class="badge b-warn" style="margin-top:4px">${r.eval.pressure.level}</div></div>` : ''}
-      ${r.eval.cist ? `<div class="eval-card high"><div class="eval-lbl">CIST (인지)</div><div class="eval-score" style="color:#E24B4A">${r.eval.cist.score}</div><div class="badge b-danger" style="margin-top:4px">${r.eval.cist.level}</div></div>` : ''}`;
+    let evalHtml = '';
+    if (r.eval.fall) evalHtml += '<div class="eval-card high"><div class="eval-lbl">낙상(Huhn)</div><div class="eval-score" style="color:#E24B4A">' + r.eval.fall.score + '점</div><div class="badge b-danger" style="margin-top:4px">' + r.eval.fall.level + '</div></div>';
+    if (r.eval.pressure) evalHtml += '<div class="eval-card mid"><div class="eval-lbl">욕창(Braden)</div><div class="eval-score" style="color:#BA7517">' + r.eval.pressure.score + '점</div><div class="badge b-warn" style="margin-top:4px">' + r.eval.pressure.level + '</div></div>';
+    if (r.eval.cist) evalHtml += '<div class="eval-card high"><div class="eval-lbl">CIST (인지)</div><div class="eval-score" style="color:#E24B4A">' + r.eval.cist.score + '</div><div class="badge b-danger" style="margin-top:4px">' + r.eval.cist.level + '</div></div>';
+    evalGrid.innerHTML = evalHtml;
   } else {
-    evalGrid.innerHTML = `<div style="font-size:12px;color:#aaa;padding:8px">정기문서 생성 후 표시됩니다</div>`;
+    evalGrid.innerHTML = '<div style="font-size:12px;color:#aaa;padding:8px">정기문서 생성 후 표시됩니다</div>';
   }
 
   // 월별 이력
@@ -5463,20 +5525,87 @@ function renderResDetail(r) {
     s2Content.innerHTML = `<div style="font-size:12px;color:#aaa;padding:8px">정기문서(욕구사정) 생성 후 표시됩니다</div>`;
   }
 
-  // 혈압 차트
+  // BPSD 현황
+  const bpsdWrap = document.getElementById('s3-bpsd-wrap');
+  const bpsdContent = document.getElementById('s3-bpsd-content');
+  if (r.eval?.bpsd && r.eval.bpsd.length > 0) {
+    bpsdWrap.style.display = 'block';
+    const activeItems = r.eval.bpsd.filter(b => b.active);
+    const recentBpsd = r.months ? r.months.find(function(m){ return m.bpsdLevel && m.bpsdLevel !== 'none'; }) : null;
+    const levelColor = {moderate:'#E24B4A', mild:'#BA7517', none:'#1D9E75'};
+    const levelLabel = {moderate:'중간', mild:'경미', none:'없음'};
+
+    const badgeHtml = activeItems.length > 0
+      ? '<span style="background:#E24B4A;color:#fff;font-size:10px;padding:1px 7px;border-radius:10px">' + activeItems.length + '개 해당</span>'
+      : '<span style="background:#1D9E75;color:#fff;font-size:10px;padding:1px 7px;border-radius:10px">해당 없음</span>';
+
+    const chipHtml = r.eval.bpsd.map(function(b) {
+      const bg = b.active ? '#FFEBEE' : '#F5F5F5';
+      const cl = b.active ? '#C62828' : '#aaa';
+      const bd = b.active ? '#FFCDD2' : '#E0E0E0';
+      const mk = b.active ? '✓' : '—';
+      return '<span style="padding:3px 9px;border-radius:12px;font-size:11px;font-weight:500;background:' + bg + ';color:' + cl + ';border:1px solid ' + bd + '">' + mk + ' ' + b.label + '</span>';
+    }).join('');
+
+    const recentHtml = recentBpsd
+      ? '<div style="margin-top:8px;font-size:11px;color:#555;border-top:1px solid #FFCDD2;padding-top:7px"><span style="color:' + (levelColor[recentBpsd.bpsdLevel] || '#555') + ';font-weight:600">[' + recentBpsd.month + ' · ' + (levelLabel[recentBpsd.bpsdLevel] || '') + ']</span> ' + recentBpsd.bpsdDesc + '</div>'
+      : '';
+
+    bpsdContent.innerHTML = '<div style="background:#FFF5F5;border:1px solid #FFCDD2;border-radius:8px;padding:10px 13px;margin-bottom:8px">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:11px;font-weight:600;color:#555">활성 항목</span>' + badgeHtml + '</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:5px">' + chipHtml + '</div>'
+      + recentHtml + '</div>';
+  } else {
+    if (bpsdWrap) bpsdWrap.style.display = 'none';
+  }
+
+  // 혈압 세로 막대 차트
   const bc = document.getElementById('bp-chart');
   if (r.eval?.bp && r.eval.bp.length > 0) {
+    const maxSys = Math.max(...r.eval.bp.map(b => b.sys), 180);
     bc.innerHTML = r.eval.bp.map(b => {
-      const w = Math.round((b.sys / 200) * 100);
       const warn = b.sys >= 160 || b.dia >= 100;
-      return `<div class="bp-row">
-        <span class="bp-date">${b.date}</span>
-        <div class="bp-bar-wrap"><div class="bp-bar" style="width:${w}%;background:${warn?'#E24B4A':'#378ADD'}"></div></div>
-        <span class="bp-val" style="color:${warn?'#E24B4A':'#333'}">${b.sys}/${b.dia}</span>
-      </div>`;
+      const hSys = Math.round((b.sys / maxSys) * 85);
+      const hDia = Math.round((b.dia / maxSys) * 85);
+      const valColor = warn ? '#E24B4A' : '#555';
+      const sysColor = warn ? '#E24B4A' : '#E07070';
+      const diaColor = warn ? '#c0392b' : '#378ADD';
+      return '<div class="bp-col-group">'
+        + '<div class="bp-col-val" style="color:' + valColor + '">' + b.sys + '/' + b.dia + '</div>'
+        + '<div class="bp-col-bars">'
+        + '<div class="bp-col" style="height:' + hSys + 'px;background:' + sysColor + ';width:12px" title="수축기 ' + b.sys + '"></div>'
+        + '<div class="bp-col" style="height:' + hDia + 'px;background:' + diaColor + ';width:12px" title="이완기 ' + b.dia + '"></div>'
+        + '</div>'
+        + '<div class="bp-col-date">' + b.date + '</div>'
+        + '</div>';
     }).join('');
   } else {
-    bc.innerHTML = `<div style="font-size:12px;color:#aaa;padding:8px">혈압 데이터가 없습니다</div>`;
+    bc.innerHTML = '<div style="font-size:12px;color:#aaa;padding:8px">혈압 데이터가 없습니다</div>';
+  }
+
+  // 체중 세로 막대 차트
+  const wc = document.getElementById('wt-chart');
+  const wtWrap = document.getElementById('wt-chart-wrap');
+  if (r.eval?.wt && r.eval.wt.length > 0) {
+    const weights = r.eval.wt.map(w => w.kg);
+    const minWt = Math.min(...weights) - 2;
+    const maxWt = Math.max(...weights) + 2;
+    wc.innerHTML = r.eval.wt.map((w, i) => {
+      const prev = i > 0 ? r.eval.wt[i-1].kg : null;
+      const diff = prev !== null ? (w.kg - prev).toFixed(1) : null;
+      const diffColor = diff > 0 ? '#E24B4A' : diff < 0 ? '#378ADD' : '#888';
+      const diffStr = diff === null ? '' : (diff > 0 ? '▲' + diff : diff < 0 ? '▼' + Math.abs(diff) : '-');
+      const diffSpan = diff !== null ? '<span style="color:' + diffColor + ';font-size:9px">' + diffStr + '</span>' : '';
+      const h = Math.round(((w.kg - minWt) / (maxWt - minWt)) * 65) + 10;
+      return '<div class="wt-col-group">'
+        + '<div class="wt-col-val">' + w.kg + 'kg ' + diffSpan + '</div>'
+        + '<div class="wt-col" style="height:' + h + 'px;background:#5B8AD4" title="' + w.kg + 'kg"></div>'
+        + '<div class="wt-col-date">' + w.date + '</div>'
+        + '</div>';
+    }).join('');
+    wtWrap.style.display = 'block';
+  } else {
+    wtWrap.style.display = 'none';
   }
 
   // 업무일정
@@ -5578,7 +5707,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.25
+  Day:음 · v2026.06.13.33
 </div>
 </body>
 </html>
