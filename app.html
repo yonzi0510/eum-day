@@ -3319,8 +3319,10 @@ async function callClaude(systemPrompt, userContent, docLabel) {
       })
     });
     if (!response.ok) {
-      let errMsg = `API 오류: ${response.status}`;
-      if (response.status === 400) errMsg = 'API 오류 400 — 파일 용량이 너무 크거나 형식이 지원되지 않습니다. 파일을 줄이거나 한 개씩 올려보세요.';
+      let detail = '';
+      try { const errBody = await response.json(); detail = errBody?.error?.message || JSON.stringify(errBody); } catch(e) {}
+      console.error(`[API ${response.status}]`, detail);
+      let errMsg = `API 오류: ${response.status}${detail ? '\n' + detail : ''}`;
       if (response.status === 401) errMsg = 'API 키가 올바르지 않습니다. 키를 다시 확인해주세요.';
       if (response.status === 429) errMsg = 'API 요청 한도 초과. 잠시 후 다시 시도해주세요.';
       if (response.status === 529) errMsg = 'Claude 서버가 혼잡합니다. 잠시 후 다시 시도해주세요.';
@@ -4131,17 +4133,32 @@ async function startGenerate(type) {
       return;
     }
 
-    // 멀티파일: 정기문서는 최대 3개까지 모두 전달 (기록지 + 이전 평가지 + 이전 계획서)
+    // 멀티파일 처리: 파일 목록 수집
     const allFiles = type === 'periodic'
       ? (dropFiles && dropFiles.length > 0 ? dropFiles : [activeFile])
       : [activeFile];
 
+    // 파일명 목록 (프롬프트에 컨텍스트로 전달)
+    const fileNames = allFiles.map(f => f.name).join(', ');
+
     let userContent;
-    const instructionText = '위 파일(들)을 분석하여 요청된 문서를 즉시 작성해주세요.\n[필수] 파일 종류나 형식을 이유로 작성을 거부하거나 추가 파일을 요청하는 것은 절대 금지입니다. 파일에서 확인 가능한 모든 정보를 최대한 활용하여 지금 바로 작성하세요.' + (opinion ? `\n\n[작성자 의견]\n${opinion}` : '');
+    const instructionText = `업로드된 파일: ${fileNames}\n위 파일을 분석하여 요청된 문서를 즉시 작성해주세요.\n[필수] 파일 종류나 형식을 이유로 작성을 거부하거나 추가 파일을 요청하는 것은 절대 금지입니다. 파일에서 확인 가능한 모든 정보를 최대한 활용하여 지금 바로 작성하세요.` + (opinion ? `\n\n[작성자 의견]\n${opinion}` : '');
+
+    // PDF 파일은 최대 5MB 이하인 것 우선 사용 (400 오류 방지)
+    const MAX_PDF_SIZE = 5 * 1024 * 1024;
+    const sortedFiles = [...allFiles].sort((a, b) => {
+      // 기록지(제공기록지)를 맨 앞으로
+      const aIsRecord = a.name.includes('기록지') || a.name.includes('제공기록');
+      const bIsRecord = b.name.includes('기록지') || b.name.includes('제공기록');
+      return aIsRecord ? -1 : bIsRecord ? 1 : 0;
+    });
 
     try {
       const contentParts = [];
-      for (const f of allFiles) {
+      let totalSize = 0;
+      for (const f of sortedFiles) {
+        totalSize += f.size || 0;
+        if (totalSize > MAX_PDF_SIZE * 3) break; // 총 15MB 초과 시 중단
         const isPDF = f.type === 'application/pdf' || f.name?.endsWith('.pdf');
         const b64 = await fileToBase64(f);
         if (isPDF) {
@@ -4154,7 +4171,7 @@ async function startGenerate(type) {
       contentParts.push({ type: 'text', text: instructionText });
       userContent = contentParts;
     } catch(e) {
-      // 파일 변환 실패 시 첫 번째 파일만 단독 사용
+      console.error('파일 변환 오류:', e);
       const file = activeFile;
       const isPDF = file.type === 'application/pdf' || file.name?.endsWith('.pdf');
       const b64 = await fileToBase64(file);
@@ -4423,7 +4440,7 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       errBox.style.cssText = 'background:#FCEBEB;border:1.5px solid #E24B4A;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#791F1F;line-height:1.7';
       inputEl.insertBefore(errBox, inputEl.firstChild);
     }
-    errBox.innerHTML = `⚠️ <strong>문서 생성 오류</strong><br>${err.message}<br><span style="font-size:11px;color:#a33">파일 수를 줄이거나 다시 시도해보세요.</span>`;
+    errBox.innerHTML = `⚠️ <strong>문서 생성 오류</strong><br>${err.message.replace(/\n/g, '<br>')}<br><span style="font-size:11px;color:#a33">위 메시지를 캡처해서 전달해 주시면 빠르게 확인하겠습니다.</span>`;
     errBox.style.display = 'block';
     console.error(err);
   }
@@ -6141,7 +6158,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.64
+  Day:음 · v2026.06.13.65
 </div>
 </body>
 </html>
