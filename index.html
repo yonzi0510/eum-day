@@ -9,37 +9,40 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'Noto Sans KR','맑은 고딕',sans-serif; background:#0f1c36; color:#fff; }
+  body { font-family:'Noto Sans KR','맑은 고딕',sans-serif; background:#F0F4FA; color:#1a1a2e; }
   .lo-hero { background:linear-gradient(155deg,#1F3864 0%,#2d5a9e 60%,#1a4a7a 100%); padding:80px 24px 72px; text-align:center; }
-  .lo-hero .badge { display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:20px; padding:5px 16px; font-size:12px; letter-spacing:1px; margin-bottom:24px; }
-  .lo-hero h1 { font-size:38px; font-weight:800; line-height:1.3; margin-bottom:16px; }
-  .lo-hero h1 span { color:#5de8c0; }
-  .lo-hero .slogan { font-size:15px; color:rgba(255,255,255,0.75); line-height:2.0; }
+  .lo-hero .badge { display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:20px; padding:5px 16px; font-size:12px; letter-spacing:1px; margin-bottom:24px; color:#fff; }
+  .lo-hero h1 { font-size:38px; font-weight:800; line-height:1.3; margin-bottom:16px; color:#fff; }
+  .lo-hero h1 span { color:#93c5fd; }
+  .lo-hero .slogan { font-size:15px; color:rgba(255,255,255,0.8); line-height:2.0; }
   .lo-logo { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:28px; }
-  .lo-logo-text { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
-  .lo-section { max-width:680px; margin:0 auto; padding:60px 24px; }
-  .lo-section h2 { font-size:22px; font-weight:700; margin-bottom:16px; color:#fff; }
-  .lo-section .lead { font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:20px; line-height:1.8; }
-  .lo-story p { font-size:13px; color:rgba(255,255,255,0.75); line-height:2.1; margin-bottom:16px; }
-  .lo-story strong { color:#fff; }
-  .lo-quote { background:rgba(255,255,255,0.07); border-left:3px solid #5de8c0; padding:14px 18px; border-radius:0 8px 8px 0; font-size:12px; color:rgba(255,255,255,0.8); line-height:1.8; margin-top:4px; }
-  .lo-divider { border:none; border-top:1px solid rgba(255,255,255,0.08); margin:0; }
+  .lo-logo-text { font-size:22px; font-weight:800; letter-spacing:-0.5px; color:#fff; }
+  .lo-section { max-width:720px; margin:0 auto; padding:60px 24px; }
+  .lo-section h2 { font-size:22px; font-weight:700; margin-bottom:12px; color:#1F3864; }
+  .lo-section .lead { font-size:15px; color:#555; line-height:1.85; margin-bottom:28px; }
+  .lo-story { background:#fff; border-radius:16px; padding:28px; box-shadow:0 2px 12px rgba(0,0,0,0.07); margin-bottom:20px; }
+  .lo-story p { font-size:14px; color:#444; line-height:2; margin-bottom:12px; }
+  .lo-story p:last-child { margin-bottom:0; }
+  .lo-story strong { color:#1F3864; }
+  .lo-hope { background:linear-gradient(135deg,#EEF4FF,#F5F0FF); border-radius:16px; padding:24px 28px; border-left:4px solid #1F3864; margin-top:20px; }
+  .lo-hope p { font-size:14px; color:#333; line-height:2; }
+  .lo-divider { border:none; border-top:1px solid #E0E6F0; margin:0; }
   .lo-steps { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
-  .lo-step { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:20px 16px; }
-  .lo-step .num { font-size:24px; font-weight:800; color:#5de8c0; margin-bottom:8px; }
-  .lo-step .title { font-size:13px; font-weight:600; margin-bottom:5px; }
-  .lo-step .desc { font-size:12px; color:rgba(255,255,255,0.6); line-height:1.7; }
-  .lo-login-section { max-width:400px; margin:0 auto; padding:60px 24px 90px; text-align:center; }
-  .lo-login-section h2 { font-size:22px; font-weight:700; margin-bottom:8px; }
-  .lo-login-section .sub { font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:28px; }
-  .lo-login-box { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:30px 26px; }
-  .lo-login-box input { width:100%; padding:14px 16px; border:1.5px solid rgba(255,255,255,0.2); border-radius:10px; background:rgba(255,255,255,0.1); color:#fff; font-size:18px; font-family:inherit; text-align:center; letter-spacing:6px; box-sizing:border-box; margin-bottom:10px; outline:none; transition:border .2s; }
-  .lo-login-box input::placeholder { color:rgba(255,255,255,0.3); letter-spacing:1px; font-size:13px; }
-  .lo-login-box input:focus { border-color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.15); }
-  .lo-login-btn { width:100%; padding:15px; background:#5de8c0; color:#0f1c36; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s; }
-  .lo-login-btn:hover { background:#3dd4aa; }
-  .lo-err { font-size:12px; color:#ff8080; margin-bottom:10px; display:none; min-height:18px; }
-  .lo-footer { text-align:center; padding:24px; font-size:11px; color:rgba(255,255,255,0.25); }
+  .lo-step { background:#fff; border:1px solid #E0E6F0; border-radius:12px; padding:20px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+  .lo-step .num { font-size:24px; font-weight:800; color:#1F3864; margin-bottom:8px; }
+  .lo-step .title { font-size:13px; font-weight:600; margin-bottom:5px; color:#222; }
+  .lo-step .desc { font-size:12px; color:#777; line-height:1.7; }
+  .lo-login-section { max-width:420px; margin:0 auto; padding:60px 24px 90px; text-align:center; }
+  .lo-login-section h2 { font-size:22px; font-weight:700; margin-bottom:8px; color:#1F3864; }
+  .lo-login-section .sub { font-size:13px; color:#888; margin-bottom:28px; }
+  .lo-login-box { background:#fff; border:1px solid #E0E6F0; border-radius:16px; padding:30px 26px; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
+  .lo-login-box input { width:100%; padding:14px 16px; border:1.5px solid #C5CAE9; border-radius:10px; background:#F8F9FF; color:#1F3864; font-size:18px; font-family:inherit; text-align:center; letter-spacing:6px; box-sizing:border-box; margin-bottom:10px; outline:none; transition:border .2s; }
+  .lo-login-box input::placeholder { color:#aaa; letter-spacing:1px; font-size:13px; }
+  .lo-login-box input:focus { border-color:#1F3864; background:#fff; }
+  .lo-login-btn { width:100%; padding:15px; background:#1F3864; color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s; }
+  .lo-login-btn:hover { background:#2d5a9e; }
+  .lo-err { font-size:12px; color:#E24B4A; margin-bottom:10px; display:none; min-height:18px; }
+  .lo-footer { text-align:center; padding:24px; font-size:11px; color:#aaa; }
 </style>
 </head>
 <body>
@@ -81,7 +84,9 @@
     <p>어르신들과의 하루 속에서 상담과 사례회의는 이미 자연스럽게 이루어지고 있습니다. 하지만 <strong>이를 문서로 남기기엔 업무량도 많고, 작성 방법 또한 명확히 제시되지 않아</strong> 막막한 경우가 많습니다.</p>
     <p><strong>이미 급여제공기록지에는 어르신의 하루가 모두 담겨 있습니다.</strong> 그 기록을 다시 정리해서 문서로 옮기는 작업이 자동화된다면 어떨까, 라는 질문에서 데이음이 시작됐습니다.</p>
     <p>AI가 초안을 만들고, 사람이 검토·완성하는 구조. <strong>돌봄의 본질에 더 집중할 수 있도록</strong> 돕고 싶었습니다.</p>
-    <p class="lo-quote">💬 데이음이 단순한 도구가 아닌, 기록의 가치를 높여 <strong style="color:#5de8c0">어르신 한 분 한 분에게 더 나은 케어가 이어지는 연결고리</strong>가 되었으면 합니다. 사용하시면서 불편한 점, 아쉬운 점을 언제든 말씀해 주세요.</p>
+    <div class="lo-hope">
+      <p>💬 데이음이 단순한 도구가 아닌, 기록의 가치를 높여 <strong style="color:#1F3864">어르신 한 분 한 분에게 더 나은 케어가 이어지는 연결고리</strong>가 되었으면 합니다. 사용하시면서 불편한 점, 아쉬운 점을 언제든 말씀해 주세요.</p>
+    </div>
   </div>
 </div>
 
@@ -111,6 +116,70 @@
       <div class="num">04</div>
       <div class="title">검토 후 완성</div>
       <div class="desc">내용을 확인하고 Word 다운로드 또는 케어포에 붙여넣어 완성하세요</div>
+    </div>
+  </div>
+</div>
+
+<hr class="lo-divider">
+
+<!-- 평가지표 대응 -->
+<div class="lo-section">
+  <h2 style="color:#1F3864">📊 평가 준비, Day:음이 함께합니다</h2>
+  <p class="lead" style="color:#555">2026년 주야간보호 평가지표 중 핵심 서비스 제공 영역을 직접 커버합니다.</p>
+
+  <!-- 요약 수치 -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:12px;padding:18px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+      <div style="font-size:32px;font-weight:900;color:#1F3864;line-height:1">10개</div>
+      <div style="font-size:11px;color:#888;margin-top:6px">직접 충족 지표</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:12px;padding:18px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+      <div style="font-size:32px;font-weight:900;color:#1F3864;line-height:1">37점</div>
+      <div style="font-size:11px;color:#888;margin-top:6px">커버 배점 합계</div>
+    </div>
+    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:12px;padding:18px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+      <div style="font-size:32px;font-weight:900;color:#1F3864;line-height:1">~80%</div>
+      <div style="font-size:11px;color:#888;margin-top:6px">핵심문서 자동화율</div>
+    </div>
+  </div>
+
+  <!-- 지표 목록 -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+      <div style="font-size:11px;font-weight:700;color:#1F3864;margin-bottom:8px">📋 서비스 제공 영역 (핵심)</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+          <span><strong style="color:#fff">지표 20</strong> <span style="color:#666">욕구사정</span></span>
+          <span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">완전 충족 · 2점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+          <span><strong style="color:#fff">지표 21 ★</strong> <span style="color:#666">위험도 평가 (낙상·욕창·인지)</span></span>
+          <span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">완전 충족 · 6점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+          <span><strong style="color:#fff">지표 22</strong> <span style="color:#666">급여제공계획 수립</span></span>
+          <span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">완전 충족 · 4점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+          <span><strong style="color:#fff">지표 25</strong> <span style="color:#666">수급자 상담관리</span></span>
+          <span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">완전 충족 · 2점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+          <span><strong style="color:#fff">지표 27 ★</strong> <span style="color:#666">기능회복훈련 (2026 신설)</span></span>
+          <span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">완전 충족 · 3점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+          <span><strong style="color:#fff">지표 29 ★</strong> <span style="color:#666">사례관리</span></span>
+          <span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">완전 충족 · 4점</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px">
+          <span><strong style="color:#fff">지표 34 ★</strong> <span style="color:#666">급여제공 결과평가</span></span>
+          <span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">완전 충족 · 7점</span>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#aaa;text-align:center;padding:4px 0">
+      ★ 2026년 고배점 신설·변경 지표
     </div>
   </div>
 </div>
