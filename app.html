@@ -289,6 +289,86 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .dc-type-item:hover{border-color:#1F3864;background:#F0F3FF}
 .dc-type-item.selected{border-color:#1F3864;background:#EEF2FF}
 .dc-type-item input[type=radio]{width:14px;height:14px;accent-color:#1F3864;flex-shrink:0;margin-top:2px}
+/* ══════════ 평가지표 Q&A 채팅 ══════════ */
+.qa-wrap{background:#fff;border-radius:14px;border:1px solid #E0D6F5;overflow:hidden;margin-top:14px}
+.qa-head{background:linear-gradient(135deg,#5C3489 0%,#3C3489 100%);color:#fff;padding:13px 16px;display:flex;align-items:center;gap:9px}
+.qa-head-icon{font-size:18px}
+.qa-head-title{font-size:13px;font-weight:700;flex:1}
+.qa-head-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3)}
+.qa-msgs{height:320px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#F8F6FD}
+.qa-msg{display:flex;gap:8px;align-items:flex-start;max-width:100%}
+.qa-msg.user{flex-direction:row-reverse}
+.qa-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px}
+.qa-avatar.ai{background:#5C3489;color:#fff}
+.qa-avatar.user{background:#1F3864;color:#fff}
+.qa-bubble{max-width:82%;padding:10px 13px;border-radius:12px;font-size:12px;line-height:1.8;color:#1a1a2e}
+.qa-bubble.ai{background:#fff;border:1px solid #E0D6F5;border-radius:4px 12px 12px 12px}
+.qa-bubble.user{background:#5C3489;color:#fff;border-radius:12px 4px 12px 12px}
+.qa-bubble.ai strong{color:#5C3489}
+.qa-bubble.ai .qa-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:#EEEDFE;color:#3C3489;font-weight:600;margin-right:3px}
+.qa-typing{display:flex;gap:4px;align-items:center;padding:10px 13px}
+.qa-dot{width:7px;height:7px;border-radius:50%;background:#C5B8E8;animation:qa-bounce .9s infinite}
+.qa-dot:nth-child(2){animation-delay:.2s}
+.qa-dot:nth-child(3){animation-delay:.4s}
+@keyframes qa-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.qa-examples{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid #EEE9F8;background:#FDFCFF}
+.qa-ex-btn{font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid #C5B8E8;background:#fff;color:#5C3489;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.qa-ex-btn:hover{background:#5C3489;color:#fff;border-color:#5C3489}
+.qa-input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #EEE9F8;background:#fff}
+.qa-input{flex:1;border:1.5px solid #D0C6EE;border-radius:10px;padding:9px 13px;font-size:12px;font-family:inherit;resize:none;line-height:1.6;color:#1a1a2e;background:#FDFCFF;transition:border .2s}
+.qa-input:focus{outline:none;border-color:#5C3489}
+.qa-send{padding:9px 16px;border-radius:10px;border:none;background:#5C3489;color:#fff;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;transition:all .2s;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.qa-send:hover{background:#3C3489}
+.qa-send:disabled{background:#C5B8E8;cursor:not-allowed}
+/* ══════════ 탭: 소개 ══════════ */
+.about-hero{background:linear-gradient(135deg,#1F3864 0%,#0D6E55 100%);border-radius:16px;padding:32px 28px;margin-bottom:20px;color:#fff;position:relative;overflow:hidden}
+.about-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.06)}
+.about-hero::after{content:'';position:absolute;bottom:-30px;left:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.04)}
+.about-hero-logo{font-size:26px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.about-hero-slogan{font-size:13px;opacity:.75;margin-bottom:18px;line-height:1.6}
+.about-hero-badges{display:flex;gap:8px;flex-wrap:wrap}
+.about-hero-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);font-weight:500}
+.about-intro-card{background:#fff;border-radius:12px;border:1px solid #E8EAF0;padding:20px;margin-bottom:14px}
+.about-intro-title{font-size:14px;font-weight:700;color:#1F3864;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.about-intro-body{font-size:13px;color:#444;line-height:1.9}
+.about-intro-body strong{color:#1F3864}
+.about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.about-stat{background:#F8F9FB;border:1px solid #E8EAF0;border-radius:10px;padding:14px;text-align:center}
+.about-stat-num{font-size:22px;font-weight:800;color:#1F3864;line-height:1}
+.about-stat-unit{font-size:11px;color:#888;margin-top:3px}
+.review-grid{display:flex;flex-direction:column;gap:10px}
+.review-card{background:#fff;border-radius:12px;border:1px solid #E8EAF0;padding:16px}
+.review-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.review-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.review-meta{flex:1}
+.review-name{font-size:12px;font-weight:600;color:#1a1a2e}
+.review-center{font-size:11px;color:#888;margin-top:1px}
+.review-stars{display:flex;gap:1px;margin-left:auto}
+.review-star{font-size:13px}
+.review-body{font-size:12px;color:#444;line-height:1.8;background:#F8F9FB;border-radius:8px;padding:11px 13px;border-left:3px solid #1F3864}
+.social-row{display:flex;gap:10px;flex-wrap:wrap}
+.social-btn{display:flex;align-items:center;gap:8px;padding:11px 16px;border-radius:10px;border:1.5px solid #E8EAF0;background:#fff;text-decoration:none;color:#1a1a2e;font-size:12px;font-weight:500;transition:all .2s;cursor:pointer}
+.social-btn:hover{border-color:#1F3864;background:#F0F3FF;color:#1F3864}
+.social-btn .s-icon{font-size:18px}
+.social-btn .s-label{font-size:11px;color:#888;display:block}
+.privacy-box{background:#F8F9FB;border:1px solid #E0E6F0;border-radius:10px;padding:16px;font-size:11px;color:#666;line-height:1.9}
+.privacy-box h4{font-size:12px;font-weight:600;color:#1F3864;margin-bottom:6px;margin-top:12px}
+.privacy-box h4:first-child{margin-top:0}
+.privacy-copy{text-align:center;font-size:11px;color:#bbb;margin-top:20px;padding-top:14px;border-top:1px dashed #E0E6F0}
+
+/* ══════════ 후기 작성/표시 ══════════ */
+.review-form-card{background:#fff;border-radius:12px;border:1px solid #E8EAF0;padding:18px;margin-bottom:14px}
+.review-form-title{font-size:13px;font-weight:600;color:#1F3864;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.star-select{display:flex;gap:4px;margin-bottom:14px}
+.star-btn{font-size:24px;cursor:pointer;transition:transform .1s;opacity:.3;background:none;border:none;padding:0;line-height:1}
+.star-btn.on{opacity:1}
+.star-btn:hover{transform:scale(1.2)}
+.review-input{width:100%;border:1.5px solid #E0E6F0;border-radius:8px;padding:9px 12px;font-size:12px;font-family:inherit;color:#333;background:#FAFAFA;transition:border .2s}
+.review-input:focus{outline:none;border-color:#1F3864;background:#fff}
+.review-submit-btn{width:100%;padding:11px;border-radius:9px;border:none;background:#1F3864;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:12px;transition:all .2s}
+.review-submit-btn:hover{background:#162a4e}
+.review-empty{text-align:center;padding:28px 20px;color:#ccc;font-size:13px}
+
 /* ══════════ 탭: 사용평 ══════════ */
 .fb-cat-btn{padding:6px 13px;border-radius:20px;border:1.5px solid #E0E0E0;font-size:12px;cursor:pointer;background:#fff;font-family:inherit;color:#555;transition:all .2s}
 .fb-cat-btn:hover{border-color:#1F3864;color:#1F3864}
@@ -453,13 +533,12 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 </div>
 
 <div class="tab-nav">
-  <button class="tab-btn" onclick="switchTab('tab-overview',this)">👤 어르신 정보</button>
-  <button class="tab-btn active" onclick="switchTab('tab-docs',this)">📄 문서 만들기</button>
-  <button class="tab-btn" onclick="switchTab('tab-survey',this)">📋 조사</button>
-  <button class="tab-btn" onclick="switchTab('tab-split',this)">📂 기록지 분리</button>
-  <button class="tab-btn" onclick="switchTab('tab-eval',this)">📊 모의평가</button>
-  <button class="tab-btn" onclick="switchTab('tab-feedback',this)">💬 사용평</button>
+  <button class="tab-btn" onclick="switchTab('tab-about',this)">ℹ️ 소개</button>
   <button class="tab-btn" onclick="switchTab('tab-guide',this)">📚 가이드</button>
+  <button class="tab-btn active" onclick="switchTab('tab-docs',this)">📄 문서 만들기</button>
+  <button class="tab-btn" onclick="switchTab('tab-overview',this)">👤 어르신 현황</button>
+  <button class="tab-btn" onclick="switchTab('tab-eval',this)">📋 평가준비</button>
+  <button class="tab-btn" onclick="switchTab('tab-feedback',this)">💬 피드백</button>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -471,7 +550,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <div class="res-bar">
     <span style="font-size:11px;color:#888;white-space:nowrap">수급자 선택</span>
     <div id="resident-list" style="display:flex;gap:6px;flex:1;flex-wrap:wrap"></div>
-    <button class="sample-btn" onclick="loadDemoResident()" style="white-space:nowrap">+ 데모 불러오기</button>
+    <button class="sample-btn" id="demo-toggle-btn" onclick="toggleDemoResident()" style="white-space:nowrap">👀 샘플 보기</button>
   </div>
 
   <div id="no-data-msg" class="no-data">
@@ -637,6 +716,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <button class="sub-tab active" onclick="switchSub('sub-monthly',this)">📅 월간 문서</button>
     <button class="sub-tab" onclick="switchSub('sub-periodic',this)">📋 정기 문서</button>
     <button class="sub-tab" onclick="switchSub('sub-adhoc',this)">🔔 수시 문서</button>
+    <button class="sub-tab" onclick="switchSub('sub-survey',this)">📊 조사</button>
   </div>
 
   <!-- ── 서브탭: 월간 문서 ── -->
@@ -646,11 +726,11 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
       <div class="card">
         <div class="card-title"><div class="num">1</div> 자료 첨부</div>
 
-        <!-- 연동된 어르신 목록 (기록지 분리 탭에서 연동 시 표시) -->
+        <!-- 연동된 어르신 목록 -->
         <div id="linked-elder-box" style="display:none;margin-bottom:10px">
           <div style="background:#E1F5EE;border:1.5px solid #9FE1CB;border-radius:10px;padding:12px 14px">
             <div style="font-size:12px;font-weight:600;color:#085041;margin-bottom:8px;display:flex;align-items:center;gap:5px">
-              🔗 기록지 분리 탭에서 연동된 어르신
+              🔗 분리된 어르신
               <span id="linked-elder-count" style="background:#0D6E55;color:#fff;border-radius:10px;font-size:10px;padding:1px 7px"></span>
             </div>
             <div id="linked-elder-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
@@ -658,6 +738,63 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
           </div>
         </div>
 
+        <!-- 기록지 분리 토글 -->
+        <div style="margin-bottom:10px">
+          <button onclick="toggleSplitPanel()" id="split-toggle-btn"
+            style="width:100%;padding:9px 14px;border-radius:8px;border:1.5px dashed #C5CAE9;background:#F8F9FF;
+            color:#1F3864;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;
+            display:flex;align-items:center;justify-content:space-between;transition:all .2s">
+            <span>📂 전체 기록지에서 어르신별로 분리하기</span>
+            <span id="split-toggle-icon" style="font-size:11px;color:#888">▾ 펼치기</span>
+          </button>
+
+          <!-- 분리 패널 -->
+          <div id="split-panel" style="display:none;margin-top:8px;border:1.5px solid #C5CAE9;border-radius:10px;padding:14px;background:#FAFBFF">
+
+            <!-- 파일 업로드 -->
+            <div class="split-drop" id="split-drop"
+                 onclick="document.getElementById('split-file-input').click()"
+                 ondragover="splitDragOver(event)" ondragleave="splitDragLeave(event)" ondrop="splitDrop(event)">
+              <div class="split-drop-icon">📋</div>
+              <div class="split-drop-main" id="split-drop-main">케어포에서 내려받은 전체 PDF 파일을 올려주세요</div>
+              <div class="split-drop-sub" id="split-drop-sub">클릭하거나 파일을 여기로 끌어다 놓으세요</div>
+              <div id="split-file-tag" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="split-fname"></span></span></div>
+            </div>
+            <input type="file" id="split-file-input" accept=".pdf" style="display:none" onchange="handleSplitFile(this)">
+
+            <!-- 월 선택 -->
+            <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+              <label style="font-size:12px;font-weight:600;color:#444;white-space:nowrap">기록 월</label>
+              <input type="month" id="split-month" style="flex:1;padding:6px 10px;border:1px solid #C5CAE9;border-radius:7px;font-size:12px;font-family:inherit">
+            </div>
+
+            <!-- 진행 -->
+            <div class="card split-progress" id="split-progress" style="display:none;margin-top:10px">
+              <div class="sp-title">📖 PDF 분석 중...</div>
+              <div class="sp-bar-wrap"><div class="sp-bar" id="sp-bar"></div></div>
+              <div class="sp-status" id="sp-status">파일을 읽는 중...</div>
+            </div>
+
+            <!-- 결과 -->
+            <div class="split-result" id="split-result" style="display:none;margin-top:10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div style="font-size:12px;font-weight:600;color:#1F3864">분리 결과</div>
+                <div class="sr-count" id="sr-count">0명</div>
+              </div>
+              <div class="elder-split-list" id="elder-split-list"></div>
+              <div class="unmatched-notice" id="unmatched-notice"></div>
+              <div class="split-actions" style="margin-top:10px">
+                <button class="split-dl-all" id="split-dl-all" onclick="downloadAll()">⬇ 전체 ZIP 다운로드</button>
+                <button class="split-link-btn" id="split-link-btn" onclick="linkToMonthly()">🔗 어르신 선택하기</button>
+              </div>
+              <div class="linked-notice" id="linked-notice">
+                ✅ 연동 완료! 위에서 어르신을 선택하세요.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 개별 파일 업로드 -->
         <div class="upload-zone" id="m-upload"
              onclick="document.getElementById('m-file').click()"
              ondragover="zoneDragOver(event,'m-upload')"
@@ -861,7 +998,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         <button class="dl-btn" style="background:#1F3864;color:#fff;border-color:#1F3864" onclick="openDocViewer(window._monthlyHtml, '월간 문서')">🔍 크게 보기</button>
         <button class="dl-btn primary" id="dl-monthly" style="opacity:.4;pointer-events:none" onclick="downloadDocx('monthly')">📄 Word 다운로드</button>
       </div>
-      <button class="goto-btn" onclick="goOverview()">👤 어르신 정보 탭에서 업데이트된 데이터 확인하기 →</button>
+      <button class="goto-btn" onclick="goOverview()">👤 어르신 현황 탭에서 업데이트된 데이터 확인하기 →</button>
       <div style="text-align:center"><button class="reset-btn" onclick="resetSub('monthly')">↩ 처음으로</button></div>
     </div>
   </div>
@@ -1240,7 +1377,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         <button class="dl-btn" style="background:#0D6E55;color:#fff;border-color:#0D6E55" onclick="openDocViewer(window._periodicHtml, '정기 문서 (기초평가+욕구사정+결과평가)')">🔍 전체 문서 크게 보기</button>
         <button class="dl-btn primary" id="dl-periodic" style="background:#0D6E55;border-color:#0D6E55;opacity:.4;pointer-events:none" onclick="downloadDocx('periodic')">📄 Word 다운로드 (3종)</button>
       </div>
-      <button class="goto-btn" onclick="goOverview()">👤 어르신 정보 탭에서 업데이트된 데이터 확인하기 →</button>
+      <button class="goto-btn" onclick="goOverview()">👤 어르신 현황 탭에서 업데이트된 데이터 확인하기 →</button>
       <div style="text-align:center"><button class="reset-btn" onclick="resetSub('periodic')">↩ 처음으로</button></div>
     </div>
   </div>
@@ -1388,14 +1525,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
   </div>
 
-</div>
-</div>
-
-<!-- ══════════════════════════════════════
-     조사 탭
-══════════════════════════════════════ -->
-<div class="tab-content" id="tab-survey">
-<div class="main">
+  <!-- ── 서브탭: 조사 ── -->
+  <div class="sub-content" id="sub-survey">
 
   <div class="survey-sub-tabs">
     <button class="survey-sub-btn active" onclick="switchSurveyTab('sv-program',this)">💬 프로그램 의견수렴</button>
@@ -1765,85 +1896,25 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
   </div>
 
-</div>
-</div>
+  </div><!-- /sub-survey -->
 
-<!-- ══════════════════════════════════════
-     탭: 기록지 분리
-══════════════════════════════════════ -->
-<div class="tab-content" id="tab-split">
-<div class="main">
-
-  <div class="card">
-    <div class="card-title"><div class="num">1</div> 급여제공기록지 전체 파일 업로드</div>
-    <div class="split-drop" id="split-drop"
-         onclick="document.getElementById('split-file-input').click()"
-         ondragover="splitDragOver(event)" ondragleave="splitDragLeave(event)" ondrop="splitDrop(event)">
-      <div class="split-drop-icon">📋</div>
-      <div class="split-drop-main" id="split-drop-main">케어포에서 내려받은 전체 PDF 파일을 올려주세요</div>
-      <div class="split-drop-sub" id="split-drop-sub">클릭하거나 파일을 여기로 끌어다 놓으세요</div>
-      <div id="split-file-tag" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="split-fname"></span></span></div>
-    </div>
-    <input type="file" id="split-file-input" accept=".pdf" style="display:none" onchange="splitFileSelected(this)">
-
-    <div class="month-input-row">
-      <label>📅 해당 월</label>
-      <select class="month-sel" id="split-month">
-        <option value="01">01월</option><option value="02">02월</option>
-        <option value="03">03월</option><option value="04">04월</option>
-        <option value="05">05월</option><option value="06" selected>06월</option>
-        <option value="07">07월</option><option value="08">08월</option>
-        <option value="09">09월</option><option value="10">10월</option>
-        <option value="11">11월</option><option value="12">12월</option>
-      </select>
-      <span style="font-size:12px;color:#888">— 파일명에 자동 반영됩니다</span>
-    </div>
-  </div>
-
-  <button class="split-run-btn" id="split-run-btn" onclick="runSplit()" disabled>
-    ✂️ 어르신별로 분리하기
-  </button>
-
-  <!-- 진행 상태 -->
-  <div class="card split-progress" id="split-progress">
-    <div class="sp-title">📖 PDF 분석 중...</div>
-    <div class="sp-bar-wrap"><div class="sp-bar" id="sp-bar"></div></div>
-    <div class="sp-status" id="sp-status">파일을 읽는 중...</div>
-  </div>
-
-  <!-- 결과 -->
-  <div class="split-result" id="split-result">
-    <div class="card" style="padding-bottom:8px">
-      <div class="sr-header">
-        <div class="sr-title">📂 분리 결과</div>
-        <div class="sr-count" id="sr-count">0명</div>
-      </div>
-      <div class="elder-split-list" id="elder-split-list"></div>
-
-      <div class="unmatched-notice" id="unmatched-notice"></div>
-
-      <div class="split-actions">
-        <button class="split-dl-all" id="split-dl-all" onclick="downloadAll()">
-          ⬇ 전체 ZIP 다운로드
-        </button>
-        <button class="split-link-btn" id="split-link-btn" onclick="linkToMonthly()">
-          🔗 월간문서 탭에 연동
-        </button>
-      </div>
-      <div class="linked-notice" id="linked-notice">
-        ✅ 월간문서 탭에 연동 완료! <strong>문서 만들기 → 월간 문서</strong> 탭에서 어르신별 파일을 확인하세요.
-      </div>
-    </div>
-  </div>
-
-</div>
-</div>
+</div><!-- /main -->
+</div><!-- /tab-docs -->
 
 <!-- ══════════════════════════════════════
      탭4: 모의평가
 ══════════════════════════════════════ -->
 <div class="tab-content" id="tab-eval">
 <div class="main">
+
+  <!-- 평가준비 서브탭 네비 -->
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSub('eval-sub-verify',this)">🔍 문서검증</button>
+    <button class="sub-tab" onclick="switchSub('eval-sub-qa',this)">🤖 AI질의</button>
+  </div>
+
+  <!-- ── 서브탭1: 문서검증 ── -->
+  <div class="sub-content active" id="eval-sub-verify">
 
   <div id="eval-input">
 
@@ -1940,9 +2011,170 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
   </div>
 
+  </div><!-- /eval-sub-verify -->
+
+  <!-- ── 서브탭2: AI질의 ── -->
+  <div class="sub-content" id="eval-sub-qa">
+  <div class="qa-wrap" style="margin-top:0">
+    <div class="qa-head">
+      <span class="qa-head-icon">🤖</span>
+      <span class="qa-head-title">평가지표 AI 질의</span>
+      <span class="qa-head-badge">2026 주야간보호 기준</span>
+      <button onclick="clearQaChat()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:2px 9px;font-size:11px;cursor:pointer;font-family:inherit">초기화</button>
+    </div>
+
+    <!-- 예시 질문 -->
+    <div class="qa-examples">
+      <span style="font-size:10px;color:#999;align-self:center;white-space:nowrap">빠른 질문 →</span>
+      <button class="qa-ex-btn" onclick="qaAsk('지표 27 기능회복훈련 판단 기준과 필요 서류 알려줘')">지표 27 기능회복훈련</button>
+      <button class="qa-ex-btn" onclick="qaAsk('지표 20 구강상태·기피식품 신설 기준 설명해줘')">지표 20 구강상태</button>
+      <button class="qa-ex-btn" onclick="qaAsk('지표 34 급여제공기록지 작성 기준 알려줘')">지표 34 기록지</button>
+      <button class="qa-ex-btn" onclick="qaAsk('인지지원등급 K01 인지활동형 프로그램 기준이 뭐야?')">인지지원등급 K01</button>
+      <button class="qa-ex-btn" onclick="qaAsk('2026년에 신설되거나 변경된 지표 목록 알려줘')">2026 변경 지표</button>
+    </div>
+
+    <!-- 대화창 -->
+    <div class="qa-msgs" id="qa-msgs">
+      <div class="qa-msg">
+        <div class="qa-avatar ai">AI</div>
+        <div class="qa-bubble ai">
+          안녕하세요! <strong>2026년 주야간보호 평가지표</strong> 안내 도구입니다.<br>
+          지표의 기준·배점·필요서류를 있는 그대로 안내해 드려요.<br>
+          <span class="qa-tag">지표 원문 기준</span> 만 안내하며, AI의 판단이나 권유는 제공하지 않습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 입력창 -->
+    <div class="qa-input-row">
+      <textarea class="qa-input" id="qa-input" rows="1"
+        placeholder="예) 지표 22 계획서 재작성 주기가 어떻게 돼?"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQa()}"></textarea>
+      <button class="qa-send" id="qa-send-btn" onclick="sendQa()">전송 ↑</button>
+    </div>
+  </div>
+  </div><!-- /eval-sub-qa -->
+
 </div>
 </div>
 
+
+<!-- ══════════ 탭: 소개 ══════════ -->
+<div class="tab-content" id="tab-about">
+<div class="main">
+
+  <!-- 히어로 섹션 -->
+  <div class="about-hero">
+    <div class="about-hero-logo">Day:음</div>
+    <div class="about-hero-slogan">하루의 기록이 문서를 만듭니다.<br>케어 기록에서 공식 문서까지 — AI가 잇습니다.</div>
+    <div class="about-hero-badges">
+      <span class="about-hero-badge">✅ 저작권 등록 완료</span>
+      <span class="about-hero-badge">🏥 3개 센터 시범 운영 중</span>
+      <span class="about-hero-badge">🤖 Claude AI 기반</span>
+    </div>
+  </div>
+
+  <!-- 소개 / 인사말 -->
+  <div class="about-intro-card">
+    <div class="about-intro-title">💬 인사말</div>
+    <div class="about-intro-body">
+      우리는 매일같이 어르신들과 함께 생활하며 다양하고 상세한 내용들을 기록에 남깁니다.<br>
+      하루 기록을 남기는 것만으로도 이미 벅찬 우리입니다.<br>
+      그럼에도 불구하고, 평가라는 큰 <strong>산</strong>을 대비해 '분기' '반기'별 문서를 따로 챙겨야 하는 어려움이 있습니다.<br><br>
+      <strong>Day:음</strong>은 문서 작성 시간을 줄이고, 어르신과 함께하는 시간에 더 집중할 수 있도록 돕고자 합니다.<br>
+      매일 기록한 급여제공기록지만 있으면 상담일지·욕구사정·결과평가·계획서까지 AI가 자동으로 생성합니다.<br>
+      <strong>하루의 기록이 곧 문서가 되도록요.</strong>
+    </div>
+
+    <!-- 브랜드명 유래 -->
+    <div style="margin-top:16px;background:#EEF2FF;border-radius:10px;padding:14px 16px;border-left:3px solid #1F3864">
+      <div style="font-size:11px;font-weight:700;color:#1F3864;margin-bottom:6px;letter-spacing:.3px">📌 Day:음 이름의 의미</div>
+      <div style="font-size:12px;color:#333;line-height:1.9">
+        <strong style="color:#1F3864">Day:음</strong>은 <strong>하루(Day)의 기록이 문서로 이어진다</strong>는 뜻에서 출발했어요.<br>
+        <strong>Day</strong>(하루) + <strong>이음</strong>(잇다·연결하다)의 약자 표기로,<br>
+        매일의 케어 기록과 공식 문서 사이를 <strong>AI가 이어준다</strong>는 의미를 담고 있습니다.
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="about-stats">
+      <div class="about-stat">
+        <div class="about-stat-num">3</div>
+        <div class="about-stat-unit">시범 운영 센터</div>
+      </div>
+      <div class="about-stat">
+        <div class="about-stat-num">5종</div>
+        <div class="about-stat-unit">자동 생성 문서</div>
+      </div>
+      <div class="about-stat">
+        <div class="about-stat-num">4단계</div>
+        <div class="about-stat-unit">순차 AI 분석</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 도입기관 후기 -->
+  <div class="about-intro-card">
+    <div class="about-intro-title">⭐ 도입 기관 후기</div>
+    <div id="about-reviews-wrap">
+      <div class="review-empty">후기를 준비 중이에요 🙂</div>
+    </div>
+  </div>
+
+  <!-- 소셜 미디어 -->
+  <div class="about-intro-card">
+    <div class="about-intro-title">🔗 소통 채널</div>
+    <div class="social-row">
+      <a class="social-btn" href="https://open.kakao.com" target="_blank">
+        <span class="s-icon">💬</span>
+        <span>
+          카카오톡 오픈채팅
+          <span class="s-label">문의 · 업데이트 알림</span>
+        </span>
+      </a>
+      <a class="social-btn" href="https://blog.naver.com" target="_blank">
+        <span class="s-icon">📝</span>
+        <span>
+          네이버 블로그
+          <span class="s-label">사용 가이드 · 업데이트 노트</span>
+        </span>
+      </a>
+      <a class="social-btn" href="mailto:contact@daeum.kr">
+        <span class="s-icon">📧</span>
+        <span>
+          이메일 문의
+          <span class="s-label">contact@daeum.kr</span>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 개인정보 고지 -->
+  <div class="about-intro-card">
+    <div class="about-intro-title">🔒 개인정보 처리 안내</div>
+    <div class="privacy-box">
+      <h4>수집 및 이용</h4>
+      업로드하신 급여제공기록지는 문서 자동 생성 목적으로만 사용되며,
+      서버에 저장되지 않습니다. API 처리 후 즉시 폐기됩니다.
+
+      <h4>제3자 제공</h4>
+      어르신 개인정보는 외부에 제공하지 않습니다.
+      AI 처리에는 Anthropic Claude API가 사용되며,
+      Anthropic의 개인정보처리방침이 동시에 적용됩니다.
+
+      <h4>저작권</h4>
+      Day:음은 한국저작권위원회(cros.or.kr)에 저작권 등록된 소프트웨어입니다.
+      무단 복제·배포·상업적 이용을 금합니다.
+
+      <h4>문의</h4>
+      개인정보 관련 문의는 이메일(contact@daeum.kr) 또는
+      카카오톡 오픈채팅으로 연락해 주세요.
+    </div>
+    <div class="privacy-copy">© 2026 Day:음(데이음) · All rights reserved · 저작권 등록번호 확인: cros.or.kr</div>
+  </div>
+
+</div>
+</div>
 
 <!-- ══════════ 탭: 가이드 ══════════ -->
 <div class="tab-content" id="tab-guide">
@@ -1958,13 +2190,13 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <button id="gtab-btn-flow" onclick="switchGuideTab('flow')"
       style="flex:1;padding:10px 8px;border-radius:10px;border:1.5px solid #1F3864;
       background:#1F3864;color:#fff;font-size:13px;font-weight:700;
-      cursor:pointer;font-family:inherit;transition:all .2s">
+      cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap">
       🗺 업무 흐름도
     </button>
     <button id="gtab-btn-routine" onclick="switchGuideTab('routine')"
       style="flex:1;padding:10px 8px;border-radius:10px;border:1.5px solid #E0E6F0;
       background:#fff;color:#888;font-size:13px;font-weight:700;
-      cursor:pointer;font-family:inherit;transition:all .2s">
+      cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap">
       📅 한 달 루틴
     </button>
   </div>
@@ -2059,6 +2291,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   padding: 3px 14px;
   border-radius: 20px;
   margin-bottom: 10px;
+  white-space: nowrap;
 }
 .header h1 {
   font-size: 24px;
@@ -2068,8 +2301,11 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   margin-bottom: 6px;
 }
 .header p {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--gray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── 범례 ── */
@@ -3114,8 +3350,42 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 <div class="tab-content" id="tab-feedback">
 <div class="main">
 
+  <!-- 후기 작성 카드 -->
+  <div class="review-form-card">
+    <div class="review-form-title">⭐ 도입 기관 후기 남기기</div>
+
+    <!-- 별점 -->
+    <div style="font-size:12px;font-weight:600;color:#444;margin-bottom:6px">별점</div>
+    <div class="star-select" id="star-select">
+      <button class="star-btn" onclick="setReviewStar(1)">⭐</button>
+      <button class="star-btn" onclick="setReviewStar(2)">⭐</button>
+      <button class="star-btn" onclick="setReviewStar(3)">⭐</button>
+      <button class="star-btn" onclick="setReviewStar(4)">⭐</button>
+      <button class="star-btn" onclick="setReviewStar(5)">⭐</button>
+    </div>
+
+    <!-- 이름 / 소속 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#444;margin-bottom:5px">이름 <span style="color:#E24B4A">*</span></div>
+        <input class="review-input" id="review-name" type="text" placeholder="예) 김○○ 사회복지사">
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#444;margin-bottom:5px">소속 센터</div>
+        <input class="review-input" id="review-center" type="text" placeholder="예) 삽교주간보호센터">
+      </div>
+    </div>
+
+    <!-- 후기 내용 -->
+    <div style="font-size:12px;font-weight:600;color:#444;margin-bottom:5px">후기 내용 <span style="color:#E24B4A">*</span></div>
+    <textarea class="review-input" id="review-content" rows="3" style="resize:vertical;min-height:80px" placeholder="Day:음을 사용하면서 느낀 점을 자유롭게 적어주세요."></textarea>
+
+    <button class="review-submit-btn" onclick="submitReview()">후기 등록하기</button>
+    <div id="review-submit-msg" style="display:none;text-align:center;margin-top:8px;font-size:12px;color:#0D6E55;font-weight:500">✅ 후기가 등록됐어요! 소개 탭에서 확인할 수 있어요.</div>
+  </div>
+
   <div class="card">
-    <div class="card-title" style="margin-bottom:4px">💬 Day:음 사용평</div>
+    <div class="card-title" style="margin-bottom:4px">💬 Day:음 피드백</div>
     <div style="font-size:12px;color:#888;margin-bottom:16px">쓰면서 불편했던 점, 개선사항, 요청사항을 자유롭게 적어주세요.<br>작성 후 복사해서 담당자에게 카톡/문자로 전달해주시면 반영할게요!</div>
 
     <!-- 센터 정보 자동 표시 -->
@@ -3144,14 +3414,14 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
       <div style="font-size:12px;font-weight:600;color:#444;margin-bottom:8px">관련 기능</div>
       <select id="fb-feature" style="width:100%;padding:8px 10px;border:1px solid #C5CAE9;border-radius:7px;font-size:12px;font-family:inherit;color:#333;background:#fff">
         <option value="">— 선택 —</option>
-        <option>👤 어르신 정보</option>
+        <option>📂 기록지 분리</option>
         <option>📄 문서 만들기 (월간)</option>
         <option>📄 문서 만들기 (정기)</option>
         <option>📄 문서 만들기 (수시)</option>
-        <option>📋 조사 (프로그램 의견수렴)</option>
-        <option>📋 조사 (식사만족도)</option>
-        <option>📂 기록지 분리</option>
-        <option>📊 모의평가</option>
+        <option>📄 문서 만들기 (조사 — 프로그램 의견수렴)</option>
+        <option>📄 문서 만들기 (조사 — 식사만족도)</option>
+        <option>👤 어르신 정보</option>
+        <option>📋 평가준비</option>
         <option>🔧 전체/공통</option>
         <option>기타</option>
       </select>
@@ -3452,19 +3722,28 @@ async function linkToMonthly() {
 
   window.splitLinkedMonth = month;
 
-  // 월간문서 탭으로 이동하고 연동 적용
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.includes('문서 만들기')) b.classList.add('active');
-  });
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-docs').classList.add('active');
+  // 패널 닫기
+  document.getElementById('split-panel').style.display = 'none';
+  document.getElementById('split-toggle-btn').style.borderColor = '#9FE1CB';
+  document.getElementById('split-toggle-btn').style.background = '#F0FBF6';
+  document.getElementById('split-toggle-icon').textContent = '✅ 연동됨';
 
-  // 월간문서 서브탭 활성화
+  // 연동 완료 후 어르신 선택 박스 표시
   setTimeout(() => {
     applyLinkedFiles();
     document.getElementById('linked-notice').classList.add('show');
   }, 100);
+}
+
+function toggleSplitPanel() {
+  const panel = document.getElementById('split-panel');
+  const icon  = document.getElementById('split-toggle-icon');
+  const btn   = document.getElementById('split-toggle-btn');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  icon.textContent = isOpen ? '▾ 펼치기' : '▴ 접기';
+  btn.style.borderStyle = isOpen ? 'dashed' : 'solid';
+  btn.style.borderColor = isOpen ? '#C5CAE9' : '#1F3864';
 }
 
 function applyLinkedFiles() {
@@ -3536,9 +3815,13 @@ async function loadPdfLib() {
 // ════════════════════════════════════════
 
 function switchSurveyTab(id, btn) {
-  document.querySelectorAll('.survey-sub-btn').forEach(b => b.classList.remove('active'));
+  // sub-survey 안의 버튼/컨텐츠만 조작
+  const wrap = document.getElementById('sub-survey');
+  if (wrap) {
+    wrap.querySelectorAll('.survey-sub-btn').forEach(b => b.classList.remove('active'));
+    wrap.querySelectorAll('.survey-sub-content').forEach(c => c.classList.remove('active'));
+  }
   btn.classList.add('active');
-  document.querySelectorAll('.survey-sub-content').forEach(c => c.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
@@ -4199,7 +4482,7 @@ function updateFbPreview() {
   const cats = [...document.querySelectorAll('.fb-cat-btn.on')].map(b=>b.textContent).join(', ') || '(미선택)';
   const feature = document.getElementById('fb-feature')?.value || '(미선택)';
   const content = document.getElementById('fb-content')?.value?.trim() || '';
-  const preview = `[Day:음 사용평]
+  const preview = `[Day:음 피드백]
 센터: ${center}
 일시: ${date}
 카테고리: ${cats}
@@ -4413,6 +4696,7 @@ function switchTab(id, btn) {
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if(id==='tab-overview') renderOverview();
+  if(id==='tab-about') renderAboutReviews();
   if(id==='tab-feedback') {
     initFeedbackTab();
     // 관리자 카드 항상 표시 (코드 입력은 카드 내부에서)
@@ -4623,7 +4907,7 @@ function buildMonthlyPrompt(opinion) {
 
   if (docList.length === 0) docList.push('1. 분기별 상담일지 (기본)');
 
-  return `파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
+  return `${getStylePrompt('m')}파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
 파악할 항목: 수급자명 / 생년월일 / 장기요양등급 / 장기요양인정번호 / 기관명 / 기관기호 / 기록지에 기재된 작성자(담당자) 성명 / 기록 대상 연월(시작월~종료월).
 
 ■ HTML 출력 형식
@@ -4725,7 +5009,7 @@ function buildPeriodicPrompt(opinion) {
   const planEnd     = document.getElementById('plan-end')?.value || '';
   const planRehab   = document.getElementById('plan-rehab')?.value.trim() || '';
 
-  return `[1단계-욕구사정]
+  return `${getStylePrompt('p')}[1단계-욕구사정]
 
 ## 역할
 당신은 주야간보호센터의 사회복지사를 보조하는 케어 문서 작성 전문가입니다. 아래 지침에 따라 업로드된 파일을 분석하여 해당하는 문서를 HTML 형식으로 작성합니다.
@@ -5796,6 +6080,18 @@ function getStyleLevel(tab) {
   return STYLE_LEVEL[tab] || 3;
 }
 
+function getStylePrompt(tab) {
+  const level = getStyleLevel(tab);
+  const descs = {
+    1: '핵심 키워드 중심으로 최소한만 기술. 한두 문장 이내로 작성.',
+    2: '핵심 정보만 간결하게 압축. 배경 설명 최소화.',
+    3: '핵심 사항을 빠짐없이 기술하되 표준적인 공문서 분량 유지.',
+    4: '주요 근거와 전문 판단 포함. 명확하게 서술.',
+    5: '모든 배경·맥락·전문용어를 빠짐없이 기술. 판단근거와 수치 풍부하게 포함. 공식 보고서 수준.'
+  };
+  return `\n[문서 스타일 레벨: ${level}단계]\n${descs[level]}\n공문서 어미(~하였음. ~확인됨.)는 모든 단계에서 유지.\n`;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   ['m','p'].forEach(function(tab) {
     const slider = document.getElementById('styleSlider_' + tab);
@@ -6177,89 +6473,294 @@ function downloadDocx(type) {
   URL.revokeObjectURL(url);
 }
 
-// ────── 어르신 정보 저장 (실제 파일 기반) ──────
+// ────── 어르신 정보 저장 (A안+B안 통합) ──────
+
+// [A안] 생성된 HTML에서 핵심 데이터 파싱
+function parseResidentDataFromHtml(type, html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  const text = (tmp.innerText || tmp.textContent || '').replace(/\s+/g, ' ');
+  const result = {};
+
+  if (type === 'periodic') {
+    // ── 낙상위험도 (Huhn) ──
+    const fallMatch = text.match(/낙상위험도\s*평가[^총]*총점[:\s]*(\d+)점[^위험]*위험\s*수준[:\s]*([^\s(（]+)/);
+    if (!fallMatch) {
+      // 단순 패턴 fallback
+      const fm2 = text.match(/총점[:\s]*(\d+)점\s*위험\s*수준[:\s]*([가-힣]+(?:\s*\([^)]+\))?)/);
+      if (fm2) result.fall = { score: parseInt(fm2[1]), level: fm2[2].trim() };
+    } else {
+      result.fall = { score: parseInt(fallMatch[1]), level: fallMatch[2].trim() };
+    }
+    // 좀 더 견고한 패턴
+    const fallScore = html.match(/Huhn[^<]*<\/[^>]+>[^<]*<[^>]+>[^<]*총점[:\s]*(\d+)/i)
+      || text.match(/Huhn Scale[^총]*총점[:\s:]*(\d+)점/i);
+    const fallLevel = text.match(/낙상[^총]*총점[:\s]*\d+점[^위]*위험\s*수준[:\s]*([가-힣]+)/);
+    if (fallScore && !result.fall) result.fall = { score: parseInt(fallScore[1]), level: fallLevel?.[1] || '-' };
+
+    // ── 욕창위험도 (Braden) ──
+    const pressureText = text.match(/욕창위험도\s*평가[\s\S]*?총점[:\s]*(\d+)점[^위]*위험\s*수준[:\s]*([^\s(（]+)/);
+    if (pressureText) result.pressure = { score: parseInt(pressureText[1]), level: pressureText[2].trim() };
+
+    // 두 총점이 모두 있을 때 순서로 구분 (Huhn 먼저, Braden 나중)
+    if (!result.fall || !result.pressure) {
+      const allScores = [...text.matchAll(/총점[:\s]*(\d+)점\s*(?:&nbsp;)*\s*위험\s*수준[:\s]*([가-힣]+(?:\s*\([^)]+\))?)/g)];
+      if (allScores.length >= 1 && !result.fall)     result.fall     = { score: parseInt(allScores[0][1]), level: allScores[0][2].trim() };
+      if (allScores.length >= 2 && !result.pressure) result.pressure = { score: parseInt(allScores[1][1]), level: allScores[1][2].trim() };
+    }
+
+    // ── CIST (인지) ──
+    const cistMatch = text.match(/CIST\s*총점\s*(\d+)\s*\/\s*30/) || text.match(/CIST[^점]*(\d+)\/30/);
+    const cistLevel = text.match(/인지저하\s*(의심|없음|정상)/) || text.match(/(인지저하\s*의심|정상)/);
+    if (cistMatch) result.cist = { score: `${cistMatch[1]}/30`, level: cistLevel?.[1] || (parseInt(cistMatch[1]) < 15 ? '인지저하 의심' : '정상') };
+
+    // ── 욕구사정 — 진단명 ──
+    const diagMatch = text.match(/현\s*진단명[:\s]*([^\n.。]{4,40})/) || text.match(/진단명[:\s]*([^\n.。]{4,40})/);
+    if (diagMatch) result.diagnosis = diagMatch[1].replace(/<[^>]+>/g, '').trim();
+
+    // ── 욕구사정 — 배설 ──
+    const excMatch = text.match(/배설\s*양상[^:]*[:\s]*([^\n.。]{3,30})/) || text.match(/소변[^\n]{0,20}(요실금|정상|양호|배뇨곤란)/);
+    if (excMatch) result.excretion = excMatch[1].trim();
+
+    // ── 욕구사정 — 영양 ──
+    const nutriMatch = text.match(/영양\s*상태[^:]*[:\s]*(양호|적당|부족|매우\s*나쁨)/);
+    if (nutriMatch) result.nutrition = nutriMatch[1].trim();
+
+    // ── 기능회복훈련 (T51/T52/T53) — 계획서에서 파싱 ──
+    // 세부제공내용 또는 세부목표내용 패턴 추출
+    // T51 신체기능훈련 영역 텍스트
+    const t51Match = text.match(/T51[^가-힣]*신체기능[^\n]{0,10}\n?([\s\S]{10,300}?)(?=T52|T53|T55|T58|T60|T61|$)/);
+    const t52Match = text.match(/T52[^가-힣]*기본동작[^\n]{0,10}\n?([\s\S]{10,300}?)(?=T53|T55|T58|T60|T61|$)/);
+    const t53Match = text.match(/T53[^가-힣]*일상생활[^\n]{0,10}\n?([\s\S]{10,300}?)(?=T55|T58|T60|T61|$)/);
+
+    // 세부제공내용 기반 추출 (테이블 셀 패턴)
+    const extractCellText = (pattern) => {
+      const tmp2 = document.createElement('div');
+      tmp2.innerHTML = html;
+      const rows = tmp2.querySelectorAll('tr');
+      for (const row of rows) {
+        const cells = row.querySelectorAll('td');
+        for (let i = 0; i < cells.length; i++) {
+          if (pattern.test(cells[i].textContent)) {
+            // 같은 행 또는 다음 행에서 세부제공내용 셀 찾기
+            const content = cells[cells.length - 1]?.textContent.trim();
+            if (content && content.length > 10) return content;
+          }
+        }
+      }
+      return null;
+    };
+
+    const rehabBody  = t51Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T51|신체기능의\s*훈련/);
+    const rehabBasic = t52Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T52|기본동작\s*훈련/);
+    const rehabAdl   = t53Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T53|일상생활동작\s*훈련/);
+
+    if (rehabBody || rehabBasic || rehabAdl) {
+      result.rehab = {
+        body:  rehabBody  || '',
+        basic: rehabBasic || '',
+        adl:   rehabAdl   || ''
+      };
+    }
+
+  }
+
+  // ── 혈압 — 월간·정기 공통 ──
+  // 패턴: "117-76", "102/70", "133-82" 형식
+  const bpMatches = [...text.matchAll(/(\d{2,3})[-\/](\d{2,3})(?:\s*mmHg)?/g)];
+  const bpData = [];
+  const seenDates = new Set();
+  // 날짜+혈압 패턴: "혈압 117-76 (2026.04.08)" 또는 "(4/14에는 혈압이 102-70)"
+  const bpDateMatches = [...text.matchAll(/(\d{1,2})[\/.](\d{1,2})[^가-힣]{0,10}혈압[이가\s]*(\d{2,3})[-\/](\d{2,3})|혈압[^가-힣]{0,10}(\d{2,3})[-\/](\d{2,3})[^가-힣]{0,15}(\d{1,2})[\/.](\d{1,2})/g)];
+  bpDateMatches.forEach(m => {
+    let mo, day, sys, dia;
+    if (m[3]) { mo = m[1]; day = m[2]; sys = m[3]; dia = m[4]; }
+    else       { mo = m[7]; day = m[8]; sys = m[5]; dia = m[6]; }
+    const key = `${mo}/${day}`;
+    if (!seenDates.has(key) && sys >= 80 && sys <= 220 && dia >= 40 && dia <= 130) {
+      seenDates.add(key);
+      bpData.push({ date: key, sys: parseInt(sys), dia: parseInt(dia) });
+    }
+  });
+  // 날짜 매핑 없이 단순 수치만 있을 때 (최대 6개)
+  if (bpData.length === 0) {
+    bpMatches.slice(0, 6).forEach((m, i) => {
+      const sys = parseInt(m[1]), dia = parseInt(m[2]);
+      if (sys >= 80 && sys <= 220 && dia >= 40 && dia <= 130)
+        bpData.push({ date: `측정${i+1}`, sys, dia });
+    });
+  }
+  if (bpData.length > 0) result.bp = bpData.slice(0, 8);
+
+  // ── 이벤트 태그 ──
+  const events = [];
+  if (/낙상|쓰러짐|넘어짐/.test(text)) events.push({ type: 'red', label: '낙상' });
+  if (/BPSD|배회|폭력|망상|환각|반복질문/.test(text)) events.push({ type: 'red', label: 'BPSD' });
+  if (/저혈압|혈압\s*[0-9]{2,3}[-\/][0-9]{2}\D/.test(text) && /9[0-9][-\/][0-9]/.test(text)) events.push({ type: 'amber', label: '혈압' });
+  if (/욕창/.test(text)) events.push({ type: 'amber', label: '욕창위험' });
+  if (/골절|수술/.test(text)) events.push({ type: 'red', label: '골절' });
+  if (/사레|흡인|연하/.test(text)) events.push({ type: 'amber', label: '흡인위험' });
+  if (events.length > 0) result.events = events;
+
+  return result;
+}
+
+// [B안] 최근 생성된 문서 HTML을 localStorage에 보관 (어르신별, 최신 1건씩)
+function saveRecentDocHtml(name, type, html) {
+  try {
+    const key = `ium-recent-doc-${centerCode}-${name}`;
+    const existing = JSON.parse(localStorage.getItem(key) || '{}');
+    existing[type] = {
+      html,
+      label: type === 'monthly' ? '월간문서' : '정기문서',
+      date: new Date().toLocaleDateString('ko-KR'),
+      ts: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(existing));
+  } catch(e) { /* 용량 초과 시 무시 */ }
+}
+
+function getRecentDocHtml(name, type) {
+  try {
+    const key = `ium-recent-doc-${centerCode}-${name}`;
+    const d = JSON.parse(localStorage.getItem(key) || '{}');
+    return d[type] || null;
+  } catch(e) { return null; }
+}
+
+// 문서 보기 모달
+function showDocModal(name, type) {
+  const doc = getRecentDocHtml(name, type);
+  if (!doc) { alert('저장된 문서가 없어요. 먼저 문서를 생성해주세요.'); return; }
+  let modal = document.getElementById('doc-preview-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'doc-preview-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:14px;width:100%;max-width:860px;overflow:hidden;margin:auto">
+        <div style="background:#1F3864;color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px">
+          <span id="doc-modal-title" style="font-size:14px;font-weight:600;flex:1"></span>
+          <span id="doc-modal-date" style="font-size:11px;opacity:.7"></span>
+          <button onclick="document.getElementById('doc-preview-modal').remove()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 4px">✕</button>
+        </div>
+        <div id="doc-modal-body" style="padding:16px;max-height:80vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  }
+  document.getElementById('doc-modal-title').textContent = `${name} 어르신 · ${doc.label}`;
+  document.getElementById('doc-modal-date').textContent = doc.date + ' 생성';
+  document.getElementById('doc-modal-body').innerHTML = doc.html;
+  modal.style.display = 'flex';
+}
+
+// ── 메인 저장 함수 ──
 async function saveResidentFromResult(type, resultHtml) {
   try {
-    // 이름 결정: 연동 파일 우선, 없으면 직접 업로드 파일명에서 추출
+    // 이름 추출 (기존 로직 유지)
     let name = window.currentLinkedName;
 
     if (!name) {
-      // 직접 업로드 파일명에서 어르신 이름 추출 시도
       const prefix = type === 'monthly' ? 'm' : 'p';
       const fileInput = document.getElementById(prefix + '-file');
       const fileName = fileInput?.files?.[0]?.name || '';
-      // 파일명 패턴: "이름_" 또는 "이름 " 앞부분 추출
       const match = fileName.match(/^([가-힣]{2,5})[_\s]/);
       if (match) name = match[1];
     }
-
     if (!name) {
-      // HTML에서 직접 파싱 (DOM 렌더링 없이)
-      // <td class="label">수급자</td><td>이동주</td> 패턴
       const tdMatch = resultHtml.match(/<td[^>]*>수급자<\/td>\s*<td[^>]*>([가-힣]{2,5})<\/td>/);
       if (tdMatch) name = tdMatch[1];
     }
-
     if (!name) {
-      // HTML 결과에서 수급자명 추출 시도 - innerText 기반
-      const temp = document.createElement('div');
-      temp.innerHTML = resultHtml;
-      // 테이블 셀에서 직접 추출
-      const cells = temp.querySelectorAll('td');
+      const tmp = document.createElement('div');
+      tmp.innerHTML = resultHtml;
+      const cells = tmp.querySelectorAll('td');
       for (let i = 0; i < cells.length - 1; i++) {
-        const cellText = cells[i].textContent.trim();
-        if (cellText === '수급자' || cellText === '수급자명') {
-          const nextVal = cells[i+1]?.textContent.trim();
-          if (nextVal && /^[가-힣]{2,5}$/.test(nextVal)) { name = nextVal; break; }
+        const ct = cells[i].textContent.trim();
+        if (ct === '수급자' || ct === '수급자명') {
+          const nv = cells[i+1]?.textContent.trim();
+          if (nv && /^[가-힣]{2,5}$/.test(nv)) { name = nv; break; }
         }
       }
     }
-
     if (!name) {
-      // fallback: 텍스트 패턴 매칭
-      const temp = document.createElement('div');
-      temp.innerHTML = resultHtml;
-      const text = (temp.innerText || '').replace(/\s+/g, ' ');
-      const patterns = [
-        /수급자명?\s*[:\|]?\s*([가-힣]{2,5})/,
-        /수급자\s+([가-힣]{2,5})/,
-        /성명\s*[:\|]?\s*([가-힣]{2,5})/,
-      ];
-      for (const pat of patterns) {
-        const match = text.match(pat);
-        if (match && match[1] && match[1] !== '수급자' && match[1] !== '어르신') {
-          name = match[1]; break;
-        }
+      const tmp = document.createElement('div');
+      tmp.innerHTML = resultHtml;
+      const text = (tmp.innerText || '').replace(/\s+/g, ' ');
+      for (const pat of [/수급자명?\s*[:\|]?\s*([가-힣]{2,5})/, /수급자\s+([가-힣]{2,5})/, /성명\s*[:\|]?\s*([가-힣]{2,5})/]) {
+        const m = text.match(pat);
+        if (m?.[1] && m[1] !== '수급자' && m[1] !== '어르신') { name = m[1]; break; }
       }
     }
+    if (!name) return;
 
-    if (!name) return; // 이름 못 찾으면 저장 안 함
+    // [B안] 문서 HTML 보관
+    saveRecentDocHtml(name, type, resultHtml);
+
+    // [A안] 핵심 데이터 파싱
+    const parsed = parseResidentDataFromHtml(type, resultHtml);
 
     const now = new Date();
     const monthKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     const monthLabel = `${now.getFullYear()}년 ${now.getMonth()+1}월`;
+    const todayStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
 
     const existing = await loadAll();
     const existingRes = existing.find(r => r.name === name);
 
+    const docLabel = type === 'monthly' ? '월간문서' : '정기문서';
     const newMonth = {
       month: monthLabel,
       monthKey,
       days: 0,
-      events: [],
-      docs: type === 'monthly' ? ['월간 문서 생성됨'] : ['정기 문서 생성됨']
+      events: parsed.events || [],
+      docs: [docLabel]
     };
 
     if (existingRes) {
+      // 월별 이력 업데이트
       const mIdx = existingRes.months?.findIndex(m => m.monthKey === monthKey);
       if (mIdx >= 0) {
-        existingRes.months[mIdx].docs = [...(existingRes.months[mIdx].docs || []), ...(type === 'monthly' ? ['월간 문서'] : ['정기 문서'])];
+        if (!existingRes.months[mIdx].docs.includes(docLabel))
+          existingRes.months[mIdx].docs.push(docLabel);
+        if (parsed.events?.length) existingRes.months[mIdx].events = parsed.events;
       } else {
         existingRes.months = [...(existingRes.months || []), newMonth];
       }
-      existingRes.lastUpdate = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+      existingRes.lastUpdate = todayStr;
+
+      // [A안] 파싱 데이터 병합
+      if (!existingRes.eval) existingRes.eval = {};
+      if (parsed.bp?.length)       existingRes.eval.bp       = parsed.bp;
+      if (parsed.fall)             existingRes.eval.fall     = parsed.fall;
+      if (parsed.pressure)         existingRes.eval.pressure = parsed.pressure;
+      if (parsed.cist)             existingRes.eval.cist     = parsed.cist;
+      if (parsed.diagnosis) {
+        if (!existingRes.needs) existingRes.needs = {};
+        existingRes.needs.diagnosis = parsed.diagnosis;
+      }
+      if (parsed.nutrition) {
+        if (!existingRes.needs) existingRes.needs = {};
+        existingRes.needs.nutrition = parsed.nutrition;
+      }
+      if (parsed.excretion) {
+        if (!existingRes.needs) existingRes.needs = {};
+        existingRes.needs.excretion = parsed.excretion;
+      }
+      // rehab 병합
+      if (parsed.rehab) existingRes.rehab = parsed.rehab;
+      // 기초평가 요약 업데이트
+      if (parsed.fall || parsed.pressure) {
+        const parts = [];
+        if (parsed.fall)     parts.push(`낙상 ${parsed.fall.score}점(${parsed.fall.level})`);
+        if (parsed.pressure) parts.push(`욕창 ${parsed.pressure.score}점(${parsed.pressure.level})`);
+        if (parsed.cist)     parts.push(`CIST ${parsed.cist.score}`);
+        existingRes.eval.summary = parts.join(' · ');
+      }
       await saveResident(existingRes);
     } else {
+      // 신규 어르신
       const newRes = {
         id: `res-${Date.now()}`,
         name,
@@ -6267,25 +6768,232 @@ async function saveResidentFromResult(type, resultHtml) {
         grade: '확인필요',
         state: '-',
         birth: '-',
-        lastUpdate: `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`,
+        lastUpdate: todayStr,
         months: [newMonth],
-        eval: { bp: [] },
+        eval: {
+          bp: parsed.bp || [],
+          ...(parsed.fall     && { fall:     parsed.fall }),
+          ...(parsed.pressure && { pressure: parsed.pressure }),
+          ...(parsed.cist     && { cist:     parsed.cist }),
+          ...(parsed.fall || parsed.pressure ? {
+            summary: [
+              parsed.fall     ? `낙상 ${parsed.fall.score}점(${parsed.fall.level})` : '',
+              parsed.pressure ? `욕창 ${parsed.pressure.score}점(${parsed.pressure.level})` : '',
+              parsed.cist     ? `CIST ${parsed.cist.score}` : ''
+            ].filter(Boolean).join(' · ')
+          } : {})
+        },
+        needs: (parsed.diagnosis || parsed.nutrition || parsed.excretion) ? {
+          diagnosis: parsed.diagnosis || '',
+          nutrition: parsed.nutrition || '',
+          excretion: parsed.excretion || ''
+        } : undefined,
+        rehab: parsed.rehab || undefined,
         schedule: { done: [], deadline: '', checklist: [] }
       };
       await saveResident(newRes);
     }
 
-    // 어르신 정보 탭 업데이트
     await renderOverview();
 
-    // Supabase에 문서 저장
+    // Supabase 저장
     const cfg = CENTERS[centerCode] || {};
-    const docTypeLabel = type === 'monthly' ? '월간문서' : '정기문서';
-    await saveDocToSupabase(centerCode, cfg.name || centerCode, name, docTypeLabel, resultHtml);
+    await saveDocToSupabase(centerCode, cfg.name || centerCode, name, type === 'monthly' ? '월간문서' : '정기문서', resultHtml);
 
   } catch(e) {
     console.log('어르신 정보 저장 오류:', e);
   }
+}
+
+// ────── 평가지표 Q&A 채팅 ──────
+const QA_SYSTEM = `당신은 2026년 주야간보호 장기요양기관 평가지표를 안내하는 도구입니다.
+
+[역할]
+2026년 주야간보호 평가지표(약 36개)의 내용을 질문에 맞게 충실히 설명합니다.
+지표의 배점, 판단 기준, 필요 서류, 점수 산정 방식, 세부 기준 등을 구체적으로 안내합니다.
+"어떻게 준비해야 하나요?" 같은 질문도 해당 지표의 기준과 필요 서류를 설명하는 방식으로 답변합니다.
+
+[답변 시 반드시 지켜야 할 것]
+- 지표에 명시된 내용만 근거로 설명할 것
+- "지표 XX에 따르면 ~입니다" 형식으로 출처를 밝힐 것
+- 지표에 없는 내용은 "해당 지표에 명시되어 있지 않습니다"라고 안내할 것
+- 지표 외 영역(운영 방식, 인사, 예산 등)은 안내하지 않을 것
+
+[절대 하지 않을 것]
+- "~하는 게 좋겠습니다", "~를 권장합니다" 등 AI 개인의 판단이나 권유
+- 지표에 없는 내용을 추론하여 제안
+- "충족될 가능성이 높습니다" 등 평가 결과 예측
+
+[답변 형식]
+- 지표번호는 굵게 강조
+- 배점, 판단기준, 필요서류 순으로 구조화하여 설명
+- 친근하고 명확한 말투, 한국어`;
+
+let qaHistory = [];
+
+function qaAddMsg(role, text, isHtml = false) {
+  const msgs = document.getElementById('qa-msgs');
+  const div = document.createElement('div');
+  div.className = `qa-msg ${role}`;
+  const avatar = role === 'ai'
+    ? '<div class="qa-avatar ai">AI</div>'
+    : '<div class="qa-avatar user">나</div>';
+  const bubble = `<div class="qa-bubble ${role}">${isHtml ? text : text.replace(/\n/g,'<br>')}</div>`;
+  div.innerHTML = role === 'ai' ? avatar + bubble : bubble + avatar;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function qaShowTyping() {
+  const msgs = document.getElementById('qa-msgs');
+  const div = document.createElement('div');
+  div.className = 'qa-msg';
+  div.id = 'qa-typing';
+  div.innerHTML = `<div class="qa-avatar ai">AI</div><div class="qa-bubble ai"><div class="qa-typing"><div class="qa-dot"></div><div class="qa-dot"></div><div class="qa-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function qaRemoveTyping() {
+  const t = document.getElementById('qa-typing');
+  if (t) t.remove();
+}
+
+async function sendQa() {
+  const input = document.getElementById('qa-input');
+  const q = input.value.trim();
+  if (!q) return;
+
+  const btn = document.getElementById('qa-send-btn');
+  btn.disabled = true;
+  input.value = '';
+  input.style.height = 'auto';
+
+  qaAddMsg('user', q);
+  qaHistory.push({ role: 'user', content: q });
+  qaShowTyping();
+
+  try {
+    // callClaude는 system + 단일 user 메시지만 받으므로
+    // 멀티턴 히스토리는 system 프롬프트에 포함하여 전달
+    const historyContext = qaHistory.slice(0, -1).map(m =>
+      `[${m.role === 'user' ? '질문' : '답변'}] ${m.content}`
+    ).join('\n\n');
+
+    const systemWithHistory = historyContext
+      ? `${QA_SYSTEM}\n\n[이전 대화 기록]\n${historyContext}`
+      : QA_SYSTEM;
+
+    const answer = await callClaude(systemWithHistory, q);
+
+    qaRemoveTyping();
+    qaHistory.push({ role: 'assistant', content: answer });
+
+    // 마크다운 → 간단 HTML 변환
+    const htmlAnswer = answer
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/^- (.+)$/gm, '• $1')
+      .replace(/\n/g, '<br>');
+    qaAddMsg('ai', htmlAnswer, true);
+
+  } catch(e) {
+    qaRemoveTyping();
+    qaAddMsg('ai', '오류가 발생했어요. 잠시 후 다시 시도해주세요.');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+function qaAsk(text) {
+  document.getElementById('qa-input').value = text;
+  sendQa();
+}
+
+// ────── 도입기관 후기 ──────
+function getReviewKey() { return `ium-reviews-${centerCode || 'default'}`; }
+let reviewStar = 0;
+
+function setReviewStar(n) {
+  reviewStar = n;
+  document.querySelectorAll('#star-select .star-btn').forEach((btn, i) => {
+    btn.classList.toggle('on', i < n);
+  });
+}
+
+function submitReview() {
+  const name    = document.getElementById('review-name').value.trim();
+  const center  = document.getElementById('review-center').value.trim();
+  const content = document.getElementById('review-content').value.trim();
+
+  if (!name)    { alert('이름을 입력해주세요.'); return; }
+  if (!content) { alert('후기 내용을 입력해주세요.'); return; }
+
+  const review = {
+    id: Date.now(),
+    name,
+    center: center || (window.CENTERS?.[centerCode]?.name || ''),
+    star: reviewStar || 5,
+    content,
+    date: new Date().toLocaleDateString('ko-KR')
+  };
+
+  const existing = JSON.parse(localStorage.getItem(getReviewKey()) || '[]');
+  existing.push(review);
+  localStorage.setItem(getReviewKey(), JSON.stringify(existing));
+
+  // 입력 초기화
+  document.getElementById('review-name').value = '';
+  document.getElementById('review-center').value = '';
+  document.getElementById('review-content').value = '';
+  setReviewStar(0);
+
+  const msg = document.getElementById('review-submit-msg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 3000);
+
+  renderAboutReviews();
+}
+
+function renderAboutReviews() {
+  const wrap = document.getElementById('about-reviews-wrap');
+  if (!wrap) return;
+
+  const reviews = JSON.parse(localStorage.getItem(getReviewKey()) || '[]');
+  if (reviews.length === 0) {
+    wrap.innerHTML = '<div class="review-empty">후기를 준비 중이에요 🙂</div>';
+    return;
+  }
+
+  const colors = ['#1F3864','#0D6E55','#5C3489','#BA7517','#0C5A8A'];
+  wrap.innerHTML = '<div class="review-grid">' + reviews.map((r, i) => `
+    <div class="review-card">
+      <div class="review-top">
+        <div class="review-avatar" style="background:${colors[i % colors.length]}">${r.name.slice(0,1)}</div>
+        <div class="review-meta">
+          <div class="review-name">${r.name}</div>
+          <div class="review-center">${r.center || ''} · ${r.date}</div>
+        </div>
+        <div class="review-stars">${'⭐'.repeat(r.star)}</div>
+      </div>
+      <div class="review-body">"${r.content}"</div>
+    </div>`).join('') + '</div>';
+}
+
+// 소개 탭 전환 시 후기 렌더링은 switchTab 내부에서 처리 (별도 오버라이드 없음)
+
+function clearQaChat() {
+  qaHistory = [];
+  const msgs = document.getElementById('qa-msgs');
+  msgs.innerHTML = `
+    <div class="qa-msg">
+      <div class="qa-avatar ai">AI</div>
+      <div class="qa-bubble ai">
+        대화가 초기화됐어요! 다시 질문해주세요.<br>
+        <span class="qa-tag">지표 원문 기준</span> 만 안내하며, AI의 판단이나 권유는 제공하지 않습니다.
+      </div>
+    </div>`;
 }
 
 function downloadEvalReport() {
@@ -6489,19 +7197,27 @@ function resetSub(type) {
   if (confirmedBox) confirmedBox.style.display = 'none';
   if (dlBtn) { dlBtn.style.opacity = '.4'; dlBtn.style.pointerEvents = 'none'; }
 
-  // 연동 파일 초기화 (월간만)
+  // 연동 파일 초기화 (월간만) - 분리된 어르신 목록은 유지
   if (type === 'monthly') {
     window.currentLinkedFile = null;
     window.currentLinkedName = null;
     window._monthlyHtml = null;
-    // 연동 박스 숨기기
-    const linkedBox = document.getElementById('linked-elder-box');
-    if (linkedBox) linkedBox.style.display = 'none';
-    // 칩 선택 해제
-    document.querySelectorAll('#linked-elder-list button').forEach(b => {
-      b.style.background = '#fff';
-      b.style.color = '#0D6E55';
-    });
+    // 연동 박스는 유지 (splitLinkedFiles가 있으면), 칩 선택만 해제
+    if (window.splitLinkedFiles && Object.keys(window.splitLinkedFiles).length > 0) {
+      document.querySelectorAll('#linked-elder-list button').forEach(b => {
+        b.style.background = '#fff';
+        b.style.color = '#0D6E55';
+      });
+      // 업로드존 상태도 연동 대기로 복원
+      const zone = document.getElementById('m-upload');
+      if (zone) { zone.classList.remove('has-file'); zone.style.borderColor = '#0D6E55'; zone.style.background = '#F0FBF7'; }
+      const fname = document.getElementById('m-fname');
+      if (fname) fname.style.display = 'none';
+    } else {
+      // 분리 파일 없으면 박스 숨김
+      const linkedBox = document.getElementById('linked-elder-box');
+      if (linkedBox) linkedBox.style.display = 'none';
+    }
   }
   if (type === 'periodic') {
     window._periodicHtml = null;
@@ -7172,20 +7888,30 @@ const DEMO_RESIDENTS = [
   }
 ];
 
-async function loadDemoResident() {
-  try { localStorage.removeItem(getDbKey()); } catch(e) {}
-  for (const r of DEMO_RESIDENTS) await saveResident(r);
-  renderOverview();
-  const btn = document.querySelector('[onclick="loadDemoResident()"]');
-  if (btn) {
-    btn.textContent = '✅ 데모 3명 불러옴';
-    btn.style.color = '#085041';
-    setTimeout(() => { btn.textContent = '+ 데모 불러오기'; btn.style.color = ''; }, 2500);
+let demoVisible = false;
+
+async function toggleDemoResident() {
+  const btn = document.getElementById('demo-toggle-btn');
+  if (!demoVisible) {
+    // 샘플 보기 — 데모 데이터 저장
+    for (const r of DEMO_RESIDENTS) await saveResident(r);
+    demoVisible = true;
+    if (btn) { btn.textContent = '✕ 샘플 닫기'; btn.style.color = '#E24B4A'; }
+  } else {
+    // 샘플 닫기 — 데모 데이터 삭제
+    const list = await loadAll();
+    const filtered = list.filter(r => !r.id.startsWith('demo-'));
+    localStorage.setItem(getDbKey(), JSON.stringify(filtered));
+    demoVisible = false;
+    if (btn) { btn.textContent = '👀 샘플 보기'; btn.style.color = ''; }
   }
+  renderOverview();
 }
 
 async function renderOverview() {
-  const list = await loadAll();
+  let list = await loadAll();
+  // 데모 버튼을 누르지 않은 경우 demo- 데이터 제외
+  if (!demoVisible) list = list.filter(r => !r.id.startsWith('demo-'));
   const resList = document.getElementById('resident-list');
   const noData = document.getElementById('no-data-msg');
   const content = document.getElementById('overview-content');
@@ -7216,19 +7942,35 @@ function renderResDetail(r) {
     if (r.eval.cist) evalHtml += '<div class="eval-card high"><div class="eval-lbl">CIST (인지)</div><div class="eval-score" style="color:#E24B4A">' + r.eval.cist.score + '</div><div class="badge b-danger" style="margin-top:4px">' + r.eval.cist.level + '</div></div>';
     evalGrid.innerHTML = evalHtml;
   } else {
-    evalGrid.innerHTML = '<div style="font-size:12px;color:#aaa;padding:8px">정기문서 생성 후 표시됩니다</div>';
+    const hasPDoc = getRecentDocHtml(r.name, 'periodic');
+    evalGrid.innerHTML = hasPDoc
+      ? `<div style="padding:4px 0">
+           <div style="font-size:11px;color:#888;margin-bottom:8px">정기문서에서 점수를 자동 추출하지 못했어요. 아래에서 직접 확인하세요.</div>
+           <button onclick="showDocModal('${r.name}','periodic')" style="font-size:11px;padding:6px 14px;border-radius:7px;border:1.5px solid #0D6E55;background:#F0FBF6;color:#0D6E55;cursor:pointer;font-family:inherit;font-weight:600">📄 정기문서 보기</button>
+         </div>`
+      : `<div style="font-size:12px;color:#aaa;padding:8px">정기문서 생성 후 자동으로 채워집니다</div>`;
   }
 
   // 월별 이력
   const hg = document.getElementById('history-grid');
   if (r.months && r.months.length > 0) {
-    hg.innerHTML = r.months.map((m, i) => `
+    hg.innerHTML = r.months.map((m, i) => {
+      const docBadges = (m.docs || []).map(d => {
+        const isM = d.includes('월간'), isP = d.includes('정기');
+        const clr = isM ? '#1F3864' : isP ? '#0D6E55' : '#5C3489';
+        const dt  = isM ? 'monthly' : isP ? 'periodic' : null;
+        return dt
+          ? `<span onclick="showDocModal('${r.name}','${dt}')" title="${d} 보기" style="display:inline-flex;align-items:center;gap:2px;font-size:9px;padding:2px 6px;border-radius:3px;background:${clr}18;color:${clr};border:1px solid ${clr}40;cursor:pointer;white-space:nowrap">${d} 📄</span>`
+          : `<span style="font-size:9px;padding:2px 5px;border-radius:3px;background:#F0F0F0;color:#888">${d}</span>`;
+      }).join('');
+      return `
       <div class="month-card ${i === r.months.length - 1 ? 'active-month' : ''}">
         <div class="mc-month">${m.month}</div>
         <div class="mc-days">이용 ${m.days || 0}일</div>
         <div class="mc-events">${(m.events || []).map(e => `<span class="edot" style="background:${e.type==='red'?'#E24B4A':e.type==='amber'?'#BA7517':'#1D9E75'}" title="${e.label}"></span>`).join('')}</div>
-        <div style="font-size:10px;color:#888;margin-top:3px">${m.docs ? m.docs.length + '건 문서' : '없음'}</div>
-      </div>`).join('');
+        <div style="display:flex;flex-direction:column;gap:2px;margin-top:3px">${docBadges || '<span style="font-size:10px;color:#ccc">-</span>'}</div>
+      </div>`;
+    }).join('');
   } else {
     hg.innerHTML = `<div style="font-size:12px;color:#aaa;padding:8px">월간 문서 생성 후 표시됩니다</div>`;
   }
@@ -7264,7 +8006,13 @@ function renderResDetail(r) {
       </div>` : ''}`;
   } else {
     s2Sum.textContent = '-';
-    s2Content.innerHTML = `<div style="font-size:12px;color:#aaa;padding:8px">정기문서(욕구사정) 생성 후 표시됩니다</div>`;
+    const hasPDoc2 = getRecentDocHtml(r.name, 'periodic');
+    s2Content.innerHTML = hasPDoc2
+      ? `<div style="padding:4px 0">
+           <div style="font-size:11px;color:#888;margin-bottom:8px">욕구사정 데이터를 자동 추출하지 못했어요. 아래에서 직접 확인하세요.</div>
+           <button onclick="showDocModal('${r.name}','periodic')" style="font-size:11px;padding:6px 14px;border-radius:7px;border:1.5px solid #0D6E55;background:#F0FBF6;color:#0D6E55;cursor:pointer;font-family:inherit;font-weight:600">📄 정기문서 보기</button>
+         </div>`
+      : `<div style="font-size:12px;color:#aaa;padding:8px">정기문서(욕구사정) 생성 후 자동으로 채워집니다</div>`;
   }
 
   // BPSD 현황
@@ -7397,7 +8145,13 @@ function renderRehabSection(r) {
 
   const rehab = r.rehab;
   if (!rehab || (!rehab.body && !rehab.basic && !rehab.adl)) {
-    el.innerHTML = '<div style="font-size:12px;color:#aaa;padding:8px">정기문서(급여제공계획서) 생성 후 어르신별 훈련 내용이 표시됩니다.</div>';
+    const hasPDoc3 = getRecentDocHtml(r.name, 'periodic');
+    el.innerHTML = hasPDoc3
+      ? `<div style="padding:4px 0">
+           <div style="font-size:11px;color:#888;margin-bottom:8px">기능회복훈련 데이터를 자동 추출하지 못했어요. 아래에서 직접 확인하세요.</div>
+           <button onclick="showDocModal('${r.name}','periodic')" style="font-size:11px;padding:6px 14px;border-radius:7px;border:1.5px solid #0D6E55;background:#F0FBF6;color:#0D6E55;cursor:pointer;font-family:inherit;font-weight:600">📄 정기문서(계획서) 보기</button>
+         </div>`
+      : `<div style="font-size:12px;color:#aaa;padding:8px">정기문서(급여제공계획서) 생성 후 어르신별 훈련 내용이 표시됩니다.</div>`;
     if (sum) sum.textContent = '미등록';
     return;
   }
