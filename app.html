@@ -409,6 +409,17 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .idx-row-head{display:flex;align-items:center;gap:8px;margin-bottom:5px}
 .idx-row-body{font-size:11px;color:#555;line-height:1.7;padding-left:4px}
 .fix-item{background:#FFF8E1;border-left:3px solid #FFB300;padding:5px 9px;border-radius:0 5px 5px 0;font-size:11px;margin-top:5px;color:#5D4037}
+
+/* 문서 스타일 슬라이더 */
+.style-slider-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.style-slider-label{font-size:11px;font-weight:500;color:#555;white-space:nowrap}
+.style-slider-track{display:flex;flex-direction:column;gap:2px;position:relative}
+.style-slider{-webkit-appearance:none;appearance:none;width:120px;height:4px;border-radius:2px;background:linear-gradient(to right,#A8C8F0,#4A90D9,#1F3864);outline:none;cursor:pointer}
+.style-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#1F3864;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.25)}
+.style-slider-labels{display:flex;justify-content:space-between;font-size:9px;color:#999;width:120px}
+.style-bubble{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1F3864;color:#fff;font-size:10px;line-height:1.6;padding:8px 11px;border-radius:10px;white-space:normal;width:200px;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;box-shadow:0 3px 12px rgba(0,0,0,0.22)}
+.style-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1F3864}
+.style-bubble.visible{opacity:1}
 </style>
 </head>
 <body>
@@ -683,7 +694,20 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 
       <!-- 문서 선택 -->
       <div class="card">
-        <div class="card-title"><div class="num">3</div> 생성할 문서</div>
+        <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:6px"><div class="num">3</div> 생성할 문서</div>
+          <div class="style-slider-wrap" id="styleSliderWrap_m">
+            <span class="style-slider-label">문서 스타일</span>
+            <div class="style-slider-track">
+              <div class="style-bubble" id="styleBubble_m"></div>
+              <input type="range" min="1" max="5" value="3" class="style-slider" id="styleSlider_m"
+                oninput="updateStyleSlider('m', this.value)">
+              <div class="style-slider-labels">
+                <span>간결</span><span>표준</span><span>상세</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="doc-grid">
           <div class="doc-item" onclick="toggleDoc(this,'m1')">
             <input type="checkbox" id="m1">
@@ -880,7 +904,20 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 
       <!-- 문서 선택 -->
       <div class="card">
-        <div class="card-title"><div class="num">3</div> 생성할 문서</div>
+        <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:6px"><div class="num">3</div> 생성할 문서</div>
+          <div class="style-slider-wrap" id="styleSliderWrap_p">
+            <span class="style-slider-label">문서 스타일</span>
+            <div class="style-slider-track">
+              <div class="style-bubble" id="styleBubble_p"></div>
+              <input type="range" min="1" max="5" value="3" class="style-slider" id="styleSlider_p"
+                oninput="updateStyleSlider('p', this.value)">
+              <div class="style-slider-labels">
+                <span>간결</span><span>표준</span><span>상세</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="doc-grid">
           <div class="doc-item" onclick="toggleDoc(this,'p1')">
             <input type="checkbox" id="p1">
@@ -5713,6 +5750,71 @@ function onAssessTypeChange() {
   document.getElementById('lbl-re').style.background   = val === 're'  ? '#EEF2FF' : '';
 }
 
+
+// ── 문서 스타일 슬라이더 ──────────────────────────────
+const STYLE_LEVEL = { m: 3, p: 3 };
+const STYLE_HIDE_TIMER = { m: null, p: null };
+
+const STYLE_EXAMPLES = {
+  1: "낙상 고위험. 이동 전 보조 필수.",
+  2: "낙상 이력 및 보행 불안정으로 이동 시 보조 필요. 낙상 예방 우선.",
+  3: "골절 수술 후 하체 근력 저하와 보행 불안정이 지속되며, 낙상 예방을 최우선 목표로 지원합니다.",
+  4: "골절 수술 후 하체 근력 저하와 보행 불안정이 이어지고 있으며, 낙상 이력(2026.02)이 확인됩니다. 기립성 저혈압 가능성을 고려하여 이동 시 전반적인 안전 보조를 제공합니다.",
+  5: "어르신은 2025년 하반기 양쪽 팔 골절 수술 이후 하체 근력 저하 및 보행 불안정이 지속되고 있으며, 2026년 2월 외부 낙상으로 안면부 타박상을 입은 이력이 있습니다. 혈압 변동폭이 넓어 기립성 저혈압 가능성이 있으므로 이동 전 과정에서 안전 보조를 일관되게 제공합니다."
+};
+
+const STYLE_LABELS = {
+  1: "1단계 · 간결 (메모 수준)",
+  2: "2단계 · 요약",
+  3: "3단계 · 표준 ★",
+  4: "4단계 · 상세",
+  5: "5단계 · 완전 상세 (공식 보고서)"
+};
+
+function updateStyleSlider(tab, val) {
+  STYLE_LEVEL[tab] = parseInt(val);
+  showStyleBubble(tab);
+  if (STYLE_HIDE_TIMER[tab]) clearTimeout(STYLE_HIDE_TIMER[tab]);
+  STYLE_HIDE_TIMER[tab] = setTimeout(() => hideStyleBubble(tab), 2000);
+}
+
+function showStyleBubble(tab) {
+  const bubble = document.getElementById('styleBubble_' + tab);
+  const val = STYLE_LEVEL[tab];
+  if (!bubble) return;
+  bubble.innerHTML = '<strong>' + STYLE_LABELS[val] + '</strong><br>' + STYLE_EXAMPLES[val];
+  bubble.classList.add('visible');
+}
+
+function hideStyleBubble(tab) {
+  const bubble = document.getElementById('styleBubble_' + tab);
+  if (!bubble) return;
+  bubble.classList.remove('visible');
+}
+
+function getStyleLevel(tab) {
+  return STYLE_LEVEL[tab] || 3;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  ['m','p'].forEach(function(tab) {
+    const slider = document.getElementById('styleSlider_' + tab);
+    if (!slider) return;
+    slider.addEventListener('mouseenter', function() {
+      if (STYLE_HIDE_TIMER[tab]) clearTimeout(STYLE_HIDE_TIMER[tab]);
+      showStyleBubble(tab);
+    });
+    slider.addEventListener('mouseleave', function() {
+      STYLE_HIDE_TIMER[tab] = setTimeout(() => hideStyleBubble(tab), 600);
+    });
+    slider.addEventListener('touchstart', function() { showStyleBubble(tab); }, {passive:true});
+    slider.addEventListener('touchend', function() {
+      STYLE_HIDE_TIMER[tab] = setTimeout(() => hideStyleBubble(tab), 2000);
+    });
+  });
+});
+// ────────────────────────────────────────────────────
+
 function toggleDoc(el, id) {
   const cb = document.getElementById(id);
   cb.checked = !cb.checked;
@@ -7347,7 +7449,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.13.69
+  Day:음 · v2026.06.14.01
 </div>
 </body>
 </html>
