@@ -3485,8 +3485,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <!-- AI 사용량 현황 (관리자 전용) -->
   <div class="card" id="usage-card" style="margin-top:8px;display:none">
     <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
-      <span>📊 AI 사용량 현황 <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 6px;border-radius:3px;margin-left:4px">관리자</span></span>
-      <button onclick="clearUsageLog()" style="font-size:11px;color:#aaa;background:none;border:1px solid #ddd;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">초기화</button>
+      <span>📊 AI 사용량 · 청구 현황 <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 6px;border-radius:3px;margin-left:4px">관리자</span></span>
+      <button onclick="clearUsageLog()" style="font-size:11px;color:#aaa;background:none;border:1px solid #ddd;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">삭제</button>
     </div>
     <!-- 관리자 코드 입력 -->
     <div id="admin-login-box">
@@ -3498,6 +3498,20 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
     <!-- 사용량 내역 -->
     <div id="usage-log-body-wrap" style="display:none">
+      <!-- 월 선택 + 청구서 출력 -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <select id="usage-month-sel" onchange="renderUsageLog()"
+          style="flex:1;padding:7px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:12px;font-family:inherit;color:#333">
+        </select>
+        <select id="usage-center-sel" onchange="renderUsageLog()"
+          style="flex:1;padding:7px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:12px;font-family:inherit;color:#333">
+          <option value="">전체 센터</option>
+          <option value="sapgyo">삽교</option>
+          <option value="center2">덕산</option>
+          <option value="center3">내포소망</option>
+        </select>
+        <button onclick="printBill()" style="padding:7px 12px;background:#1F3864;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">🧾 청구서 출력</button>
+      </div>
       <div id="usage-log-body"></div>
     </div>
   </div>
@@ -4757,107 +4771,140 @@ function openHistDoc(idx) {
   modal.scrollTop = 0;
 }
 
+// ── 요금제 상수 ──
+const PRICING = {
+  promo_until: '2026-12-31',
+  periodic: { regular: 3000, promo: 1000 },
+  monthly:  { regular: 600,  promo: 300  },
+};
+function getPrice(docType, isPromo) {
+  const p = PRICING[docType] || PRICING.monthly;
+  return isPromo ? p.promo : p.regular;
+}
+function isPromoActive() {
+  return new Date().toISOString().slice(0,10) <= PRICING.promo_until;
+}
+
 async function renderUsageLog() {
   const body = document.getElementById('usage-log-body');
   if (!body) return;
   body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>';
 
+  const monthSel  = document.getElementById('usage-month-sel');
+  const centerSel = document.getElementById('usage-center-sel');
+  const selCenter = centerSel?.value || '';
+
   let logs = [];
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/usage_logs?order=logged_at.desc&limit=500`,
+      `${SUPABASE_URL}/rest/v1/usage_logs?order=logged_at.desc&limit=1000`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
     );
     if (res.ok) logs = await res.json();
-  } catch(e) { /* 네트워크 오류 무시 */ }
+  } catch(e) {}
 
   if (!Array.isArray(logs) || logs.length === 0) {
     body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">아직 기록이 없어요.</div>';
+    if (monthSel && !monthSel.options.length) {
+      const m = new Date().toISOString().slice(0,7);
+      monthSel.innerHTML = `<option value="${m}">${m}</option>`;
+    }
     return;
   }
 
-  // 오늘 날짜 기준 필터
-  const today = new Date().toISOString().slice(0, 10);
-  const todayLogs = logs.filter(l => (l.logged_at || '').startsWith(today));
-  const totalLogs = logs;
+  // 월 목록 & 드롭다운
+  const months = [...new Set(logs.map(l => (l.logged_at||'').slice(0,7)))].sort().reverse();
+  if (monthSel) {
+    const cur = monthSel.value;
+    monthSel.innerHTML = months.map(m => `<option value="${m}"${m===cur?'selected':''}>${m}</option>`).join('');
+    if (!monthSel.value) monthSel.value = months[0];
+  }
+  const activeMonth = monthSel?.value || months[0];
+  const promo = isPromoActive();
 
-  const sumKRW   = (arr) => arr.reduce((s, l) => s + (l.cost_krw || 0), 0);
-  const sumInput  = (arr) => arr.reduce((s, l) => s + (l.input_tokens || 0), 0);
-  const sumOutput = (arr) => arr.reduce((s, l) => s + (l.output_tokens || 0), 0);
+  // 필터
+  const filtered = logs.filter(l =>
+    (l.logged_at||'').startsWith(activeMonth) &&
+    (!selCenter || l.center_code === selCenter)
+  );
 
-  // 센터별 집계 (전체)
+  // 과금 계산
+  function calcBill(arr) {
+    const periodicMap = {};
+    let monthlyCount = 0;
+    arr.forEach(l => {
+      if (l.doc_type === 'periodic') {
+        const key = `${l.center_code}_${(l.logged_at||'').slice(0,10)}`;
+        if (!periodicMap[key]) periodicMap[key] = { steps: 0 };
+        periodicMap[key].steps++;
+      } else { monthlyCount++; }
+    });
+    const periodicSets = Object.values(periodicMap).reduce((s,v) => s + Math.ceil(v.steps/4), 0);
+    const periodicAmt  = periodicSets * getPrice('periodic', promo);
+    const monthlyAmt   = monthlyCount * getPrice('monthly', promo);
+    return { periodicSets, periodicAmt, monthlyCount, monthlyAmt, total: periodicAmt + monthlyAmt };
+  }
+  const bill = calcBill(filtered);
+
+  // 센터별 집계
   const byCtr = {};
-  totalLogs.forEach(l => {
+  filtered.forEach(l => {
     const k = l.center_short || l.center_code || '?';
-    if (!byCtr[k]) byCtr[k] = { count: 0, costKRW: 0, code: l.center_code || '' };
-    byCtr[k].count++;
-    byCtr[k].costKRW += l.cost_krw || 0;
+    if (!byCtr[k]) byCtr[k] = { periodic:0, monthly:0, code:l.center_code };
+    if (l.doc_type === 'periodic') byCtr[k].periodic++;
+    else byCtr[k].monthly++;
   });
 
-  // 이달 집계 (현재 월)
-  const thisMonth = new Date().toISOString().slice(0, 7);
-  const monthLogs = logs.filter(l => (l.logged_at || '').startsWith(thisMonth));
+  const today = new Date().toISOString().slice(0,10);
+  const todayFiltered = filtered.filter(l => (l.logged_at||'').startsWith(today));
 
   body.innerHTML = `
-    <!-- 오늘 요약 -->
+    <div style="background:linear-gradient(135deg,#1F3864,#2d54a3);border-radius:10px;padding:14px 16px;margin-bottom:10px;color:#fff">
+      <div style="font-size:11px;font-weight:600;opacity:.8;margin-bottom:8px">
+        💰 ${activeMonth} 청구 예정${selCenter?' · '+(CENTERS[selCenter]?.short||selCenter):' · 전체'}
+        ${promo?'<span style="background:#F4D66C;color:#5D4037;border-radius:4px;padding:1px 6px;font-size:10px;margin-left:6px">프로모션</span>':''}
+      </div>
+      <div style="font-size:24px;font-weight:700;margin-bottom:8px">${bill.total.toLocaleString()}원</div>
+      <div style="display:flex;gap:10px;font-size:11px;opacity:.85;flex-wrap:wrap">
+        <span>정기 ${bill.periodicSets}세트 × ${getPrice('periodic',promo).toLocaleString()}원 = ${bill.periodicAmt.toLocaleString()}원</span>
+        <span>월간 ${bill.monthlyCount}건 × ${getPrice('monthly',promo).toLocaleString()}원 = ${bill.monthlyAmt.toLocaleString()}원</span>
+      </div>
+    </div>
     <div style="background:#EEF2FF;border-radius:8px;padding:10px 13px;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:600;color:#1F3864;margin-bottom:5px">📅 오늘 (${today})</div>
+      <div style="font-size:11px;font-weight:600;color:#1F3864;margin-bottom:4px">📅 오늘 (${today})</div>
       <div style="display:flex;gap:10px;font-size:12px;color:#333;flex-wrap:wrap">
-        <span>호출 <strong>${todayLogs.length}건</strong></span>
-        <span>입력 <strong>${sumInput(todayLogs).toLocaleString()}</strong> 토큰</span>
-        <span>출력 <strong>${sumOutput(todayLogs).toLocaleString()}</strong> 토큰</span>
-        <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(todayLogs).toLocaleString()}원</strong></span>
+        <span>호출 <strong>${todayFiltered.length}건</strong></span>
+        <span>API실비 <strong style="color:#E24B4A">≈ ${todayFiltered.reduce((s,l)=>s+(l.cost_krw||0),0).toLocaleString()}원</strong></span>
       </div>
     </div>
-    <!-- 이달 요약 -->
-    <div style="background:#FFF8E1;border-radius:8px;padding:10px 13px;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:600;color:#7A5C00;margin-bottom:5px">📆 이달 (${thisMonth})</div>
-      <div style="display:flex;gap:10px;font-size:12px;color:#333;flex-wrap:wrap">
-        <span>호출 <strong>${monthLogs.length}건</strong></span>
-        <span>입력 <strong>${sumInput(monthLogs).toLocaleString()}</strong> 토큰</span>
-        <span>출력 <strong>${sumOutput(monthLogs).toLocaleString()}</strong> 토큰</span>
-        <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(monthLogs).toLocaleString()}원</strong></span>
-      </div>
-    </div>
-    <!-- 전체 요약 -->
-    <div style="background:#F5F5F5;border-radius:8px;padding:10px 13px;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">📊 전체 누적 (${totalLogs.length}건)</div>
-      <div style="display:flex;gap:10px;font-size:12px;color:#333;flex-wrap:wrap">
-        <span>입력 <strong>${sumInput(totalLogs).toLocaleString()}</strong> 토큰</span>
-        <span>출력 <strong>${sumOutput(totalLogs).toLocaleString()}</strong> 토큰</span>
-        <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(totalLogs).toLocaleString()}원</strong></span>
-      </div>
-    </div>
-    <!-- 센터별 집계 -->
-    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">🏢 센터별 누적</div>
+    ${Object.keys(byCtr).length > 1 ? `
+    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">🏢 센터별 (${activeMonth})</div>
     <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">
-      ${Object.entries(byCtr).sort((a,b) => b[1].costKRW - a[1].costKRW).map(([ctr, d]) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;background:#fff;border:1px solid #eee;border-radius:6px;padding:6px 10px">
+      ${Object.entries(byCtr).map(([ctr,d]) => {
+        const sets = Math.ceil(d.periodic/4);
+        const amt  = sets*getPrice('periodic',promo) + d.monthly*getPrice('monthly',promo);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;background:#fff;border:1px solid #eee;border-radius:6px;padding:6px 10px">
           <span style="font-weight:600">${ctr}</span>
-          <span style="color:#777">${d.count}건</span>
-          <strong style="color:#E24B4A">≈ ${d.costKRW.toLocaleString()}원</strong>
-        </div>`).join('')}
-    </div>
-    <!-- 최근 15건 -->
-    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">최근 15건</div>
+          <span style="color:#777;font-size:11px">정기 ${sets}세트 · 월간 ${d.monthly}건</span>
+          <strong style="color:#1F3864">${amt.toLocaleString()}원</strong>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">최근 기록 (${activeMonth})</div>
     <div style="display:flex;flex-direction:column;gap:3px">
-      ${totalLogs.slice(0, 15).map(l => `
+      ${filtered.slice(0,20).map(l => `
         <div style="font-size:11px;color:#555;background:#fafafa;border:1px solid #eee;border-radius:5px;padding:5px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <span style="color:#aaa">${(l.logged_at || '').slice(0,16).replace('T',' ')}</span>
-          <span>${l.center_short || l.center_code || '?'} · ${l.doc_label || '?'}</span>
-          <span style="color:#E24B4A;white-space:nowrap">≈ ${(l.cost_krw||0).toLocaleString()}원</span>
+          <span style="color:#aaa">${(l.logged_at||'').slice(0,16).replace('T',' ')}</span>
+          <span>${l.center_short||l.center_code||'?'} · ${l.doc_label||'?'}</span>
+          <span style="color:#888;font-size:10px;background:#f0f0f0;padding:1px 5px;border-radius:3px">${l.doc_type==='periodic'?'정기':'월간'}</span>
         </div>`).join('')}
     </div>`;
 }
 
 async function clearUsageLog() {
-  const options = [
-    ...Object.entries(CENTERS).map(([code, cfg]) => `  ${cfg.short}(${code})`),
-    '  전체'
-  ].join('\n');
-  const choice = prompt(`삭제할 범위를 선택하세요:\n${options}\n\n센터코드 입력 (전체 삭제는 "all"):`, '');
+  const options = Object.entries(CENTERS).map(([code,cfg])=>`  ${cfg.short} → ${code}`).join('\n');
+  const choice = prompt(`삭제할 센터코드 입력\n${options}\n\n전체 삭제: all`, '');
   if (choice === null) return;
-
   let url;
   if (choice.trim() === 'all') {
     if (!confirm('전체 사용량 기록을 삭제할까요?')) return;
@@ -4869,17 +4916,129 @@ async function clearUsageLog() {
     alert('올바른 센터코드를 입력하세요 (sapgyo / center2 / center3 / all)');
     return;
   }
-
   try {
     const res = await fetch(url, {
-      method: 'DELETE',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      method:'DELETE',
+      headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` }
     });
     if (res.ok) { alert('삭제 완료'); renderUsageLog(); }
     else alert('삭제 실패: ' + res.status);
   } catch(e) { alert('오류: ' + e.message); }
 }
 
+async function printBill() {
+  const monthSel  = document.getElementById('usage-month-sel');
+  const centerSel = document.getElementById('usage-center-sel');
+  const activeMonth = monthSel?.value;
+  const selCenter   = centerSel?.value || '';
+  if (!activeMonth) return alert('월을 선택해주세요.');
+
+  let logs = [];
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/usage_logs?order=logged_at.desc&limit=1000`,
+      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
+    );
+    if (res.ok) logs = await res.json();
+  } catch(e) {}
+
+  const filtered = logs.filter(l =>
+    (l.logged_at||'').startsWith(activeMonth) &&
+    (!selCenter || l.center_code === selCenter)
+  );
+  const promo = isPromoActive();
+
+  const periodicMap = {};
+  let monthlyCount = 0;
+  filtered.forEach(l => {
+    if (l.doc_type === 'periodic') {
+      const key = `${l.center_code}_${(l.logged_at||'').slice(0,10)}`;
+      if (!periodicMap[key]) periodicMap[key] = { steps:0, date:(l.logged_at||'').slice(0,10), ctr:l.center_short||l.center_code };
+      periodicMap[key].steps++;
+    } else { monthlyCount++; }
+  });
+  const periodicSets = Object.values(periodicMap).reduce((s,v)=>s+Math.ceil(v.steps/4),0);
+  const periodicAmt  = periodicSets * getPrice('periodic', promo);
+  const monthlyAmt   = monthlyCount * getPrice('monthly', promo);
+  const totalAmt     = periodicAmt + monthlyAmt;
+  const apiCost      = filtered.reduce((s,l)=>s+(l.cost_krw||0),0);
+
+  const centerLabel = selCenter ? (CENTERS[selCenter]?.name||selCenter) : '전체 센터';
+  const issueDate   = new Date().toLocaleDateString('ko-KR');
+  const [yr, mo]    = activeMonth.split('-');
+
+  const billHtml = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Day:음 이용요금 청구서 ${activeMonth}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px}
+.page{background:#fff;max-width:680px;margin:0 auto;padding:44px 52px 52px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
+.logo{font-size:18pt;font-weight:700;color:#1F3864;letter-spacing:2px;margin-bottom:2px}
+.logo-sub{font-size:9pt;color:#888;margin-bottom:28px}
+.bill-title{font-size:16pt;font-weight:700;letter-spacing:4px;text-align:center;color:#1F3864;border-bottom:2.5px solid #1F3864;padding-bottom:10px;margin-bottom:22px}
+.meta-tbl{width:100%;border-collapse:collapse;margin-bottom:26px;font-size:10pt}
+.meta-tbl th{background:#EEF2FF;border:1px solid #C5CAE9;padding:7px 12px;text-align:left;font-weight:600;color:#1F3864;width:90px}
+.meta-tbl td{border:1px solid #C5CAE9;padding:7px 12px}
+.sec-title{font-size:10.5pt;font-weight:700;color:#1F3864;margin-bottom:8px;padding-left:6px;border-left:3px solid #1F3864}
+.item-tbl{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:10pt}
+.item-tbl th{background:#1F3864;color:#fff;padding:8px 12px;text-align:center;font-weight:600}
+.item-tbl td{border:1px solid #ddd;padding:8px 12px;text-align:center}
+.item-tbl tr:nth-child(even) td{background:#F8F9FF}
+.total-box{background:#EEF2FF;border:2px solid #1F3864;border-radius:8px;padding:16px 22px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.total-label{font-size:12pt;font-weight:700;color:#1F3864}
+.total-amt{font-size:20pt;font-weight:700;color:#1F3864}
+.note-box{background:#FFFBF0;border:1px solid #F4D66C;border-radius:6px;padding:12px 16px;font-size:9.5pt;color:#7A5C00;line-height:1.9}
+.footer{margin-top:32px;padding-top:14px;border-top:1px solid #eee;font-size:9pt;color:#aaa;text-align:center;line-height:1.9}
+@media print{body{background:#fff;padding:0}.page{box-shadow:none;padding:32px 40px}}
+</style></head><body><div class="page">
+  <div class="logo">Day:음</div>
+  <div class="logo-sub">하루의 기록이 문서를 만듭니다.</div>
+  <div class="bill-title">이 용 요 금 청 구 서</div>
+  <table class="meta-tbl">
+    <tr><th>청구 대상</th><td>${centerLabel}</td><th>청구 기간</th><td>${yr}년 ${mo}월</td></tr>
+    <tr><th>발행일</th><td>${issueDate}</td><th>적용 요금</th><td>${promo?'프로모션가 (∼2026.12.31)':'정가'}</td></tr>
+  </table>
+  <div class="sec-title" style="margin-bottom:10px">이용 내역</div>
+  <table class="item-tbl">
+    <thead><tr><th>구분</th><th>단가</th><th>수량</th><th>금액</th></tr></thead>
+    <tbody>
+      <tr>
+        <td style="text-align:left">정기문서 세트<br><span style="font-size:9pt;color:#888">기초평가 + 욕구사정 + 결과평가 + 계획서</span></td>
+        <td>${getPrice('periodic',promo).toLocaleString()}원</td>
+        <td>${periodicSets}세트</td>
+        <td><strong>${periodicAmt.toLocaleString()}원</strong></td>
+      </tr>
+      <tr>
+        <td style="text-align:left">월간문서<br><span style="font-size:9pt;color:#888">상담일지, 보호자 상담일지 등</span></td>
+        <td>${getPrice('monthly',promo).toLocaleString()}원</td>
+        <td>${monthlyCount}건</td>
+        <td><strong>${monthlyAmt.toLocaleString()}원</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="total-box">
+    <span class="total-label">청구 합계</span>
+    <span class="total-amt">${totalAmt.toLocaleString()} 원</span>
+  </div>
+  <div class="note-box">
+    ${promo?'※ 시범운영 프로모션 요금 적용 중 (정가: 정기 3,000원 / 월간 600원)<br>':''}
+    ※ 프로모션 기간: 2026년 12월 31일까지<br>
+    ※ API 실비 참고: 약 ${apiCost.toLocaleString()}원<br>
+    ※ 문의: Day:음 관리자
+  </div>
+  <div class="footer">
+    Day:음 · 삽교주간보호센터 운영<br>
+    저작권 등록 완료 (한국저작권위원회 cros.or.kr)<br>
+    본 청구서는 Day:음 시스템에서 자동 생성되었습니다.
+  </div>
+</div></body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(billHtml);
+  w.document.close();
+  setTimeout(() => w.print(), 800);
+}
 
 // ────── 가이드 탭 서브탭 ──────
 function switchGuideTab(tab) {
@@ -5082,6 +5241,7 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
           center_name: cfg.name || centerCode,
           center_short: cfg.short || centerCode,
           doc_label: log.doc,
+          doc_type: (['월간문서','상담일지','보호자 상담일지','사례관리 회의록','월간 현황 요약','프로그램업무수행일지'].includes(log.doc)) ? 'monthly' : 'periodic',
           input_tokens: log.input,
           output_tokens: log.output,
           cost_krw: log.costKRW,
@@ -8582,7 +8742,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.02
+  Day:음 · v2026.06.15.03
 </div>
 </body>
 </html>
