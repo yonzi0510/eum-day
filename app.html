@@ -1814,7 +1814,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         </div>
         <div class="survey-pgm-row">
           <span class="survey-pgm-label">센터명</span>
-          <input class="survey-pgm-input" id="food-survey-center" placeholder="예) 데이음주간보호센터" value="데이음주간보호센터">
+          <input class="survey-pgm-input" id="food-survey-center" placeholder="예) Day:음" value="Day:음">
         </div>
       </div>
       <div style="background:#FFF8E1;border:1px solid #FFD700;border-radius:8px;padding:10px 13px;font-size:11px;color:#5D4037;margin-bottom:10px;line-height:1.7">
@@ -1961,7 +1961,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
           </div>
           <div id="report-place-wrap">
             <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px">장소</div>
-            <input type="text" id="report-place" placeholder="예) 데이음주간보호센터 프로그램실" style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;color:#333;box-sizing:border-box">
+            <input type="text" id="report-place" placeholder="예) Day:음 프로그램실" style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;color:#333;box-sizing:border-box">
           </div>
         </div>
 
@@ -3571,7 +3571,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
       </div>
       <div>
         <div style="font-size:12px;font-weight:600;color:#444;margin-bottom:5px">소속 센터</div>
-        <input class="review-input" id="review-center" type="text" placeholder="예) 데이음주간보호센터">
+        <input class="review-input" id="review-center" type="text" placeholder="예) Day:음">
       </div>
     </div>
 
@@ -4377,7 +4377,7 @@ function printProgramSurvey() {
 // ── 설문지 출력: 식사 ──
 function printFoodSurvey() {
   const period = document.getElementById('food-survey-period').value || '2026년 상반기';
-  const center = document.getElementById('food-survey-center').value || '데이음주간보호센터';
+  const center = document.getElementById('food-survey-center').value || 'Day:음';
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>식사 만족도 설문지</title>
 <style>
@@ -5267,7 +5267,7 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;colo
     ※ 문의: Day:음 관리자
   </div>
   <div class="footer">
-    Day:음 · 데이음주간보호센터 운영<br>
+    Day:음 · Day:음 운영<br>
     저작권 등록 완료 (한국저작권위원회 cros.or.kr)<br>
     본 청구서는 Day:음 시스템에서 자동 생성되었습니다.
   </div>
@@ -5351,7 +5351,7 @@ body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic',sans-serif;font-
   </div>
   <!-- 헤더 -->
   <div class="doc-header">
-    <div class="agency-name">데이음주간보호센터</div>
+    <div class="agency-name">Day:음</div>
     <div class="doc-title">재난·화재 대응훈련 결과보고서</div>
     <div class="doc-subtitle">2026년 상반기 소방훈련</div>
   </div>
@@ -5370,7 +5370,7 @@ body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic',sans-serif;font-
     </tr>
     <tr>
       <th>훈련장소</th>
-      <td colspan="3">데이음주간보호센터 전체 (프로그램실, 식당, 복도 → 외부 대피장소: 주차장)</td>
+      <td colspan="3">Day:음 전체 (프로그램실, 식당, 복도 → 외부 대피장소: 주차장)</td>
     </tr>
     <tr>
       <th>참가 인원</th>
@@ -5569,7 +5569,7 @@ body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic',sans-serif;font-
       </div>
     </div>
     <div style="text-align:right;font-size:9.5pt;color:#888;margin-top:12px">
-      작성일: 2026년 6월 10일 &nbsp;|&nbsp; 데이음주간보호센터
+      작성일: 2026년 6월 10일 &nbsp;|&nbsp; Day:음
     </div>
   </div>
 
@@ -5737,7 +5737,7 @@ async function startReportGenerate() {
 
   const cfg = REPORT_CONFIG[type];
   const title       = document.getElementById('report-title').value || cfg.defaultTitle;
-  const place       = document.getElementById('report-place').value.trim() || '데이음주간보호센터';
+  const place       = document.getElementById('report-place').value.trim() || 'Day:음';
   const instructor  = document.getElementById('report-instructor').value.trim();
   const method      = document.querySelector('input[name="report-method"]:checked')?.value || '';
   const detail      = document.getElementById('report-detail').value.trim();
@@ -6901,7 +6901,7 @@ M10(기능회복훈련): T50→M10L50_1, T51→M10L50_2, T52→M10L50_3, T53→M
 **③ 보호자 안내 카카오톡 문구**
 아래 형식으로 작성 (주요 항목은 해당 어르신 계획서 내용에 맞게 구체적으로 기재):
 ---
-안녕하세요, 데이음주간보호센터입니다.
+안녕하세요, Day:음입니다.
 [수급자명] 어르신의 급여제공계획서를 카카오톡으로 전송해 드렸습니다.
 계획서에는 신체활동지원([주요 항목 2~3개]), 인지관리지원([주요 항목 1~2개]),
 건강관리([주요 항목 1~2개]), 기능회복훈련([주요 항목 1~2개]) 항목이 포함되어 있습니다.
@@ -9965,7 +9965,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.32
+  Day:음 · v2026.06.15.33
 </div>
 </body>
 </html>
