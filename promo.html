@@ -36,6 +36,12 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;background:#F5F6FA;co
 .doc-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600;background:#EEF2FF;color:#1F3864;margin-top:5px;display:inline-block}
 .doc-arrow{font-size:16px;color:#C5CAE9;flex-shrink:0;transition:all .2s}
 .doc-card:hover .doc-arrow{color:#1F3864;transform:translateX(3px)}
+.doc-group-label{font-size:10.5px;font-weight:700;color:#fff;padding:4px 10px;border-radius:4px;margin:10px 0 6px;display:inline-block;letter-spacing:.5px}
+.gl-urgent{background:#BA7517}
+.gl-monthly{background:#1F3864}
+.gl-quarterly{background:#0C5A8A}
+.gl-semi{background:#0D6E55}
+.gl-report{background:#5C3489}
 
 /* 미리보기 영역 */
 .preview-wrap{display:none;margin-bottom:40px}
@@ -56,6 +62,19 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;background:#F5F6FA;co
 
 /* 문서 내용 (샘플) */
 .sample-doc{font-family:'맑은 고딕','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;color:#111;padding:28px;line-height:1.8}
+
+/* 2컬럼 레이아웃 */
+.promo-layout{display:flex;gap:20px;align-items:flex-start;margin-bottom:40px}
+.doc-list-col{width:280px;flex-shrink:0;position:sticky;top:20px}
+.preview-col{flex:1;min-width:0}
+.section-title{font-size:17px;font-weight:700;color:#1F3864;margin-bottom:6px}
+.section-sub{font-size:12.5px;color:#888;margin-bottom:16px;line-height:1.7}
+
+/* 모바일 */
+@media(max-width:680px){
+  .promo-layout{flex-direction:column}
+  .doc-list-col{width:100%;position:static}
+}
 </style>
 </head>
 <body>
@@ -73,53 +92,94 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;background:#F5F6FA;co
 
 <div class="main">
 
-  <div class="section-title">📄 문서 종류 선택</div>
-  <p class="section-sub">원하시는 문서를 클릭하면 샘플을 바로 확인하실 수 있어요.</p>
+  <div class="promo-layout">
+  <!-- 좌측: 문서 목록 -->
+  <div class="doc-list-col">
+    <div class="section-title">📄 문서 종류 선택</div>
+    <p class="section-sub">문서를 클릭하면<br>오른쪽에서 바로 확인하실 수 있어요.</p>
+    <div class="doc-grid">
 
-  <div class="doc-grid">
-
-    <div class="doc-card" onclick="showSample('consult')">
-      <div class="doc-icon">📝</div>
-      <div class="doc-info">
-        <div class="doc-name">분기별 상담일지</div>
-        <div class="doc-desc">어르신과의 면담 내용을 SOAP 형식으로 자동 작성<br>급여제공반영 포함 · 보호자 상담일지 자동 추가</div>
-        <span class="doc-badge">월간문서</span>
-      </div>
-      <div class="doc-arrow">›</div>
-    </div>
-
-    <div class="doc-card" onclick="showSample('needs')">
-      <div class="doc-icon">📋</div>
-      <div class="doc-info">
-        <div class="doc-name">욕구사정 평가지</div>
-        <div class="doc-desc">10개 영역 전체 자동 작성 · 낙상·욕창 평가 포함<br>2026 지표20 구강상태·기피식품 신설 반영</div>
-        <span class="doc-badge">정기문서</span>
-      </div>
-      <div class="doc-arrow">›</div>
-    </div>
-
-    <div class="doc-card" onclick="showSample('result')">
-      <div class="doc-icon">📊</div>
-      <div class="doc-info">
-        <div class="doc-name">급여제공결과평가</div>
-        <div class="doc-desc">이전 계획서 대비 상태 변화 자동 판단<br>재작성 필요 여부 · 총평 자동 작성</div>
-        <span class="doc-badge">정기문서</span>
-      </div>
-      <div class="doc-arrow">›</div>
-    </div>
-
+    <!-- 수시문서 -->
+    <div class="doc-group-label gl-urgent">🔔 수시문서</div>
     <div class="doc-card" onclick="showSample('linkage')">
       <div class="doc-icon">🔗</div>
       <div class="doc-info">
         <div class="doc-name">퇴소 연계기록지</div>
         <div class="doc-desc">이용 기간 전체 서비스 내용 자동 정리<br>심신기능상태 · 퇴소 후 계획 포함</div>
-        <span class="doc-badge">수시문서</span>
+        <span class="doc-badge" style="background:#FAEEDA;color:#633806">수시문서</span>
       </div>
       <div class="doc-arrow">›</div>
     </div>
 
-    <div class="doc-card" onclick="showSample('report')">
+    <!-- 월간문서 -->
+    <div class="doc-group-label gl-monthly">📅 월간문서</div>
+    <div class="doc-card" onclick="showSample('consult')">
+      <div class="doc-icon">📝</div>
+      <div class="doc-info">
+        <div class="doc-name">분기별 상담일지</div>
+        <div class="doc-desc">어르신 면담 내용을 SOAP 형식으로 자동 작성<br>보호자 상담일지 포함 · 급여제공반영 포함</div>
+        <span class="doc-badge">월간문서</span>
+      </div>
+      <div class="doc-arrow">›</div>
+    </div>
+
+    <!-- 분기문서 -->
+    <div class="doc-group-label gl-quarterly">📋 분기문서</div>
+    <div class="doc-card" onclick="showSample('needs')">
       <div class="doc-icon">📋</div>
+      <div class="doc-info">
+        <div class="doc-name">욕구사정 평가지</div>
+        <div class="doc-desc">10개 영역 전체 자동 작성<br>2026 지표20 구강상태·기피식품 신설 반영</div>
+        <span class="doc-badge" style="background:#E8F4FD;color:#0C5A8A">연간 1회 (분기 추천)</span>
+      </div>
+      <div class="doc-arrow">›</div>
+    </div>
+    <div class="doc-card" onclick="showSample('fall')">
+      <div class="doc-icon">🩺</div>
+      <div class="doc-info">
+        <div class="doc-name">낙상·욕창위험도 평가</div>
+        <div class="doc-desc">Huhn Scale · Braden Scale 기반 자동 평가<br>항목별 점수 · 위험 수준 · 판단근거 포함</div>
+        <span class="doc-badge" style="background:#E8F4FD;color:#0C5A8A">분기문서</span>
+      </div>
+      <div class="doc-arrow">›</div>
+    </div>
+
+    <!-- 반기문서 -->
+    <div class="doc-group-label gl-semi">📊 반기문서</div>
+    <div class="doc-card" onclick="showSample('case')">
+      <div class="doc-icon">👥</div>
+      <div class="doc-info">
+        <div class="doc-name">사례관리 회의록</div>
+        <div class="doc-desc">BPSD·건강 이상 등 선정 기준 해당 시 자동 작성<br>직종별 발언 · 계획 · 30일 이내 급여반영 기록 포함</div>
+        <span class="doc-badge" style="background:#E1F5EE;color:#085041">반기문서</span>
+      </div>
+      <div class="doc-arrow">›</div>
+    </div>
+    <div class="doc-card" onclick="showSample('result')">
+      <div class="doc-icon">📊</div>
+      <div class="doc-info">
+        <div class="doc-name">급여제공결과평가</div>
+        <div class="doc-desc">이전 계획서 대비 상태 변화 자동 판단<br>재작성 필요 여부 · 총평 자동 작성</div>
+        <span class="doc-badge" style="background:#E1F5EE;color:#085041">반기문서</span>
+      </div>
+      <div class="doc-arrow">›</div>
+    </div>
+    <!-- 연간문서 -->
+    <div class="doc-group-label" style="background:#6A0DAD">📆 연간문서</div>
+    <div class="doc-card" onclick="showSample('plan')">
+      <div class="doc-icon">📄</div>
+      <div class="doc-info">
+        <div class="doc-name">급여제공계획서</div>
+        <div class="doc-desc">전 영역 + 기능회복훈련 자동 작성<br>공단 업로드용 엑셀 자동 출력 · 지표 22·27 반영</div>
+        <span class="doc-badge" style="background:#FCE8FF;color:#6A0DAD">연간문서</span>
+      </div>
+      <div class="doc-arrow">›</div>
+    </div>
+
+    <!-- 보고서 -->
+    <div class="doc-group-label gl-report">📋 보고서</div>
+    <div class="doc-card" onclick="showSample('report')">
+      <div class="doc-icon">🔥</div>
       <div class="doc-info">
         <div class="doc-name">결과보고서 (소방훈련)</div>
         <div class="doc-desc">재난·화재 대응훈련 결과보고서 자동 작성<br>평가지표 23호 기준 · 결재란 포함</div>
@@ -128,59 +188,34 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;background:#F5F6FA;co
       <div class="doc-arrow">›</div>
     </div>
 
-    <div class="doc-card" onclick="showSample('case')">
-      <div class="doc-icon">👥</div>
-      <div class="doc-info">
-        <div class="doc-name">사례관리 회의록</div>
-        <div class="doc-desc">BPSD·건강 이상 등 선정 기준 해당 시 자동 작성<br>직종별 발언 · 사례관리 계획 포함</div>
-        <span class="doc-badge">월간문서</span>
+    </div>
+  </div><!-- /doc-list-col -->
+
+  <!-- 우측: 미리보기 -->
+  <div class="preview-col">
+    <div class="section-title">🔍 문서 미리보기</div>
+    <p class="section-sub">좌측에서 문서를 선택하면 여기서 확인하실 수 있어요.</p>
+
+    <!-- 기본 안내 -->
+    <div id="preview-placeholder" style="border:2px dashed #C5CAE9;border-radius:14px;padding:60px 20px;text-align:center;color:#aaa">
+      <div style="font-size:40px;margin-bottom:12px">👈</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px;color:#888">문서를 선택해주세요</div>
+      <div style="font-size:12px;line-height:1.8">좌측에서 확인하고 싶은 문서를<br>클릭하면 샘플이 표시됩니다</div>
+    </div>
+
+    <div class="preview-wrap" id="preview-wrap" style="margin-bottom:0">
+      <div class="preview-header">
+        <span>📄</span>
+        <span class="preview-title" id="preview-title">샘플 문서</span>
+        <button class="preview-close" onclick="closeSample()">✕ 닫기</button>
       </div>
-      <div class="doc-arrow">›</div>
-    </div>
-
-    <div class="doc-card" onclick="showSample('guardian')">
-      <div class="doc-icon">📞</div>
-      <div class="doc-info">
-        <div class="doc-name">보호자 상담일지</div>
-        <div class="doc-desc">건강 이상·가정 환경 확인 필요 시 자동 추가<br>SOAP 형식 · 급여제공반영 포함</div>
-        <span class="doc-badge">월간문서</span>
+      <div class="preview-body">
+        <iframe class="preview-iframe" id="preview-iframe" style="height:700px"></iframe>
       </div>
-      <div class="doc-arrow">›</div>
     </div>
+  </div><!-- /preview-col -->
 
-    <div class="doc-card" onclick="showSample('fall')">
-      <div class="doc-icon">🩺</div>
-      <div class="doc-info">
-        <div class="doc-name">낙상·욕창위험도 평가</div>
-        <div class="doc-desc">Huhn Scale · Braden Scale 기반 자동 평가<br>항목별 점수 · 위험 수준 · 판단근거 포함</div>
-        <span class="doc-badge">정기문서</span>
-      </div>
-      <div class="doc-arrow">›</div>
-    </div>
-
-    <div class="doc-card" onclick="showSample('plan')">
-      <div class="doc-icon">📄</div>
-      <div class="doc-info">
-        <div class="doc-name">급여제공계획서</div>
-        <div class="doc-desc">전 영역 + 기능회복훈련 자동 작성<br>공단 업로드용 엑셀 자동 출력 · 지표 22·27 반영</div>
-        <span class="doc-badge">정기문서</span>
-      </div>
-      <div class="doc-arrow">›</div>
-    </div>
-
-  </div>
-
-  <!-- 샘플 미리보기 -->
-  <div class="preview-wrap" id="preview-wrap">
-    <div class="preview-header">
-      <span>📄</span>
-      <span class="preview-title" id="preview-title">샘플 문서</span>
-      <button class="preview-close" onclick="closeSample()">✕ 닫기</button>
-    </div>
-    <div class="preview-body">
-      <iframe class="preview-iframe" id="preview-iframe"></iframe>
-    </div>
-  </div>
+  </div><!-- /promo-layout -->
 
   <!-- CTA -->
   <div class="cta-box">
@@ -370,86 +405,422 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:13px;backgr
   </div>
 </div>
 
+
+<div style="height:2px;background:#1e5c28;margin:32px 0 24px"></div>
+
+<div class="doc-title" style="color:#1e5c28;border-top-color:#1e5c28">보호자 상담일지 <span>2026년 2분기</span></div>
+
+<div class="session-card" style="border-color:#8abf92">
+  <div class="session-header" style="background:#1e5c28">
+    <span class="session-num">1회</span>
+    <span class="session-title">복약 거부 지속 및 정서 불안정 보호자 공유 상담</span>
+    <span class="session-date">2026.05.22 (금)</span>
+  </div>
+  <table class="meta-table">
+    <tr><th style="background:#e8f4ea;color:#1e5c28">상담일시</th><td colspan="3">2026년 5월 22일(금) 오후 15:00 ~ 15:20</td></tr>
+    <tr><th style="background:#e8f4ea;color:#1e5c28">상담구분</th><td>보호자 상담</td><th style="background:#e8f4ea;color:#1e5c28">상담대상</th><td>보호자 (자녀 박○철)</td></tr>
+    <tr><th style="background:#e8f4ea;color:#1e5c28">상담형태</th><td>전화</td><th style="background:#e8f4ea;color:#1e5c28">상담자 성명</th><td>김○지</td></tr>
+  </table>
+  <div class="soap-box">
+    <span class="soap-label" style="border-left-color:#1e5c28;color:#1e5c28">S　상담 계기</span>
+    <div class="soap-text">3개월째 관절약 복용을 거부하고 계신 어르신의 상태와 최근 정서 불안정 심화 상황을 보호자에게 공유하고 가정 내 상황을 확인하기 위해 유선 상담을 실시하였음.</div>
+  </div>
+  <div class="soap-box">
+    <span class="soap-label" style="border-left-color:#1e5c28;color:#1e5c28">O　상담 내용</span>
+    <div class="soap-text"><ul>
+      <li>"어머니가 집에서도 약 먹기 싫다고 자주 말씀하신다"며 복약 거부 상황을 이미 인지하고 있었음.</li>
+      <li>"요즘 자식들끼리 사이가 안 좋아서 어머니가 눈치를 많이 보시는 것 같다"고 가정 내 상황을 공유하였음.</li>
+      <li>주치의 재방문을 통해 약물 조정 여부를 상담해보겠다고 하였음.</li>
+    </ul></div>
+  </div>
+  <div class="soap-box">
+    <span class="soap-label" style="border-left-color:#1e5c28;color:#1e5c28">A　상담자 판단</span>
+    <div class="soap-text">가정 내 갈등이 어르신의 정서적 불안정에 주된 영향을 미치고 있음이 확인되었음. 보호자의 협조 의지가 있어 주치의 연계 및 정서 지지 강화 방향으로 협의가 가능할 것으로 보임.</div>
+  </div>
+  <div class="soap-box" style="border-bottom:none">
+    <span class="soap-label" style="border-left-color:#1e5c28;color:#1e5c28">P　조치 및 계획</span>
+    <div class="soap-text"><ul>
+      <li>주치의 재방문 시 복약 관련 상담 요청을 보호자에게 안내하였음.</li>
+      <li>다음 달 보호자와 재상담을 통해 상태 변화를 확인할 예정임.</li>
+    </ul></div>
+  </div>
+  <div class="action-box" style="background:#e8f4ea">
+    <div class="action-title" style="color:#1e5c28">조치내용</div>
+    <div class="action-item"><span class="action-arrow" style="color:#1e5c28">▶</span><span>보호자에게 복약 거부 상황 및 정서 불안정 현황을 공유하고 주치의 상담 연계를 권고하였음.<span class="action-date" style="background:#1e5c28">2026.05.22</span></span></div>
+    <div class="action-item"><span class="action-arrow" style="color:#1e5c28">▶</span><span>향후 정기적으로 연락하여 가정 상황 변화 및 어르신 상태를 지속 모니터링할 예정임.</span></div>
+  </div>
+  <div class="benefit-box" style="background:#f0f8f4">
+    <div class="benefit-title" style="color:#1e5c28">[ 급여제공반영 ]</div>
+    <div class="benefit-row"><span class="benefit-key">반영일</span><span>2026.05.22</span></div>
+    <div class="benefit-row"><span class="benefit-key">급여구분</span><span>상담관리</span></div>
+    <div class="benefit-row"><span class="benefit-key">반영사유</span><span>복약 거부 지속 및 정서 불안정 관련 보호자 상담 실시 후 급여에 반영하였음.</span></div>
+  </div>
+</div>
+
 </div></body></html>`
   },
 
   needs: {
     title: '욕구사정 평가지 — 샘플',
-    html: `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    html: `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:13px;background:#d8dce4;padding:28px 16px;line-height:1.75;color:#1a1a1a}
-.page{background:#fff;max-width:880px;margin:0 auto;padding:38px 50px 44px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
-.doc-title-main{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1a3a6e;padding-bottom:10px;border-bottom:2.5px solid #1a3a6e;margin-bottom:6px}
-.doc-title-sub{text-align:center;font-size:9.5pt;color:#555;margin-bottom:18px;letter-spacing:1px}
-.info-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10pt}
-.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e}
-.info-tbl td{border:1px solid #9aaecc;padding:5px 10px}
-.sec-title{background:#1a1a1a;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:24px;letter-spacing:.5px}
-.sec-body{border:1px solid #ddd;border-top:none;padding:14px 18px 16px;font-size:10.5pt;line-height:1.95}
-.sel{color:#000;font-weight:bold}
-.unsel{color:#999}
-.judge-box{background:#f5f5f5;border-left:4px solid #888;padding:10px 14px;margin-top:10px;font-size:10pt;line-height:1.85;border-radius:0 6px 6px 0}
-.summary-box{background:#fffbe6;border:1px solid #e0c840;padding:14px 18px;margin-top:10px;border-radius:4px;line-height:1.95;font-size:10.5pt}
-</style></head><body><div class="page">
+body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10pt;background:#d8dce4;padding:24px 16px;color:#1a1a1a;line-height:1.75}
+.page{background:#fff;max-width:900px;margin:0 auto;padding:36px 48px 48px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
+.doc-title{text-align:center;font-size:17pt;font-weight:700;letter-spacing:4px;color:#1a3a6e;border-bottom:2.5px solid #1a3a6e;padding-bottom:10px;margin-bottom:4px}
+.center-name{text-align:right;font-size:10pt;font-weight:700;color:#1a3a6e;margin-bottom:14px}
+.info-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:9.5pt}
+.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 8px;text-align:center;font-weight:700;color:#1a3a6e;white-space:nowrap}
+.info-tbl td{border:1px solid #9aaecc;padding:5px 8px}
+.sec-num{font-size:12pt;font-weight:700;color:#1a1a1a;margin:22px 0 6px;letter-spacing:.5px}
+.needs-tbl{width:100%;border-collapse:collapse;margin-bottom:4px;font-size:9.5pt}
+.needs-tbl th{border:1px solid #9aaecc;padding:6px 10px;text-align:center;font-weight:700;background:#dce6f5;color:#1a3a6e;white-space:nowrap}
+.needs-tbl td{border:1px solid #9aaecc;padding:6px 10px;vertical-align:top;line-height:1.8}
+.sub-label{background:#eef2fb;font-weight:700;text-align:center;color:#1a3a6e;width:70px;vertical-align:middle;font-size:9pt}
+.row-label{font-weight:700;color:#333;white-space:nowrap;min-width:80px;display:inline-block;font-size:9pt}
+.sel{font-weight:700;color:#000}
+.unsel{color:#aaa}
+.chk{font-weight:700;color:#000}
+.unchk{color:#aaa}
+.judge-row td{background:#fafafa;line-height:1.9;font-size:9.5pt;padding:10px 14px}
+.judge-label{font-weight:700;color:#1a3a6e;text-align:center;background:#eef2fb;width:70px}
+.summary-box{background:#fffbe6;border:1.5px solid #e0c840;border-radius:4px;padding:14px 18px;font-size:9.5pt;line-height:1.95;margin-top:4px}
+.item-row{margin-bottom:5px}
+</style>
+</head>
+<body>
+<div class="page">
 
-<div class="doc-title-main">욕 구 사 정 평 가 지</div>
-<div class="doc-title-sub">데이음주간보호센터 · 2026년도</div>
+<div class="doc-title">욕 구 사 정 평 가 지</div>
+<div class="center-name">데이음주간보호센터</div>
 
 <table class="info-tbl">
   <tr>
     <th>수급자</th><td>이○수</td>
     <th>생년월일(성별)</th><td>1945.07.03 (남)</td>
     <th>본인부담률</th><td>일반 15%</td>
-    <th>인정번호</th><td>L2512161663</td>
   </tr>
   <tr>
-    <th>등급</th><td>인지지원등급</td>
+    <th>인정번호</th><td>L2512161663</td>
     <th>급여개시일</th><td>2026.01.23</td>
+    <th>등급</th><td><strong style="color:#E24B4A">인지지원등급</strong></td>
+  </tr>
+  <tr>
+    <th>키/체중</th><td>168cm / 68kg</td>
     <th>작성일</th><td>2026.06.10</td>
     <th>작성자</th><td>김○지</td>
   </tr>
 </table>
 
-<div class="sec-title">1. 영양상태</div>
-<div class="sec-body">
-  영양상태: <span class="sel">● 양호</span> <span class="unsel">○ 적당 ○ 부족 ○ 매우 나쁨</span><br>
-  식사형태: <span class="sel">■ 일반식</span> <span class="unsel">□ 다진식 □ 죽식 □ 미음 □ 유동식</span><br>
-  식사 시 문제점: <span class="sel">■ 양호</span> <span class="unsel">□ 저작곤란 □ 소화불량 □ 연하곤란</span><br>
-  기피식품: <span class="sel">● 있음</span> — 오이, 가지류
-  <div class="judge-box">어르신은 일반식을 정량 섭취하시며 큰 영양 불균형은 관찰되지 않음. 다만 오이 및 가지류에 대한 기피 의사를 표현하셔서 해당 식재료 제공 시 대체 식품(애호박, 당근 등)으로 교체 제공하고 있음. 이용 초기 대비 식욕이 유지되고 있으며 식사 태도도 양호함.</div>
+<!-- 1. 영양상태 -->
+<div class="sec-num">1. 영양상태</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:70px">구분</th><th style="width:100px">확인 항목</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="sub-label" rowspan="4">영양</td>
+      <td><span class="row-label">영양상태</span></td>
+      <td><span class="sel">● 양호</span> &nbsp;<span class="unsel">○ 적당</span> &nbsp;<span class="unsel">○ 부족</span> &nbsp;<span class="unsel">○ 매우 나쁨</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">식사형태</span></td>
+      <td><span class="chk">■ 일반식</span> &nbsp;<span class="unchk">□ 다진식</span> &nbsp;<span class="unchk">□ 죽식</span> &nbsp;<span class="unchk">□ 미음</span> &nbsp;<span class="unchk">□ 유동식(경관식)</span> &nbsp;<span class="unchk">□ 연하식</span> &nbsp;<span class="unchk">□ 갈은식</span> &nbsp;<span class="unchk">□ 기타( )</span><br>
+      <span class="unchk">□ 치료식이( □ 당뇨식 □ 저염식 □ 고단백식 □ 체중조절식 )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">식사 시 문제점</span></td>
+      <td><span class="chk">■ 양호</span> &nbsp;<span class="unchk">□ 저작곤란</span> &nbsp;<span class="unchk">□ 소화불량</span> &nbsp;<span class="unchk">□ 오심·구토</span> &nbsp;<span class="unchk">□ 연하곤란</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">기피식품</span></td>
+      <td><span class="unsel">○ 없음</span> &nbsp;<span class="sel">● 있음</span> ( 오이, 가지류 )</td>
+    </tr>
+    <tr>
+      <td class="sub-label" rowspan="3">배설<br>양상</td>
+      <td><span class="row-label">소변상태</span></td>
+      <td><span class="chk">■ 양호</span> &nbsp;<span class="unchk">□ 요실금</span> &nbsp;<span class="unchk">□ 배뇨곤란</span> &nbsp;<span class="unchk">□ 유치도뇨관</span> &nbsp;<span class="unchk">□ 방광루</span> &nbsp;<span class="unchk">□ 요루</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">대변상태</span></td>
+      <td><span class="chk">■ 양호</span> &nbsp;<span class="unchk">□ 지속적인 설사</span> &nbsp;<span class="unchk">□ 변비</span> &nbsp;<span class="unchk">□ 장루</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">기저귀여부</span></td>
+      <td><span class="unchk">□ 기저귀</span></td>
+    </tr>
+    <tr class="judge-row">
+      <td class="judge-label" colspan="2">판단근거</td>
+      <td>① 이용 기간 전반에 걸쳐 일반식을 정량 섭취하고 있으며 큰 영양 불균형은 관찰되지 않음. 오이 및 가지류에 대한 기피 의사를 명확히 표현하고 계시어 해당 식재료 제공 시 애호박·당근 등 대체 식품으로 교체 제공하고 있음. 소변·대변 모두 양호하며 기저귀 미사용 상태임.<br>② 식욕은 이용 초기 대비 유지되고 있으나, 기피 식품 관련 개별 식단 조정을 지속하여 영양 균형을 유지할 필요가 있음.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 2. 구강상태 -->
+<div class="sec-num">2. 구강상태</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:70px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="row-label">치아상태</span></td>
+      <td><span class="unsel">○ 양호</span> &nbsp;<span class="unsel">○ 청결불량</span> &nbsp;<span class="unsel">○ 치아 약함</span> &nbsp;<span class="sel">● 틀니</span> &nbsp;<span class="unsel">○ 잔존 치아 없음</span> &nbsp;<span class="unsel">○ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">잇몸상태</span></td>
+      <td><span class="unchk">□ 치은염증</span> &nbsp;<span class="unchk">□ 치석</span> &nbsp;<span class="unchk">□ 기타( )</span> &nbsp;— 해당 없음</td>
+    </tr>
+    <tr class="judge-row">
+      <td class="judge-label">판단근거</td>
+      <td>① 현재 상하 틀니를 착용하고 계시며, 식사 전 틀니 장착 도움이 필요한 상태임. 구강 위생은 식후 양치 보조를 통해 관리되고 있으며 치은염증·치석 등 특별한 이상은 관찰되지 않음.<br>② 틀니 착용으로 인한 저작 기능 제한이 있으나 일반식 섭취에 큰 어려움은 없는 상태로, 틀니 세척 및 정기 점검을 통한 구강 건강 유지가 필요함.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 3. 질병상태 -->
+<div class="sec-num">3. 질병상태</div>
+<table class="needs-tbl" style="margin-bottom:2px">
+  <tr><td style="width:80px;font-weight:700;background:#eef2fb;color:#1a3a6e;text-align:center">과거 병력</td><td>고혈압 (2018년경 진단)</td></tr>
+  <tr><td style="font-weight:700;background:#eef2fb;color:#1a3a6e;text-align:center">현 진단명</td><td>고혈압, 경도인지장애, 척추관 협착증(3개소, 2026.02 신규)</td></tr>
+</table>
+<table class="needs-tbl">
+  <thead><tr><th style="width:130px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="row-label">만성질환</span></td>
+      <td><span class="unchk">□ 당뇨</span> &nbsp;<span class="chk">■ 고혈압</span> &nbsp;<span class="unchk">□ 만성 호흡기질환</span> &nbsp;<span class="unchk">□ 암( )</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">순환기계</span></td>
+      <td><span class="unchk">□ 뇌경색</span> &nbsp;<span class="unchk">□ 뇌출혈</span> &nbsp;<span class="unchk">□ 협심증</span> &nbsp;<span class="unchk">□ 심근경색증</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">신경계</span></td>
+      <td><span class="chk">■ 치매</span> ( <span class="sel">● 경도인지장애</span> &nbsp;<span class="unsel">○ 중등도치매</span> &nbsp;<span class="unsel">○ 중증치매</span> ) &nbsp;<span class="unchk">□ 파킨슨병</span> &nbsp;<span class="unchk">□ 간질</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">근골격계</span></td>
+      <td><span class="chk">■ 관절염</span> &nbsp;<span class="unchk">□ 요통·좌골통</span> &nbsp;<span class="unchk">□ 골절 등 후유증</span> &nbsp;<span class="unchk">□ 기타( )</span> — 척추관 협착증</td>
+    </tr>
+    <tr>
+      <td><span class="row-label">정신·행동장애</span></td>
+      <td><span class="unchk">□ 중풍</span> &nbsp;<span class="unchk">□ 우울증</span> &nbsp;<span class="unchk">□ 수면장애</span> &nbsp;<span class="unchk">□ 정신질환</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">호흡기계</span></td>
+      <td><span class="unchk">□ 호흡곤란</span> &nbsp;<span class="unchk">□ 결핵</span> &nbsp;<span class="unchk">□ 기관지 절개관</span> &nbsp;<span class="unchk">□ 흡인</span> &nbsp;<span class="unchk">□ 산소요법</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">만성 신장질환</span></td>
+      <td><span class="unchk">□ 만성신부전증( □ 복막투석 □ 혈액투석 )</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">기타 질환</span></td>
+      <td><span class="unchk">□ 알레르기( □ 식품 □ 기타 )</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">욕창 단계</span></td>
+      <td><span class="unsel">○ 1단계</span> &nbsp;<span class="unsel">○ 2단계</span> &nbsp;<span class="unsel">○ 3단계</span> &nbsp;<span class="unsel">○ 4단계</span> &nbsp;— 해당 없음</td>
+    </tr>
+    <tr>
+      <td><span class="row-label">욕창 부위</span></td>
+      <td><span class="unchk">□ 머리</span> &nbsp;<span class="unchk">□ 등</span> &nbsp;<span class="unchk">□ 어깨</span> &nbsp;<span class="unchk">□ 팔꿈치</span> &nbsp;<span class="unchk">□ 엉덩이</span> &nbsp;<span class="unchk">□ 뒤꿈치</span> &nbsp;<span class="unchk">□ 기타( )</span> &nbsp;— 해당 없음</td>
+    </tr>
+    <tr>
+      <td><span class="row-label">욕창방지</span></td>
+      <td><span class="unchk">□ 욕창방지 (도구: )</span> &nbsp;— 해당 없음</td>
+    </tr>
+    <tr class="judge-row">
+      <td class="judge-label">판단근거</td>
+      <td>① 고혈압은 이용 개시 이전부터 지속 관리 중이며, 2026년 2월 척추관 협착증(3개소) 신규 진단 이후 하지 통증이 만성화되어 보행 시 절뚝거림이 관찰되고 있음. 경도인지장애는 현재 인지지원등급으로 관리 중이며 욕창은 해당 없음.<br>② 척추관 협착증 진단으로 낙상 위험도가 이용 초기 대비 증가하였으며, 통증 관리 및 이동 안전 지원이 핵심 과제로 대두됨. 고혈압 복약 관리를 지속하며 혈압 변화를 면밀히 관찰할 필요가 있음.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 4. 신체상태 -->
+<div class="sec-num">4. 신체상태(일상생활 동작 수행능력)</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:130px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr><td><span class="row-label">옷 벗고 입기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">세수하기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">양치질하기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">식사하기</span></td><td><span class="sel">● 완전자립</span> &nbsp;<span class="unsel">○ 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">목욕하기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">체위변경 하기</span></td><td><span class="sel">● 완전자립</span> &nbsp;<span class="unsel">○ 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">일어나 앉기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">옮겨 앉기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">화장실 사용하기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr><td><span class="row-label">몸단장하기</span></td><td><span class="unsel">○ 완전자립</span> &nbsp;<span class="sel">● 부분도움</span> &nbsp;<span class="unsel">○ 완전도움</span></td></tr>
+    <tr class="judge-row">
+      <td class="judge-label">판단근거</td>
+      <td>옷 벗고 입기: 허리 굽힘 동작에 제한이 있어 하의 착탈의 시 부분 도움이 필요함.<br>
+세수하기: 세면대까지 이동 및 세수 동작 전반에 보조가 필요함.<br>
+양치질하기: 칫솔 준비 및 틀니 장착·분리 과정에 보조가 필요함.<br>
+식사하기: 숟가락·젓가락을 스스로 사용하여 자립적으로 식사함.<br>
+목욕하기: 목욕의자를 활용하며 이동 및 세정 과정에 보조가 필요함.<br>
+체위변경: 침상에서 스스로 체위 변경이 가능함.<br>
+일어나 앉기: 기립 시 균형 유지를 위한 보조가 필요함.<br>
+옮겨 앉기: 의자·변기 이동 시 보조가 필요함.<br>
+화장실 사용하기: 이동 과정 및 용변 후 처리에 부분 도움이 필요함.<br>
+몸단장하기: 머리 빗기·손발톱 관리 등에 부분 도움이 필요함.<br><br>
+① 척추관 협착증으로 인한 하지 통증으로 기립·보행·이동 관련 동작에 전반적으로 보조가 필요한 상태임. 식사는 자립적으로 수행 가능하며 체위변경도 스스로 할 수 있음.<br>
+② 통증 관리와 함께 기립·이동 보조를 지속 제공하고, 잔존 기능 유지를 위해 일상생활동작 훈련을 병행할 필요가 있음.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 5. 인지상태 -->
+<div class="sec-num">5. 인지상태</div>
+<div style="background:#FFF8E1;border:1px solid #FFB300;border-radius:4px;padding:8px 14px;margin-bottom:6px;font-size:9pt;color:#5D4037">
+  욕구사정 작성일 기준 최근 작성된 CIST 평가가 없습니다.
+</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:30px">번호</th><th style="width:200px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr><td style="text-align:center">1</td><td>망상 (남을 의심하거나, 위협을 느낌)</td><td><span class="unchk">□ 해당</span></td></tr>
+    <tr><td style="text-align:center">2</td><td>환각 (헛것을 보거나 환청을 듣는다)</td><td><span class="unchk">□ 해당</span></td></tr>
+    <tr><td style="text-align:center">3</td><td>배회 (의미 없이 걷는다)</td><td><span class="unchk">□ 해당</span></td></tr>
+    <tr><td style="text-align:center">4</td><td>반복적인 행동 (의미 없는 행동을 한다)</td><td><span class="chk">■ 해당</span> — 특정 자리에 대한 집착 행동이 4월 중순부터 관찰됨</td></tr>
+    <tr><td style="text-align:center">5</td><td>부적절한 행동 (불결행위 및 숨기는 행동)</td><td><span class="unchk">□ 해당</span></td></tr>
+    <tr><td style="text-align:center">6</td><td>폭력적 행동 (주변인에게 폭력적인 행동)</td><td><span class="unchk">□ 해당</span></td></tr>
+    <tr><td style="text-align:center">7</td><td>우울 (슬프거나 쳐져있고 때로는 운다)</td><td><span class="unchk">□ 해당</span></td></tr>
+    <tr><td style="text-align:center">8</td><td>불안 (서성이거나, 안절부절 못하다)</td><td><span class="unchk">□ 해당</span></td></tr>
+    <tr class="judge-row">
+      <td class="judge-label" colspan="2">판단근거</td>
+      <td>① 경도인지장애 진단으로 인지지원등급을 부여받았으며, 작성일 기준 최근 CIST 평가 결과는 없음. 4월 중순부터 특정 자리에 대한 집착 행동이 처음으로 관찰되어 인지 행동 양상에 변화가 확인됨. 인지활동형 프로그램(K01)은 매일 1회 60분 이상 제공되고 있으며 어르신께서 참여에 긍정적인 의사를 표현하고 계심.<br>② 반복 행동이 새롭게 관찰된 만큼 인지 변화에 대한 지속적인 모니터링이 필요하며, 다음 평가 시 CIST 시행을 통해 인지 수준을 객관적으로 평가할 것을 권고함.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 6. 의사소통 -->
+<div class="sec-num">6. 의사소통</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:100px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="row-label">청력상태</span></td>
+      <td><span class="sel">● 정상(보청기 사용 포함)</span><br>
+      <span class="unsel">○ 가까운 곳에서 대화는 가능하나 먼 곳의 말소리는 듣지 못한다</span><br>
+      <span class="unsel">○ 큰소리만 들을 수 있다</span> &nbsp;<span class="unsel">○ 소리에 거의 반응이 없다</span> &nbsp;<span class="unsel">○ 들리는지 판단 불능</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">의사소통</span></td>
+      <td><span class="unsel">○ 모두 이해하고 의사를 표현한다</span><br>
+      <span class="sel">● 대부분 이해하고 의사를 표현한다</span><br>
+      <span class="unsel">○ 가끔 이해하고 의사를 표현한다</span> &nbsp;<span class="unsel">○ 거의 이해하지 못하고 의사를 전달하지 못한다</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">발음능력</span></td>
+      <td><span class="sel">● 정확하게 발음이 가능하다</span><br>
+      <span class="unsel">○ 웅얼거리는 소리로만 한다</span> &nbsp;<span class="unsel">○ 간혹 어눌한 발음이 섞인다</span> &nbsp;<span class="unsel">○ 전혀 발음하지 못한다</span></td>
+    </tr>
+    <tr class="judge-row">
+      <td class="judge-label">판단근거</td>
+      <td>① 청력은 정상 범위이며 대부분의 대화 내용을 이해하고 의사를 표현할 수 있음. 발음은 명확하며 의사소통에 큰 어려움이 없는 상태임.<br>② 경도인지장애로 인해 복잡한 지시사항에 대한 이해가 간혹 지연될 수 있으므로, 짧고 명확한 언어로 반복 안내하는 방식이 적절함.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 7. 가족 및 환경상태 -->
+<div class="sec-num">7. 가족 및 환경상태</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:100px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="row-label">동거인</span></td>
+      <td><span class="unchk">□ 독거</span> &nbsp;<span class="chk">■ 배우자</span> &nbsp;<span class="unchk">□ 부모</span> &nbsp;<span class="unchk">□ 자녀</span> &nbsp;<span class="unchk">□ 자부·사위</span> &nbsp;<span class="unchk">□ 손자녀</span> &nbsp;<span class="unchk">□ 친척</span> &nbsp;<span class="unchk">□ 친구·이웃</span> &nbsp;<span class="unchk">□ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">자녀수</span></td>
+      <td><span class="unsel">○ 무</span> &nbsp;<span class="sel">● 유</span> ( 아들: 2명, 딸: 1명 )</td>
+    </tr>
+    <tr>
+      <td><span class="row-label">주수발자</span></td>
+      <td>유무: <span class="unsel">○ 무</span> &nbsp;<span class="sel">● 유</span> &nbsp;&nbsp; 관계: <span class="unsel">○ 배우자</span> &nbsp;<span class="sel">● 자녀</span> &nbsp;<span class="unsel">○ 자부</span> &nbsp;<span class="unsel">○ 사위</span> &nbsp;<span class="unsel">○ 형제자매</span> &nbsp;<span class="unsel">○ 친척</span> &nbsp;<span class="unsel">○ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">경제 상태</span></td>
+      <td><span class="unsel">○ 안정</span> &nbsp;<span class="sel">● 연금생활</span> &nbsp;<span class="unsel">○ 불안정</span> &nbsp;<span class="unsel">○ 기초 생활수급</span> &nbsp;<span class="unsel">○ 의료급여</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">수발 부담</span></td>
+      <td><span class="unsel">○ 전혀 부담되지 않음</span> &nbsp;<span class="sel">● 가끔 부담됨</span> &nbsp;<span class="unsel">○ 아주 가끔 부담됨</span> &nbsp;<span class="unsel">○ 자주 부담됨</span> &nbsp;<span class="unsel">○ 항상 부담됨</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">거주 환경</span></td>
+      <td><span class="unsel">○ 아파트</span> &nbsp;<span class="sel">● 단독주택</span> &nbsp;<span class="unsel">○ 연립주택</span> &nbsp;<span class="unsel">○ 다세대주택</span> &nbsp;<span class="unsel">○ 기타( )</span></td>
+    </tr>
+    <tr class="judge-row">
+      <td class="judge-label">판단근거</td>
+      <td>① 배우자와 단독주택에서 거주하고 계시며, 주수발자는 자녀(장남)임. 연금생활로 경제적 안정 상태이며, 자녀가 가끔 수발 부담을 느끼는 것으로 확인됨.<br>② 단독주택 거주로 계단 및 문턱 등 낙상 위험 환경이 존재할 수 있으므로, 향후 가정 내 안전 환경 점검 및 보조기구(안전손잡이·미끄럼방지) 설치 필요 여부를 보호자와 협의할 것을 권고함.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 8. 자원이용 욕구 -->
+<div class="sec-num">8. 자원이용 욕구</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:100px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="row-label">진료 병원</span></td>
+      <td>병원명(진료과): ○○내과(내과·정형외과) &nbsp;|&nbsp; 전화번호: 041-000-0000 &nbsp;|&nbsp; 정기진료: <span class="unsel">○ 무</span> &nbsp;<span class="sel">● 유</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">종교활동</span></td>
+      <td><span class="unsel">○ 천주교</span> &nbsp;<span class="unsel">○ 기독교</span> &nbsp;<span class="sel">● 불교</span> &nbsp;<span class="unsel">○ 기타( )</span></td>
+    </tr>
+    <tr>
+      <td><span class="row-label">지역사회 자원</span></td>
+      <td>
+        <span class="unchk">□ 노인맞춤 돌봄 서비스</span> &nbsp;<span class="unchk">□ 가사간병</span> &nbsp;<span class="unchk">□ 재가복지</span> &nbsp;<span class="unchk">□ 급식 및 도시락 배달</span> &nbsp;<span class="unchk">□ 보건소 사업</span><br>
+        <span class="unchk">□ 개인 간병인</span> &nbsp;<span class="unchk">□ 산업재해 간병인</span> &nbsp;<span class="unchk">□ 치매안심센터</span> &nbsp;<span class="unchk">□ 복지관(마을회관)</span><br>
+        <span class="unchk">□ 노인정</span> &nbsp;<span class="chk">■ 이동 서비스</span> &nbsp;<span class="unchk">□ 종교단체</span> &nbsp;<span class="unchk">□ 이·미용</span> &nbsp;<span class="unchk">□ 주거개선 사업</span>
+      </td>
+    </tr>
+    <tr class="judge-row">
+      <td class="judge-label">판단근거</td>
+      <td>① ○○내과를 통해 고혈압 및 척추관 협착증을 정기적으로 관리하고 있으며, 현재 센터 이동서비스(송영)를 통해 안전하게 등·하원하고 있음. 그 외 별도 지역사회 자원은 이용하지 않고 있음.<br>② 현재 이용 중인 데이음주간보호센터 내 서비스(인지활동형 프로그램·기능회복훈련·건강관리)를 중심으로 필요 욕구를 충족하고 있으며, 향후 필요 시 지역사회 자원 연계를 검토할 예정임.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 9. 주관적 욕구 -->
+<div class="sec-num">9. 주관적 욕구</div>
+<table class="needs-tbl">
+  <thead><tr><th style="width:200px">구분</th><th>확인</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><span class="row-label">이용하기를 희망하는<br>복지용구</span></td>
+      <td>
+        <span class="unchk">□ 이동변기</span> &nbsp;<span class="chk">■ 성인용 보행기</span> &nbsp;<span class="unchk">□ 안전손잡이</span> &nbsp;<span class="unchk">□ 미끄럼 방지용품</span><br>
+        <span class="unchk">□ 수동휠체어</span> &nbsp;<span class="unchk">□ 전동침대</span> &nbsp;<span class="unchk">□ 수동침대</span> &nbsp;<span class="unchk">□ 배회감지기</span> &nbsp;<span class="unchk">□ 경사로( □ 실내 □ 실외 )</span>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="row-label">수급자 또는 보호자가<br>희망하는 욕구</span></td>
+      <td>"센터에서 재미있게 지내고 싶고, 친구들이랑 이야기하는 게 좋다"고 직접 표현하셨음. "다리가 아프긴 한데 그래도 여기 오는 게 집에만 있는 것보다 낫다"고 하셨음.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 10. 총평 -->
+<div class="sec-num">10. 총평</div>
+<div class="summary-box">
+  <p style="margin-bottom:10px">이○수 어르신은 인지지원등급으로 경도인지장애와 고혈압, 척추관 협착증을 주 진단으로 이용하고 계심. 이용 초기 대비 2026년 2월 척추관 협착증 신규 진단으로 하지 통증이 만성화되어 보행 시 절뚝거림이 지속되고 낙상 위험도가 증가하였으며, 4월 중순부터 특정 자리에 대한 집착 행동이 처음으로 관찰되어 인지 행동 양상에도 변화가 확인됨.</p>
+  <p style="margin-bottom:10px"><strong>[개인 맞춤형 영양·구강 관리]</strong><br>기피 식품(오이·가지류)을 파악하여 식단 제공 시 대체 식재료(애호박·당근)로 교체하겠음. 상하 틀니 착용으로 인한 저작 기능 제한을 고려하여 식전 틀니 장착 보조 및 식후 구강 위생 관리를 지속 제공하겠음.</p>
+  <p style="margin-bottom:10px"><strong>[통증 관리 및 낙상 예방]</strong><br>척추관 협착증으로 인한 요부·하지 통증 완화를 위해 물리치료(핫팩·공기압)를 제공하겠음. 이동 시 워커 사용을 안내하고 전 과정 동행 보조를 제공하여 낙상 사고를 예방하겠음.</p>
+  <p style="margin-bottom:10px"><strong>[인지기능 유지 및 행동 변화 모니터링]</strong><br>인지지원등급 기준에 맞게 인지활동형 프로그램(K01)을 매일 1회 60분 이상 제공하겠음. 4월부터 관찰되기 시작한 집착 행동을 지속 모니터링하고, 다음 평가 시 CIST를 시행하여 인지 수준을 객관적으로 평가하겠음.</p>
+  <p><strong>[사회적 교류 및 정서 지지]</strong><br>어르신이 센터 이용에 긍정적인 의사를 표현하고 계시므로 또래 어르신과의 소규모 교류 활동 및 개별 말벗 활동을 강화하여 사회적 연결감과 정서적 안정을 지원하겠음.</p>
 </div>
 
-<div class="sec-title">2. 구강상태</div>
-<div class="sec-body">
-  치아상태: <span class="sel">● 틀니</span> <span class="unsel">○ 양호 ○ 치아 약함 ○ 잔존 치아 없음</span><br>
-  잇몸상태: <span class="unsel">□ 치은염증 □ 치석</span> <span class="sel">■ 해당 없음</span>
-  <div class="judge-box">현재 상하 틀니를 착용하고 계시며, 식사 전 틀니 장착 도움이 필요한 상태임. 구강 위생은 식후 양치 보조를 통해 관리되고 있으며 특별한 이상은 관찰되지 않음.</div>
 </div>
-
-<div class="sec-title">3. 질병상태</div>
-<div class="sec-body">
-  만성질환: <span class="sel">■ 고혈압</span> <span class="unsel">□ 당뇨 □ 암 □ 기타</span><br>
-  신경계: <span class="sel">■ 치매</span> (<span class="sel">● 경도인지장애</span> <span class="unsel">○ 중등도 ○ 중증</span>)<br>
-  근골격계: <span class="sel">■ 관절염</span> <span class="unsel">□ 골절 등 후유증</span>
-  <div class="judge-box">고혈압과 경도인지장애가 주 진단으로 확인됨. 척추관 협착증(3개소) 진단 이후 보행 시 하지 통증이 지속되고 있으며 정형외과 주사 치료를 반복하고 있음. 낙상 위험도가 이용 초기 대비 증가한 것으로 판단됨.</div>
-</div>
-
-<div class="sec-title">9. 주관적 욕구</div>
-<div class="sec-body">
-  <p>"센터에서 재미있게 지내고 싶고, 친구들이랑 이야기하는 게 좋다"고 직접 표현하셨음.</p>
-  <p>"다리가 아프긴 한데 그래도 여기 오는 게 집에만 있는 것보다 낫다"고 하셨음.</p>
-</div>
-
-<div class="sec-title">10. 총평</div>
-<div class="sec-body">
-  <div class="summary-box">
-    이○수 어르신은 인지지원등급으로 경도인지장애와 고혈압, 척추관 협착증을 주 진단으로 이용하고 계심. 영양 상태는 전반적으로 양호하나 기피 식품(오이·가지류)에 대한 식단 조정이 필요함. 척추관 협착증으로 인한 하지 통증이 지속되어 이동 보조 및 통증 관리가 핵심 케어 과제임. 인지기능은 경도 수준으로 인지활동형 프로그램(매일 60분 이상)을 통해 유지·강화할 필요가 있음. 어르신께서 센터 이용에 긍정적인 의사를 표현하고 계시어 사회적 교류와 정서 지지를 강화하는 방향으로 케어를 운영할 계획임.
-  </div>
-</div>
-
-</div></body></html>`
+</body>
+</html>`
+  }
   },
 
   result: {
@@ -813,6 +1184,37 @@ table.info td.label{background:#f0f0f0;font-weight:700;width:18%;white-space:now
 <div class="sec-title">4. 차기 검토 일정</div>
 <div class="sec-body">2026년 6월 중 — 보호자 상담 결과 및 복약 이행 여부 확인 후 사례관리 지속 여부 재판단 예정.</div>
 
+<div class="sec-title" style="background:#0D6E55">5. 사례관리 급여반영 기록 (회의 후 30일 이내)</div>
+<div class="sec-body">
+  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px">
+    <thead><tr style="background:#e8f4ea">
+      <th style="border:1px solid #aaa;padding:6px 10px;text-align:center;width:20%">반영일</th>
+      <th style="border:1px solid #aaa;padding:6px 10px;text-align:center;width:25%">급여구분</th>
+      <th style="border:1px solid #aaa;padding:6px 10px;text-align:left">반영 내용</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="border:1px solid #aaa;padding:6px 10px;text-align:center">2026.06.02</td>
+        <td style="border:1px solid #aaa;padding:6px 10px;text-align:center">인지관리지원·정서지원</td>
+        <td style="border:1px solid #aaa;padding:6px 10px">소그룹 활동 배치 강화 — 박○희 어르신을 오후 소그룹(3~4인) 프로그램에 우선 배치하여 위축감 완화 및 사회적 교류 지원을 실시하였음.</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #aaa;padding:6px 10px;text-align:center">2026.06.05</td>
+        <td style="border:1px solid #aaa;padding:6px 10px;text-align:center">건강관리·간호처치</td>
+        <td style="border:1px solid #aaa;padding:6px 10px">복약 관리 강화 — 보호자 상담 후 주치의 처방 조정 결과를 반영하여 관절약 복용 방법을 식후 즉시 제공 방식으로 변경하고 복약 여부를 매일 기록하였음.</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #aaa;padding:6px 10px;text-align:center">2026.06.10</td>
+        <td style="border:1px solid #aaa;padding:6px 10px;text-align:center">상담관리</td>
+        <td style="border:1px solid #aaa;padding:6px 10px">개별 말벗 활동 주 2회 이상 실시 — 담당 요양보호사(박○수)가 어르신과 개별 대화 시간을 배정하여 정서적 안정 지원을 지속하고 있음.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="background:#E1F5EE;border-radius:6px;padding:10px 14px;font-size:11.5px;color:#085041;line-height:1.8">
+    ✅ 사례관리 회의 후 <strong>21일 이내</strong> 전 항목 급여 반영 완료 (기준: 회의 후 30일 이내)
+  </div>
+</div>
+
 </div></body></html>`
   },
 
@@ -997,91 +1399,142 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:13px;backgr
 
   plan: {
     title: '급여제공계획서 — 샘플',
-    html: `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    html: `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>급여제공계획서 — 이○수</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:13px;background:#d8dce4;padding:28px 16px;color:#1a1a1a;line-height:1.75}
-.page{background:#fff;max-width:880px;margin:0 auto;padding:38px 50px 44px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
-.doc-title{text-align:center;font-size:16pt;font-weight:700;letter-spacing:3px;color:#1a3a6e;padding-bottom:10px;border-bottom:2.5px solid #1a3a6e;margin-bottom:18px}
-.info-tbl{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:10pt}
-.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:700;color:#1a3a6e}
-.info-tbl td{border:1px solid #9aaecc;padding:5px 10px}
-.sec-title{background:#1a1a1a;color:#fff;font-size:13px;font-weight:700;padding:7px 14px;margin-top:20px;letter-spacing:.5px}
-.plan-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:0}
-.plan-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 8px;text-align:center;font-weight:700;color:#1a3a6e;white-space:nowrap}
-.plan-tbl td{border:1px solid #9aaecc;padding:5px 8px;vertical-align:top;line-height:1.6}
-.plan-tbl td.cat{background:#f0f4fb;font-weight:700;color:#1a3a6e;text-align:center;white-space:nowrap;width:70px}
-.plan-tbl td.code{text-align:center;color:#555;font-size:10px;white-space:nowrap}
-.goal-box{background:#fffbe6;border:1px solid #e0c840;padding:12px 16px;margin-top:16px;border-radius:4px;font-size:12px;line-height:1.9}
-.goal-title{font-weight:700;color:#7a5c10;margin-bottom:6px;font-size:12px}
-.sign-row{display:flex;gap:20px;margin-top:24px;justify-content:flex-end}
-.sign-cell{text-align:center;min-width:120px}
-.sign-label{font-size:11px;color:#888;margin-bottom:4px}
-.sign-line{border-bottom:1px solid #333;padding-bottom:2px;margin-bottom:2px;min-width:100px}
-.sign-name{font-size:12px;font-weight:600}
-</style></head><body><div class="page">
-
+body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:9.5pt;background:#d8dce4;padding:24px 16px;color:#1a1a1a;line-height:1.7}
+.page{background:#fff;max-width:1100px;margin:0 auto 32px;padding:36px 44px 44px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
+.doc-title{text-align:center;font-size:17pt;font-weight:700;letter-spacing:4px;color:#1a3a6e;border-bottom:2.5px solid #1a3a6e;padding-bottom:10px;margin-bottom:16px}
+.info-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:9pt}
+.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 8px;text-align:center;font-weight:700;color:#1a3a6e;white-space:nowrap}
+.info-tbl td{border:1px solid #9aaecc;padding:5px 8px}
+.sec-bar{background:#1a3a6e;color:#fff;font-size:11pt;font-weight:700;padding:7px 14px;margin-top:20px;margin-bottom:0;letter-spacing:.5px}
+.plan-tbl{width:100%;border-collapse:collapse;font-size:8.5pt}
+.plan-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 6px;text-align:center;font-weight:700;color:#1a3a6e;white-space:nowrap;font-size:8.5pt}
+.plan-tbl td{border:1px solid #9aaecc;padding:5px 7px;vertical-align:top;line-height:1.65}
+.area-cell{background:#1a3a6e;color:#fff;font-weight:700;text-align:center;writing-mode:vertical-rl;width:28px;font-size:8.5pt;letter-spacing:2px}
+.mon-cell{text-align:center;color:#555;font-size:8pt;white-space:nowrap;background:#f8f9fb}
+.code-cell{text-align:center;color:#1a3a6e;font-size:8pt;white-space:nowrap;font-weight:600}
+.name-cell{font-size:8.5pt;color:#222;line-height:1.6}
+.goal-cell{font-size:8.5pt;color:#333;line-height:1.65;background:#fffef7}
+.content-cell{font-size:8.5pt;line-height:1.7;color:#222}
+.cycle-cell{text-align:center;font-size:8.5pt}
+.k01-row td{background:#fff8e1}
+.goal-box{background:#fffbe6;border:1.5px solid #e0c840;border-radius:4px;padding:14px 18px;margin-top:18px;font-size:9.5pt;line-height:1.9}
+.goal-box-title{font-weight:700;color:#7a5c10;margin-bottom:8px;font-size:10pt}
+.summary-box{background:#f0f4fb;border:1.5px solid #9aaecc;border-radius:4px;padding:14px 18px;margin-top:14px;font-size:9.5pt;line-height:1.9}
+.summary-title{font-weight:700;color:#1a3a6e;margin-bottom:8px;font-size:10pt}
+.kakao-box{background:#FEE500;border-radius:10px;padding:16px 20px;margin-top:14px;font-size:9.5pt;line-height:1.9;color:#3C1E1E}
+.kakao-title{font-weight:700;margin-bottom:8px;font-size:10pt}
+.phone-box{background:#f0fbf4;border:1.5px solid #8abf92;border-radius:4px;padding:14px 18px;margin-top:14px;font-size:9.5pt;line-height:1.9}
+.phone-title{font-weight:700;color:#1e5c28;margin-bottom:8px;font-size:10pt}
+.sign-row{display:flex;justify-content:flex-end;gap:30px;margin-top:28px;padding-top:16px;border-top:1px solid #ddd}
+.sign-cell{text-align:center;min-width:110px}
+.sign-label{font-size:9pt;color:#888;margin-bottom:6px}
+.sign-name{font-size:10pt;font-weight:600;border-bottom:1px solid #333;padding-bottom:4px;min-width:100px;display:inline-block}
+.sign-stamp{font-size:8.5pt;color:#aaa;margin-top:3px}
+.badge-k01{display:inline-block;background:#E24B4A;color:#fff;font-size:7.5pt;padding:1px 5px;border-radius:3px;margin-left:3px}
+.badge-req{display:inline-block;background:#1a3a6e;color:#fff;font-size:7.5pt;padding:1px 5px;border-radius:3px;margin-left:3px}
+</style>
+</head>
+<body><div class="page">
 <div class="doc-title">급 여 제 공 계 획 서</div>
 <table class="info-tbl">
-  <tr>
-    <th>수급자</th><td>이○수</td>
-    <th>생년월일(성별)</th><td>1945.07.03 (남)</td>
-    <th>등급</th><td>인지지원등급</td>
-  </tr>
-  <tr>
-    <th>인정번호</th><td>L2512161663</td>
-    <th>작성일</th><td>2026.06.10</td>
-    <th>적용기간</th><td>2026.06.10 ~ 2027.06.09</td>
-  </tr>
-  <tr>
-    <th>작성자</th><td>사회복지사 김○지</td>
-    <th>면허번호</th><td>사복사-12345</td>
-    <th>기관명</th><td>데이음주간보호센터</td>
-  </tr>
+  <tr><th>수급자</th><td>이○수</td><th>생년월일(성별)</th><td>1945.07.03 (남)</td><th>본인부담률</th><td>일반 15%</td><th>장기요양인정번호</th><td>L2512161663</td></tr>
+  <tr><th>장기요양등급</th><td><strong style="color:#E24B4A">인지지원등급</strong></td><th>급여개시일</th><td>2026.01.23</td><th>작성일</th><td>2026.06.10</td><th>적용기간</th><td>2026.06.10 ~ 2027.06.09</td></tr>
+  <tr><th>작성자</th><td>사회복지사 김○지</td><th>면허번호</th><td>사복사-12345</td><th>장기요양기관명</th><td colspan="3">데이음주간보호센터 (기관기호: 24481000156)</td></tr>
 </table>
-
-<div class="sec-title">급여제공 계획 내용</div>
+<div class="sec-bar">급여제공 계획 내용</div>
 <table class="plan-tbl">
-  <thead>
-    <tr><th>영역</th><th>서비스 코드</th><th>서비스명</th><th>세부 제공 내용</th><th>주기</th><th>횟수</th><th>시간</th></tr>
-  </thead>
+  <thead><tr>
+    <th style="width:28px">영역</th><th style="width:60px">모니터링구분코드</th><th style="width:55px">필요내용코드</th>
+    <th style="width:160px">필요내용</th><th style="width:180px">세부목표내용</th><th>세부 제공 내용</th>
+    <th style="width:36px">주기</th><th style="width:30px">횟수</th><th style="width:30px">시간</th>
+  </tr></thead>
   <tbody>
-    <tr><td class="cat" rowspan="3">신체활동지원</td><td class="code">A10P03</td><td>구강청결</td><td>양치 도움 및 틀니 관리 지원하겠음</td><td>일</td><td>1</td><td>5</td></tr>
-    <tr><td class="code">A10P04</td><td>목욕</td><td>목욕의자 활용하여 안전한 샤워 보조 제공하겠음</td><td>주</td><td>2</td><td>20</td></tr>
-    <tr><td class="code">A60P10</td><td>배설도움</td><td>정시 화장실 이동 유도 및 필요 시 보조 제공하겠음</td><td>일</td><td>3</td><td>10</td></tr>
-    <tr><td class="cat" rowspan="2">건강관리</td><td class="code">K30A08_1</td><td>혈압측정</td><td>매 이용일 혈압 측정 및 이상 수치 관찰하겠음</td><td>일</td><td>1</td><td>5</td></tr>
-    <tr><td class="code">K30A08_3</td><td>복약관리</td><td>처방약을 식후 정시에 제공하고 복약 여부를 확인하겠음</td><td>일</td><td>3</td><td>5</td></tr>
-    <tr><td class="cat">통증간호</td><td class="code">L40N06</td><td>통증간호</td><td>척추관 협착증으로 인한 하지 통증 부위에 파스 도포 및 물리치료(핫팩·공기압)를 제공하겠음</td><td>필요시</td><td></td><td>20</td></tr>
-    <tr><td class="cat" rowspan="2">인지관리</td><td class="code">B10R99</td><td>인지활동형 프로그램 (K01)</td><td>매일 이야기여행·빙고게임·색칠공부 등 인지활동형 프로그램을 60분 이상 제공하겠음 (인지지원등급 기준)</td><td>일</td><td>1</td><td>60</td></tr>
-    <tr><td class="code">C10A99</td><td>정서지원</td><td>개별 말벗 활동 및 소그룹 프로그램 참여를 통해 정서적 안정을 지원하겠음</td><td>일</td><td>1</td><td>20</td></tr>
-    <tr><td class="cat" rowspan="3">기능회복훈련</td><td class="code">M10L50_2</td><td>T51 신체기능훈련</td><td>슬링재활운동·백세체조를 통해 어깨·팔 근력 강화 및 지구력 향상을 지원하겠음</td><td>주</td><td>3</td><td>30</td></tr>
-    <tr><td class="code">M10L50_3</td><td>T52 기본동작훈련</td><td>워커를 활용한 안전 보행 훈련 및 균형감각 유지를 위한 앉았다 일어서기를 지원하겠음</td><td>주</td><td>3</td><td>20</td></tr>
-    <tr><td class="code">M10L50_7</td><td>T61 사회적응훈련</td><td>월 1회 지역사회 외부 활동(공원 산책 등)을 통해 사회 참여 경험을 제공하겠음</td><td>월</td><td>1</td><td>60</td></tr>
+  <tr><td class="area-cell" rowspan="7">신체활동지원</td><td class="mon-cell">A10</td><td class="code-cell">A01</td><td class="name-cell">입을 옷 준비하기</td><td class="goal-cell" rowspan="7">잔존 기능을 최대한 유지하면서 안전하고 존엄한 착탈의를 지원하겠음. 척추관 협착증으로 인한 허리 굽힘 제한을 고려하여 하의 착탈의를 중점 보조하겠음.</td><td class="content-cell">옷장·서랍에서 어르신이 원하는 옷을 꺼내 준비하겠음. 계절·날씨에 맞는 옷 선택을 도와드리겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">1</td></tr>
+  <tr><td class="mon-cell">A10</td><td class="code-cell">A02</td><td class="name-cell">옷갈아입기 지시 및 지켜보기 도움</td><td class="content-cell">스스로 옷 입을 수 있도록 순서를 안내하고 적절하게 입도록 지켜보겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">2</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">A10</td><td class="code-cell">A03</td><td class="name-cell">옷갈아입기 도움</td><td class="content-cell">허리 굽힘 동작에 제한이 있으므로 하의 착탈의 과정을 중점적으로 보조하겠음. 가능한 부분은 스스로 수행하도록 격려하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">2</td><td class="cycle-cell">10</td></tr>
+  <tr><td class="mon-cell">A10</td><td class="code-cell">A52</td><td class="name-cell">세면도움</td><td class="content-cell">세면대 이동 및 세수 과정을 안전하게 보조하겠음. 세면 후 보습 크림 도포를 지원하고 피부 상태를 관찰하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">10</td></tr>
+  <tr><td class="mon-cell">A10</td><td class="code-cell">B03</td><td class="name-cell">양치질 도움</td><td class="content-cell">칫솔에 치약을 준비하고 양치 과정을 보조하겠음. 구강 점막 상태(염증·출혈)를 관찰하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">3</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">A10</td><td class="code-cell">B04</td><td class="name-cell">틀니관리</td><td class="content-cell">식전 틀니 장착·식후 분리 과정을 보조하겠음. 틀니 세척 및 보관 방법을 안내하고 손상 여부를 정기적으로 확인하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">3</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">A10</td><td class="code-cell">B52</td><td class="name-cell">몸씻기 도움</td><td class="content-cell">목욕의자를 활용하여 안전한 샤워를 지원하겠음. 이동 전 과정에 동행하고 미끄럼 방지 환경을 조성하겠음. 목욕 후 피부 보습 관리를 제공하겠음.</td><td class="cycle-cell">주</td><td class="cycle-cell">2</td><td class="cycle-cell">20</td></tr>
+
+  <tr><td class="area-cell" rowspan="4">신체활동지원</td><td class="mon-cell">A50</td><td class="code-cell">G06</td><td class="name-cell">이동 시 부축 도움</td><td class="goal-cell" rowspan="4">척추관 협착증으로 인한 하지 통증 및 보행 불안정으로 낙상 위험이 높으므로 이동 전 과정에서 안전 보조를 제공하겠음.</td><td class="content-cell">센터 내 이동 시 부축 또는 동행 보조를 제공하겠음. 하차 시 비틀거림이 관찰되어 차량 하차부터 실내 착석까지 전 과정을 보조하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">4</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">A50</td><td class="code-cell">G07</td><td class="name-cell">이동 시 적절한 보조기구 사용 도움</td><td class="content-cell">워커를 올바르게 사용하도록 안내하겠음. 워커 높이·상태를 정기적으로 점검하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">4</td><td class="cycle-cell">3</td></tr>
+  <tr><td class="mon-cell">A50</td><td class="code-cell">G50</td><td class="name-cell">위험요소 최소화 및 안전관리로 낙상예방</td><td class="content-cell">이동 경로의 장애물 및 미끄럼 위험 요소를 사전에 제거하겠음. 낙상 발생 시 즉시 보고 및 응급 처치 절차를 준수하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">A60</td><td class="code-cell">H02</td><td class="name-cell">화장실 이용 도움</td><td class="content-cell">정시 화장실 이동 유도(2시간 간격)를 실시하겠음. 화장실 이동 및 변기 이용 시 안전 보조를 제공하겠음. 배설 횟수 및 상태를 기록하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">4</td><td class="cycle-cell">5</td></tr>
+
+  <tr><td class="area-cell" rowspan="5">식사제공</td><td class="mon-cell">A20</td><td class="code-cell">E11</td><td class="name-cell">기능상태에 맞는 음식 준비</td><td class="goal-cell" rowspan="5">기피 식품(오이·가지류)을 반영한 개별 식단을 제공하여 영양 불균형 없이 즐겁게 식사하도록 지원하겠음. 틀니 착용 상태를 고려하여 저작 기능에 맞는 식사를 제공하겠음.</td><td class="content-cell">기피 식품(오이·가지류)을 식단에서 제외하고 대체 식재료(애호박·당근)로 교체 제공하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">2</td><td class="cycle-cell">10</td></tr>
+  <tr><td class="mon-cell">A20</td><td class="code-cell">E12</td><td class="name-cell">안전하게 식사하기 도움</td><td class="content-cell">식사 속도가 빠를 경우 천천히 드시도록 안내하겠음. 사레 증상 발생 시 즉시 대응하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">2</td><td class="cycle-cell">10</td></tr>
+  <tr><td class="mon-cell">A20</td><td class="code-cell">E13</td><td class="name-cell">치아상태(틀니) 관찰 및 씹는 기능확인</td><td class="content-cell">식사 전 틀니 장착 상태를 확인하겠음. 식사 중 씹는 기능 변화를 관찰하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">2</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">A20</td><td class="code-cell">E14</td><td class="name-cell">적절한 수분 섭취</td><td class="content-cell">식간 수분 섭취(물·보리차)를 격려하겠음. 고혈압 약 복용과 연계하여 충분한 수분 섭취를 지원하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">3</td><td class="cycle-cell">3</td></tr>
+  <tr><td class="mon-cell">A20</td><td class="code-cell">E17</td><td class="name-cell">균형잡힌 식단 관리</td><td class="content-cell">고혈압 관리를 위한 저염식 원칙을 유지하겠음. 섭취량을 기록하여 영양 불균형 징후를 모니터링하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">2</td><td class="cycle-cell">5</td></tr>
+
+  <tr><td class="area-cell" rowspan="5">건강관리·간호처치</td><td class="mon-cell">K30</td><td class="code-cell">O50</td><td class="name-cell">건강상태 관찰 및 측정</td><td class="goal-cell" rowspan="5">고혈압 및 척추관 협착증의 만성 통증을 체계적으로 관리하고 상태 변화를 조기에 발견하여 안전한 이용 환경을 유지하겠음.</td><td class="content-cell">매 이용일 등원 직후 혈압·체온을 측정하고 기록하겠음. 수축기 160mmHg 이상 시 즉시 간호조무사에게 보고하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">K30</td><td class="code-cell">O51</td><td class="name-cell">건강교육 및 상담</td><td class="content-cell">고혈압 관리(저염식·규칙적 복약)에 대해 이해할 수 있도록 안내하겠음. 척추 건강을 위한 올바른 자세 교육을 제공하겠음.</td><td class="cycle-cell">주</td><td class="cycle-cell">1</td><td class="cycle-cell">10</td></tr>
+  <tr><td class="mon-cell">K30</td><td class="code-cell">O56</td><td class="name-cell">치매간호</td><td class="content-cell">인지 변화(기억력 저하·반복 질문)를 관찰하고 기록하겠음. 익숙한 환경을 유지하여 불안감을 최소화하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">10</td></tr>
+  <tr><td class="mon-cell">A80</td><td class="code-cell">J01</td><td class="name-cell">정확한 복약도움(시간, 용량, 용법 등)</td><td class="content-cell">고혈압약을 식후 정시에 제공하겠음. 복약 여부를 확인하고 기록하겠음. 복약 거부 시 필요성을 안내하고 보호자에게 연락하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">2</td><td class="cycle-cell">5</td></tr>
+  <tr><td class="mon-cell">L40</td><td class="code-cell">Q50</td><td class="name-cell">통증간호</td><td class="content-cell">척추관 협착증으로 인한 요부·하지 통증 부위에 핫팩·공기압 마사지를 제공하겠음. 통증 강도(NRS 0~10)를 확인·기록하겠음.</td><td class="cycle-cell">필요시</td><td class="cycle-cell"></td><td class="cycle-cell">20</td></tr>
+
+  <tr class="k01-row"><td class="area-cell" rowspan="4">인지관리지원</td><td class="mon-cell">B30</td><td class="code-cell">K01</td><td class="name-cell">인지활동형 프로그램 실시 <span class="badge-k01">K01 필수</span></td><td class="goal-cell" rowspan="4">인지지원등급 기준(매일 60분 이상 K01)에 맞는 인지활동형 프로그램을 안정적으로 제공하여 경도인지장애의 진행을 늦추겠음. 사회적 교류를 통해 정서적 안정과 삶의 질을 지원하겠음.</td><td class="content-cell">매일 1회 60분 이상 인지활동형 프로그램(이야기여행·빙고게임·색칠공부·이름 쓰기)을 제공하겠음. 참여 반응과 집중 지속 시간을 기록하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">60</td></tr>
+  <tr class="k01-row"><td class="mon-cell">B30</td><td class="code-cell">K02</td><td class="name-cell">인지기능악화 예방활동</td><td class="content-cell">일상생활 속 인지 자극 활동(신문 읽기·노래 부르기·간단한 계산)을 제공하겠음. 일과 구조화를 통해 혼란을 예방하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">20</td></tr>
+  <tr><td class="mon-cell">C10</td><td class="code-cell">K60</td><td class="name-cell">정서적 안정된 환경조성</td><td class="content-cell">익숙한 자리 배치를 유지하겠음. 큰 소음·급격한 환경 변화를 최소화하겠음. 불안 표현 시 차분하게 대응하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">10</td></tr>
+  <tr><td class="mon-cell">D10</td><td class="code-cell">L05</td><td class="name-cell">말벗 및 위로 등 정서적 지원</td><td class="content-cell">개별 말벗 활동을 통해 감정 상태를 확인하고 정서적 지지를 제공하겠음. 또래 어르신과의 소규모 대화 모임을 활성화하겠음.</td><td class="cycle-cell">일</td><td class="cycle-cell">1</td><td class="cycle-cell">20</td></tr>
+
+  <tr><td class="area-cell" rowspan="5">기능회복훈련</td><td class="mon-cell">M10</td><td class="code-cell">T51</td><td class="name-cell">신체기능의 훈련 <span class="badge-req">T51 필수</span></td><td class="goal-cell" rowspan="5">척추관 협착증 및 관절염으로 인한 기능 저하를 예방하고 잔존 기능을 유지하겠음. 낙상 위험을 최소화하는 보행·균형 훈련을 제공하여 독립적 일상생활 수행 능력을 지지하겠음.</td><td class="content-cell">슬링재활운동으로 어깨·팔 근력 강화 훈련을 제공하겠음. 백세체조(팔운동·손가락운동·지구력훈련)를 통해 전신 기능 유지를 지원하겠음.</td><td class="cycle-cell">주</td><td class="cycle-cell">3</td><td class="cycle-cell">30</td></tr>
+  <tr><td class="mon-cell">M10</td><td class="code-cell">T52</td><td class="name-cell">기본동작 훈련 <span class="badge-req">T52 필수</span></td><td class="content-cell">워커를 활용한 안전 보행 훈련을 제공하겠음. 균형 유지를 위한 앉았다 일어서기(10회 반복)를 지원하겠음. 기립성 저혈압 가능성을 고려하여 급격한 자세 변환을 피하도록 안내하겠음.</td><td class="cycle-cell">주</td><td class="cycle-cell">3</td><td class="cycle-cell">20</td></tr>
+  <tr><td class="mon-cell">M10</td><td class="code-cell">T53</td><td class="name-cell">일상생활동작 훈련</td><td class="content-cell">빙고게임 참여 시 가위질·붙이기로 소근육 조작 기능을 유지하겠음. 숟가락·젓가락 식사 훈련을 제공하겠음.</td><td class="cycle-cell">주</td><td class="cycle-cell">3</td><td class="cycle-cell">20</td></tr>
+  <tr><td class="mon-cell">M10</td><td class="code-cell">T55</td><td class="name-cell">물리치료</td><td class="content-cell">척추관 협착증·관절염으로 인한 요부·하지 통증 완화를 위해 핫팩·공기압 마사지를 제공하겠음. 통증 부위와 강도를 매 이용일마다 확인하고 기록하겠음.</td><td class="cycle-cell">주</td><td class="cycle-cell">3</td><td class="cycle-cell">20</td></tr>
+  <tr><td class="mon-cell">M10</td><td class="code-cell">T61</td><td class="name-cell">사회적응훈련</td><td class="content-cell">월 1회 지역사회 외부 활동(공원 산책·카페 방문)을 통해 사회 참여 경험을 제공하겠음. 외출 시 워커를 활용한 안전한 보행 환경을 조성하겠음.</td><td class="cycle-cell">월</td><td class="cycle-cell">1</td><td class="cycle-cell">60</td></tr>
   </tbody>
 </table>
 
 <div class="goal-box">
-  <div class="goal-title">📋 급여제공 목표</div>
-  - 척추관 협착증으로 인한 하지 통증을 관리하고 안전한 이동 환경을 조성하겠음<br>
-  - 인지지원등급 기준에 맞는 인지활동형 프로그램(매일 60분 이상)을 안정적으로 제공하겠음<br>
-  - 사회적 교류를 통해 정서적 안정과 삶의 질 유지를 지원하겠음<br>
-  - 기피 식품(오이·가지류)을 파악하여 식단에 반영하겠음
+  <div class="goal-box-title">📋 급여제공 목표</div>
+  - 척추관 협착증으로 인한 하지 통증을 체계적으로 관리하고 보행 안전 환경을 유지하여 낙상 사고를 예방하겠음<br>
+  - 인지지원등급 기준(매일 1회 60분 이상)에 맞는 인지활동형 프로그램(K01)을 안정적으로 제공하여 경도인지장애의 진행을 늦추겠음<br>
+  - 기피 식품(오이·가지류)을 식단에서 제외하고 대체 식재료를 제공하여 어르신이 즐겁게 식사하도록 지원하겠음<br>
+  - 상하 틀니 착용·세척 지원을 통해 구강 건강을 유지하고 식사 기능 저하를 예방하겠음<br>
+  - 고혈압 복약 관리를 철저히 하여 혈압 변동을 최소화하고 건강한 이용 환경을 유지하겠음<br>
+  - 사회적 교류와 정서 지지를 통해 센터 이용 만족도를 높이고 삶의 질을 향상하겠음
+</div>
+
+<div class="summary-box">
+  <div class="summary-title">📝 종합의견</div>
+  <p style="margin-bottom:10px"><strong>[수급자의 상태]</strong><br>이○수 어르신은 인지지원등급으로 경도인지장애와 고혈압을 주 진단으로 이용하고 계심. 2026년 2월 척추관 협착증 신규 진단 이후 하지 통증이 만성화되어 보행 시 절뚝거림이 지속되고 낙상 위험도가 이용 초기 대비 증가한 상태임. 오이·가지류 기피 의사를 명확히 표현하고 계시어 식단 조정이 필요함. 상하 틀니를 착용하고 계시며 식전 틀니 장착 보조가 필요한 상태임.</p>
+  <p><strong>[서비스 제공 방향]</strong><br>신규 진단된 척추관 협착증에 대응하여 통증간호(L40-Q50) 항목을 추가하고, 기본동작훈련(T52)에서 워커 활용 보행 훈련 및 낙상 예방 내용을 강화하였음. 기피 식품 파악 결과를 식단에 즉시 반영하고, 틀니 관리(B04) 항목을 별도 구성하여 구강 건강 지원을 강화하였음. 인지활동형 프로그램(K01)은 이야기여행·빙고게임·색칠공부 등 다양한 활동으로 구성하여 매일 60분 이상 제공할 계획임.</p>
+</div>
+
+<div class="kakao-box">
+  <div class="kakao-title">💬 보호자 안내 카카오톡 문구</div>
+  안녕하세요, 데이음주간보호센터입니다. 😊<br><br>
+  이○수 어르신의 <strong>급여제공계획서</strong>를 카카오톡으로 전송해 드렸습니다.<br><br>
+  계획서에는<br>
+  · <strong>신체활동지원</strong> — 착탈의·세면·구강(틀니관리)·목욕·이동 보조·배설 도움<br>
+  · <strong>식사제공</strong> — 기피식품 제외 개별 식단, 수분 섭취 관리<br>
+  · <strong>건강관리</strong> — 혈압 측정, 복약 관리, 통증간호, 치매 관찰<br>
+  · <strong>인지관리</strong> — 인지활동형 프로그램 매일 60분(K01), 정서 지지<br>
+  · <strong>기능회복훈련</strong> — T51·T52·T53·T55·T61<br>
+  항목이 포함되어 있습니다.<br><br>
+  내용 확인 후 <strong>전자서명</strong> 부탁드립니다. 감사합니다! 🙏
+</div>
+
+<div class="phone-box">
+  <div class="phone-title">📞 유선 상담 기록 문구</div>
+  급여제공계획서 발송 안내를 위해 보호자와 유선 상담을 실시하였음. 계획서의 주요 내용(척추관 협착증 신규 진단에 따른 통증간호 및 낙상예방 항목 강화, 기피 식품 식단 반영, 틀니 관리 지원, 인지활동형 프로그램 매일 60분 이상 제공)에 대해 상세히 설명하였음. 보호자로부터 내용 확인 및 전자서명 동의를 받았으며, 향후 문의 사항이 있을 경우 센터로 연락 달라고 안내하였음.
 </div>
 
 <div class="sign-row">
-  <div class="sign-cell">
-    <div class="sign-label">작성자</div>
-    <div class="sign-line">사회복지사 김○지</div>
-    <div style="font-size:10px;color:#aaa">(인)</div>
-  </div>
-  <div class="sign-cell">
-    <div class="sign-label">수급자(보호자) 확인</div>
-    <div class="sign-line">&nbsp;</div>
-    <div style="font-size:10px;color:#aaa">(인)</div>
-  </div>
+  <div class="sign-cell"><div class="sign-label">작성자</div><div class="sign-name">사회복지사 &nbsp; 김○지</div><div class="sign-stamp">(인)</div></div>
+  <div class="sign-cell"><div class="sign-label">수급자(보호자) 확인</div><div class="sign-name">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div class="sign-stamp">(인)</div></div>
+  <div class="sign-cell"><div class="sign-label">시설장</div><div class="sign-name">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div class="sign-stamp">(인)</div></div>
 </div>
-
 </div></body></html>`
   }
 
@@ -1095,18 +1548,16 @@ function showSample(key) {
   document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('active'));
   event.currentTarget.classList.add('active');
 
-  // 미리보기 표시
+  // placeholder 숨기고 미리보기 표시
+  document.getElementById('preview-placeholder').style.display = 'none';
   document.getElementById('preview-title').textContent = sample.title;
   document.getElementById('preview-iframe').srcdoc = sample.html;
-  const wrap = document.getElementById('preview-wrap');
-  wrap.classList.add('show');
-
-  // 스크롤
-  setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  document.getElementById('preview-wrap').classList.add('show');
 }
 
 function closeSample() {
   document.getElementById('preview-wrap').classList.remove('show');
+  document.getElementById('preview-placeholder').style.display = 'block';
   document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('active'));
 }
 </script>
