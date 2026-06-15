@@ -6815,12 +6815,8 @@ function renderPeriodicResult(html) {
 // ════════════════════════════════════════
 function showDisclaimerModal(callback) {
   const today = new Date().toISOString().slice(0, 10);
-  const seen  = localStorage.getItem('daeum-disclaimer-seen');
-  if (seen === today) { callback(); return; } // 오늘 이미 확인
-  const modal = document.getElementById('ai-disclaimer-modal');
-  modal.style.display = 'flex';
-  // 확인 버튼 콜백 연결
-  modal._pendingCallback = callback;
+  localStorage.setItem('daeum-disclaimer-seen', today);
+  callback(); // 모달 없이 바로 진행
 }
 function closeDisclaimerModal() {
   const today = new Date().toISOString().slice(0, 10);
@@ -9653,7 +9649,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.12
+  Day:음 · v2026.06.15.13
 </div>
 </body>
 </html>
