@@ -3717,28 +3717,6 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
   </div>
 
-  <!-- AI 검토 안내 모달 -->
-  <div id="ai-disclaimer-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:99999;">
-    <div style="background:#fff;border-radius:16px;padding:28px 24px 22px;max-width:340px;width:90%;margin:80px auto 0;box-shadow:0 8px 32px rgba(0,0,0,.22);position:relative">
-      <div style="text-align:center;margin-bottom:16px">
-        <div style="font-size:32px;margin-bottom:8px">📋</div>
-        <div style="font-size:15px;font-weight:700;color:#1F3864;margin-bottom:10px">AI 문서 생성 전 안내</div>
-        <div style="width:40px;height:3px;background:#1F3864;border-radius:2px;margin:0 auto 16px"></div>
-      </div>
-      <div style="background:#EEF2FF;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:#1F3864;line-height:1.8;font-weight:600;text-align:center">
-        생성된 문서는 반드시 검토가 필요합니다.
-      </div>
-      <div style="font-size:12.5px;color:#555;line-height:1.9;margin-bottom:18px">
-        AI는 급여제공기록지를 바탕으로 <strong>초안</strong>을 제시합니다.<br>
-        최종 문서의 내용에 대한 책임은 담당자에게 있으며,
-        생성 후 반드시 내용을 확인·수정하시기 바랍니다.<br><br>
-        <span style="color:#888;font-size:11.5px">※ 오늘 하루 동안 이 안내는 다시 표시되지 않습니다.</span>
-      </div>
-      <button onclick="closeDisclaimerModal()" style="width:100%;padding:12px;background:#1F3864;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.5px">
-        확인했습니다
-      </button>
-    </div>
-  </div>
 
 </div>
 </div>
@@ -5845,7 +5823,7 @@ ${detail ? `- 실시 내용 및 특이사항: ${detail}` : ''}
     window._reportHtml = result;
     window._reportTitle = `${centerCfg.name}_${title}_${date}`;
     const iframe = document.getElementById('report-iframe');
-    iframe.srcdoc = result.includes('<body') ? result.replace(/<body[^>]*>/, (m) => m + DRAFT_NOTICE) : DRAFT_NOTICE + result;
+    iframe.srcdoc = result;
     document.getElementById('report-result').classList.add('show');
 
   } catch(err) {
@@ -6114,6 +6092,7 @@ const DOC_CSS = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'No
 
 // ── AI 초안 경고 문구 (모든 문서 공통) ──
 const DRAFT_NOTICE = `<div class="ai-draft-notice">※ 이 문서는 AI(Day:음)가 작성한 초안입니다. 채택 여부는 담당자가 결정하시고, 실제 내용을 반영하여 수정해 주세요.</div>`;
+
 function buildMonthlyPrompt(opinion) {
   // 선택된 문서 확인
   const docs = {
@@ -7125,17 +7104,14 @@ function closeDisclaimerModal() {
 }
 
 async function startGenerate(type) {
-  console.log('[Day:음] startGenerate 시작:', type);
   const prefix = type === 'monthly' ? 'm' : 'p';
   const upload = document.getElementById(prefix + '-upload');
   if (!upload.classList.contains('has-file')) {
     alert('먼저 파일을 업로드하거나 샘플을 선택해주세요.');
     return;
   }
-  console.log('[Day:음] 파일 확인 OK, 모달 표시');
   // AI 검토 안내 모달 (오늘 첫 생성 시 1회)
   await new Promise(resolve => showDisclaimerModal(resolve));
-  console.log('[Day:음] 모달 통과, API 호출 시작');
 
   // 월간 문서: 선택된 항목 기반으로 프로그레스 스텝 텍스트 업데이트
   if (type === 'monthly') {
@@ -8901,7 +8877,6 @@ async function loadAdhocResidents() {
   const list = await loadAll();
   const wrap = document.getElementById('adhoc-resident-list');
   const noMsg = document.getElementById('adhoc-no-resident');
-  // 샘플(demo) 어르신 제외 — 실제 저장 어르신만 표시
   const realList = (list || []).filter(r => !r.id?.startsWith('demo-'));
   if (realList.length === 0) {
     wrap.innerHTML = '';
@@ -9971,7 +9946,30 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.35
+  Day:음 · v2026.06.15.36
+</div>
+
+<!-- AI 검토 안내 모달 (body 직속) -->
+<div id="ai-disclaimer-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:99999;">
+  <div style="background:#fff;border-radius:16px;padding:28px 24px 22px;max-width:340px;width:90%;margin:80px auto 0;box-shadow:0 8px 32px rgba(0,0,0,.22);position:relative">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:32px;margin-bottom:8px">📋</div>
+      <div style="font-size:15px;font-weight:700;color:#1F3864;margin-bottom:10px">AI 문서 생성 전 안내</div>
+      <div style="width:40px;height:3px;background:#1F3864;border-radius:2px;margin:0 auto 16px"></div>
+    </div>
+    <div style="background:#EEF2FF;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:#1F3864;line-height:1.8;font-weight:600;text-align:center">
+      생성된 문서는 반드시 검토가 필요합니다.
+    </div>
+    <div style="font-size:12.5px;color:#555;line-height:1.9;margin-bottom:18px">
+      AI는 급여제공기록지를 바탕으로 <strong>초안</strong>을 제시합니다.<br>
+      최종 문서의 내용에 대한 책임은 담당자에게 있으며,
+      생성 후 반드시 내용을 확인·수정하시기 바랍니다.<br><br>
+      <span style="color:#888;font-size:11.5px">※ 오늘 하루 동안 이 안내는 다시 표시되지 않습니다.</span>
+    </div>
+    <button onclick="closeDisclaimerModal()" style="width:100%;padding:12px;background:#1F3864;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.5px">
+      확인했습니다
+    </button>
+  </div>
 </div>
 </body>
 </html>
