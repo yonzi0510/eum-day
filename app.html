@@ -180,8 +180,6 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 /* 생성 버튼 */
 .gen-btn{width:100%;padding:12px;border-radius:8px;border:none;background:#1F3864;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;margin-top:4px}
 .gen-btn:hover{background:#162a4e;transform:translateY(-1px)}
-.gen-btn:disabled{background:#B0BEC5;cursor:not-allowed;transform:none;opacity:.7}
-.survey-gen-btn:disabled{background:#B0BEC5;cursor:not-allowed;opacity:.7}
 
 /* 진행 */
 .prog-wrap{display:none}
@@ -720,7 +718,6 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <button class="sub-tab" onclick="switchSub('sub-periodic',this)">📋 정기 문서</button>
     <button class="sub-tab" onclick="switchSub('sub-adhoc',this)">🔔 수시 문서</button>
     <button class="sub-tab" onclick="switchSub('sub-survey',this)">📊 조사</button>
-    <button class="sub-tab" onclick="switchSub('sub-report',this)">📝 보고서</button>
   </div>
 
   <!-- ── 서브탭: 월간 문서 ── -->
@@ -857,17 +854,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
             <input type="checkbox" id="m1">
             <div class="doc-item-text">
               <div class="dtitle">📝 상담일지</div>
-              <div class="ddesc">회차별 구성 · 보호자 상담 필요 시 자동 추가</div>
+              <div class="ddesc">SOAP 형식 · 회차별 구성<br>보호자 상담 필요 시 자동 추가</div>
               <span class="dbadge db-auto">자동 생성</span>
-              <div id="consult-format-wrap" style="margin-top:8px;display:none;padding:8px 10px;background:#f0f4ff;border-radius:8px;border:1px solid #c5cae9" onclick="event.stopPropagation()">
-                <div style="font-size:11px;font-weight:700;color:#1F3864;margin-bottom:6px">✏️ 작성 형식 선택</div>
-                <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-bottom:4px">
-                  <input type="radio" name="consult-format" value="soap" checked style="accent-color:#1F3864"> SOAP 형식 <span style="color:#888;font-size:11px">(주관·객관·판단·계획)</span>
-                </label>
-                <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
-                  <input type="radio" name="consult-format" value="narrative" style="accent-color:#1F3864"> 서술형 <span style="color:#888;font-size:11px">(자유 서술 · 상황 중심)</span>
-                </label>
-              </div>
             </div>
           </div>
           <input type="checkbox" id="m2" checked style="display:none">
@@ -903,14 +891,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <!-- 월간 진행 -->
     <div class="prog-wrap" id="monthly-prog">
       <div class="card">
-        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
-          <span style="display:flex;align-items:center;gap:6px"><div class="num" style="background:#1D9E75">⚡</div> AI 분석 중...</span>
-          <span id="monthly-pct" style="font-size:13px;font-weight:700;color:#1D9E75">0%</span>
-        </div>
-        <!-- 진행 바 -->
-        <div style="height:4px;background:#E0F7F1;border-radius:2px;margin:6px 0 10px">
-          <div id="monthly-pct-bar" style="height:100%;background:#1D9E75;border-radius:2px;width:0%;transition:width .4s"></div>
-        </div>
+        <div class="card-title"><div class="num" style="background:#1D9E75">⚡</div> AI 분석 중...</div>
         <div class="prog-steps">
           <div class="prog-step" id="mp1"><div class="picon">📋</div>급여제공기록지 전체 분석 중...</div>
           <div class="prog-step" id="mp2"><div class="picon">🔍</div>케어 이벤트 감지 및 분류 중...</div>
@@ -936,10 +917,12 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 
       <!-- 문서1: 상담일지 -->
       <div class="doc-result" id="dr-m1">
-        <div class="doc-result-head">
-          <span>📝</span>
-          <span class="doc-result-title">월간 문서 — 초안 완성</span>
-          <button class="result-copy" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit" onclick="copyResult('m-r1')">복사</button>
+        <div class="doc-result-head" style="display:flex;align-items:center;justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:7px"><span>📝</span><span class="doc-result-title">월간 문서 — 초안 완성</span></span>
+          <span style="display:flex;align-items:center;gap:6px">
+            <button class="result-copy" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit" onclick="copyResult('m-r1')">복사</button>
+            <button id="view-btn-m1" onclick="openMonthlyBox()" style="display:none;font-size:11px;padding:3px 10px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:5px;color:#fff;cursor:pointer;font-family:inherit">🔍 크게보기</button>
+          </span>
         </div>
         <div class="doc-result-body" id="m-r1"></div>
         <div class="feedback-area">
@@ -1816,7 +1799,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
         </div>
         <div class="survey-pgm-row">
           <span class="survey-pgm-label">센터명</span>
-          <input class="survey-pgm-input" id="food-survey-center" placeholder="예) Day:음" value="Day:음">
+          <input class="survey-pgm-input" id="food-survey-center" placeholder="예) 삽교주간보호센터" value="삽교주간보호센터">
         </div>
       </div>
       <div style="background:#FFF8E1;border:1px solid #FFD700;border-radius:8px;padding:10px 13px;font-size:11px;color:#5D4037;margin-bottom:10px;line-height:1.7">
@@ -1921,162 +1904,6 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 
   </div><!-- /sub-survey -->
 
-  <!-- ── 서브탭: 보고서 작성 ── -->
-  <div class="sub-content" id="sub-report">
-
-    <!-- 입력 영역 -->
-    <div id="report-input">
-
-      <!-- 보고서 종류 선택 -->
-      <div class="card" style="padding:14px 16px">
-        <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between"><span>📝 보고서 종류 선택</span><button onclick="showReportSample()" style="font-size:11px;padding:4px 10px;background:#fff;color:#5C3489;border:1.5px solid #5C3489;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600">👁 샘플 확인</button></div>
-        <select id="report-type" onchange="onReportTypeChange()"
-          style="width:100%;padding:10px 12px;border:1.5px solid #C5CAE9;border-radius:9px;font-size:13px;font-family:inherit;color:#333;background:#fff;margin-bottom:4px">
-          <option value="">-- 보고서 종류를 선택하세요 --</option>
-          <optgroup label="🔥 재난·안전 (지표 23)">
-            <option value="fire">재난·화재 대응훈련 결과보고서</option>
-            <option value="disaster">재난상황 대응훈련 결과보고서 (지진·풍수해 등)</option>
-          </optgroup>
-          <optgroup label="👩‍🏫 직원교육 (지표 6·19)">
-            <option value="human_rights">노인인권 및 학대예방교육 결과보고서</option>
-            <option value="operation">운영규정 교육 결과보고서</option>
-            <option value="care_guide">급여제공지침 교육 결과보고서</option>
-            <option value="infection">감염관리 교육 결과보고서</option>
-          </optgroup>
-          <optgroup label="📋 기타 기록 (지표 3·5·7)">
-            <option value="volunteer">자원봉사 활동 결과보고서</option>
-            <option value="health_check">건강검진 실시 결과보고서</option>
-          </optgroup>
-        </select>
-        <!-- 지표 안내 배지 -->
-        <div id="report-indicator-badge" style="display:none;font-size:11px;color:#1F3864;background:#EEF2FF;border-radius:6px;padding:6px 10px;margin-top:6px;line-height:1.7"></div>
-      </div>
-
-      <!-- 공통 입력 폼 -->
-      <div class="card" id="report-form-card" style="display:none;padding:14px 16px">
-
-        <!-- 날짜 / 장소 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div>
-            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px">실시일자 <span style="color:#E24B4A">*</span></div>
-            <input type="date" id="report-date" style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;color:#333;box-sizing:border-box">
-          </div>
-          <div id="report-place-wrap">
-            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px">장소</div>
-            <input type="text" id="report-place" placeholder="예) Day:음 프로그램실" style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;color:#333;box-sizing:border-box">
-          </div>
-        </div>
-
-        <!-- 교육명 / 강사 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px" id="report-title-row">
-          <div>
-            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px" id="report-title-label">교육명 / 훈련명</div>
-            <input type="text" id="report-title" placeholder="자동 입력됩니다" style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;color:#333;box-sizing:border-box">
-          </div>
-          <div id="report-instructor-wrap">
-            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px">강사명</div>
-            <input type="text" id="report-instructor" placeholder="예) 김영지 / 외부강사" style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;color:#333;box-sizing:border-box">
-          </div>
-        </div>
-
-        <!-- 교육방법 (교육류만) -->
-        <div id="report-method-wrap" style="margin-bottom:10px">
-          <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">교육방법</div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-              <input type="radio" name="report-method" value="자체교육" checked style="accent-color:#1F3864"> 자체교육
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-              <input type="radio" name="report-method" value="외부강사초빙" style="accent-color:#1F3864"> 외부강사 초빙
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-              <input type="radio" name="report-method" value="온라인교육이수" style="accent-color:#1F3864"> 온라인 교육 이수
-            </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-              <input type="radio" name="report-method" value="실습훈련" style="accent-color:#1F3864"> 실습·훈련
-            </label>
-          </div>
-        </div>
-
-        <!-- 참석자 -->
-        <div style="margin-bottom:10px">
-          <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px">참석자 <span style="color:#E24B4A">*</span></div>
-          <textarea id="report-participants" rows="2" placeholder="예) 직원 전원 (요양보호사 5명, 사회복지사 1명, 간호조무사 1명)&#10;재난훈련의 경우: 직원 7명, 수급자 12명" style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.7;box-sizing:border-box"></textarea>
-        </div>
-
-        <!-- 작성자 의견 / 특이사항 -->
-        <div style="margin-bottom:10px">
-          <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px">실시 내용 및 특이사항 <span style="color:#E24B4A">*</span></div>
-          <textarea id="report-detail" rows="3" placeholder="실제 진행된 내용, 참석자 반응, 특이사항 등을 입력해주세요.&#10;(예) 소방훈련 시나리오에 따라 대피 절차 실습, 소화기 작동법 시연&#10;→ 입력하신 내용을 바탕으로 AI가 보고서 초안을 작성합니다." style="width:100%;padding:8px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.7;box-sizing:border-box"></textarea>
-        </div>
-
-        <!-- 파일 첨부 (선택) -->
-        <div style="margin-bottom:4px">
-          <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px">자료 첨부 <span style="color:#E24B4A">*</span> <span style="color:#888;font-weight:400;font-size:10px">(사진·교육자료·서식 등)</span></div>
-          <div class="upload-zone" id="report-upload" onclick="document.getElementById('report-file').click()"
-            style="padding:14px;min-height:60px;display:flex;align-items:center;justify-content:center">
-            <div id="report-fname-wrap" style="display:none"><span class="file-tag">✓ <span id="report-fname"></span></span></div>
-            <div id="report-upload-placeholder" style="text-align:center;color:#aaa;font-size:12px">
-              📎 사진 또는 교육자료를 첨부해주세요 (PDF·이미지)<br>
-              <span style="font-size:11px">실제 진행 자료를 바탕으로 AI가 보고서를 작성합니다</span>
-            </div>
-          </div>
-          <input type="file" id="report-file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleReportFile(this)">
-        </div>
-
-      </div><!-- /report-form-card -->
-
-      <!-- 생성 버튼 -->
-      <button class="gen-btn" id="report-gen-btn" onclick="startReportGenerate()"
-        style="display:none;background:#5C3489">
-        📝 AI로 결과보고서 작성하기
-      </button>
-
-    </div><!-- /report-input -->
-
-    <!-- 진행 -->
-    <div class="prog-wrap" id="report-prog">
-      <div class="card">
-        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
-          <span style="display:flex;align-items:center;gap:6px"><div class="num" style="background:#5C3489">⚡</div> 보고서 작성 중...</span>
-          <span id="report-pct" style="font-size:13px;font-weight:700;color:#5C3489">0%</span>
-        </div>
-        <div style="height:4px;background:#EDE7F6;border-radius:2px;margin:6px 0 10px">
-          <div id="report-pct-bar" style="height:100%;background:#5C3489;border-radius:2px;width:0%;transition:width .5s"></div>
-        </div>
-        <div class="prog-steps">
-          <div class="prog-step" id="rp1"><div class="picon">📋</div>보고서 종류 및 입력 정보 분석 중...</div>
-          <div class="prog-step" id="rp2"><div class="picon">🔍</div>평가지표 기준 검토 중...</div>
-          <div class="prog-step" id="rp3"><div class="picon">✏️</div>결과보고서 본문 작성 중...</div>
-          <div class="prog-step" id="rp4"><div class="picon">✅</div>검토 및 완료...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 결과 -->
-    <div class="result-wrap" id="report-result">
-      <div class="card">
-        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
-          <span>📝 결과보고서 — 초안 완성</span>
-          <div style="display:flex;gap:6px">
-            <button onclick="openDocViewer(window._reportHtml,'결과보고서')"
-              style="font-size:11px;padding:5px 10px;background:#5C3489;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit">🔍 크게 보기</button>
-            <button onclick="downloadReportWord()"
-              style="font-size:11px;padding:5px 10px;background:#1F3864;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit">⬇ Word 다운로드</button>
-          </div>
-        </div>
-        <div id="report-preview" style="border:1px solid #E0E6F0;border-radius:8px;overflow:hidden;max-height:500px;overflow-y:auto;margin-top:4px">
-          <iframe id="report-iframe" style="width:100%;height:480px;border:none"></iframe>
-        </div>
-        <button onclick="resetReport()" style="margin-top:10px;width:100%;padding:9px;background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">
-          ↩ 새 보고서 작성
-        </button>
-      </div>
-    </div>
-
-  </div><!-- /sub-report -->
-
-
 </div><!-- /main -->
 </div><!-- /tab-docs -->
 
@@ -2087,16 +1914,12 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 <div class="main">
 
   <div class="card">
-    <div class="card-title" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+    <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
       <span>📄 문서 결과 보기</span>
       <div style="display:flex;gap:6px;align-items:center">
         <span id="results-center-label" style="font-size:11px;color:#888"></span>
         <button onclick="loadResultsDocs()" style="font-size:11px;color:#1F3864;background:none;border:1px solid #C5CAE9;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">새로고침</button>
       </div>
-    </div>
-    <div style="font-size:11px;color:#888;background:#FFF8E1;border:1px solid #FFE082;border-radius:7px;padding:7px 12px;margin-bottom:12px;line-height:1.6">
-      ⏱ 생성 후 <strong>24시간</strong> 이내 문서만 표시됩니다. 이후에는 자동으로 사라져요.<br>
-      필요한 문서는 <strong>Word 다운로드</strong>로 미리 저장해 두세요.
     </div>
     <div id="results-doc-body">
       <div style="text-align:center;color:#bbb;padding:24px;font-size:13px">불러오는 중...</div>
@@ -3577,7 +3400,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
       </div>
       <div>
         <div style="font-size:12px;font-weight:600;color:#444;margin-bottom:5px">소속 센터</div>
-        <input class="review-input" id="review-center" type="text" placeholder="예) Day:음">
+        <input class="review-input" id="review-center" type="text" placeholder="예) 삽교주간보호센터">
       </div>
     </div>
 
@@ -3664,8 +3487,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <!-- AI 사용량 현황 (관리자 전용) -->
   <div class="card" id="usage-card" style="margin-top:8px;display:none">
     <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
-      <span>📊 AI 사용량 · 청구 현황 <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 6px;border-radius:3px;margin-left:4px">관리자</span></span>
-      <button onclick="clearUsageLog()" style="font-size:11px;color:#aaa;background:none;border:1px solid #ddd;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">삭제</button>
+      <span>📊 AI 사용량 현황 <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 6px;border-radius:3px;margin-left:4px">관리자</span></span>
+      <button onclick="clearUsageLog()" style="font-size:11px;color:#aaa;background:none;border:1px solid #ddd;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">초기화</button>
     </div>
     <!-- 관리자 코드 입력 -->
     <div id="admin-login-box">
@@ -3677,49 +3500,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
     <!-- 사용량 내역 -->
     <div id="usage-log-body-wrap" style="display:none">
-      <!-- 월 선택 + 청구서 출력 -->
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
-        <select id="usage-month-sel" onchange="renderUsageLog()"
-          style="flex:1;padding:7px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:12px;font-family:inherit;color:#333">
-        </select>
-        <select id="usage-center-sel" onchange="renderUsageLog()"
-          style="flex:1;padding:7px 10px;border:1.5px solid #C5CAE9;border-radius:7px;font-size:12px;font-family:inherit;color:#333">
-          <option value="">전체 센터</option>
-          <option value="sapgyo">삽교</option>
-          <option value="center2">덕산</option>
-          <option value="center3">내포소망</option>
-        </select>
-        <button onclick="printBill()" style="padding:7px 12px;background:#1F3864;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">🧾 청구서 출력</button>
-      </div>
       <div id="usage-log-body"></div>
-    </div>
-  </div>
-
-
-
-  <!-- 보고서 샘플 확인 모달 -->
-  <div id="report-sample-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:99998;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 0">
-    <div style="background:#fff;border-radius:14px;width:90%;max-width:820px;margin:0 auto;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.3)">
-      <!-- 모달 헤더 -->
-      <div style="background:#5C3489;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-size:14px;font-weight:700">📋 보고서 샘플 미리보기</div>
-          <div style="font-size:11px;opacity:.8;margin-top:2px">재난·화재 대응훈련 결과보고서 · 실제 생성 스타일 예시</div>
-        </div>
-        <button onclick="closeReportSample()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">✕ 닫기</button>
-      </div>
-      <!-- 안내 배너 -->
-      <div style="background:#FFF8E1;border-bottom:1px solid #F4D66C;padding:10px 20px;font-size:11.5px;color:#7A5C00;line-height:1.7">
-        💡 아래는 Day:음이 생성하는 보고서 스타일 예시입니다. 실제 생성 시에는 <strong>입력하신 내용과 첨부 자료</strong>를 바탕으로 구체적인 내용이 채워집니다.
-      </div>
-      <!-- 샘플 본문 iframe -->
-      <div style="height:75vh;overflow-y:auto">
-        <iframe id="report-sample-iframe" style="width:100%;height:100%;border:none" srcdoc=""></iframe>
-      </div>
-      <!-- 하단 버튼 -->
-      <div style="padding:12px 20px;background:#f8f8f8;border-top:1px solid #eee;text-align:center">
-        <button onclick="closeReportSample()" style="padding:10px 28px;background:#5C3489;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">확인</button>
-      </div>
     </div>
   </div>
 
@@ -4361,7 +4142,7 @@ function printProgramSurvey() {
 // ── 설문지 출력: 식사 ──
 function printFoodSurvey() {
   const period = document.getElementById('food-survey-period').value || '2026년 상반기';
-  const center = document.getElementById('food-survey-center').value || 'Day:음';
+  const center = document.getElementById('food-survey-center').value || '삽교주간보호센터';
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>식사 만족도 설문지</title>
 <style>
@@ -4573,7 +4354,7 @@ async function runSurveyAI(prompt, resultId, bodyId) {
     const data = await res.json();
     let html = data.content?.map(c => c.text || '').join('') || '';
     html = html.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
-    bodyEl.innerHTML = (html ? DRAFT_NOTICE + html : null) || '<p style="color:#aaa;text-align:center;padding:20px">결과를 불러오지 못했어요.</p>';
+    bodyEl.innerHTML = html || '<p style="color:#aaa;text-align:center;padding:20px">결과를 불러오지 못했어요.</p>';
     window[resultId + '_html'] = html;
   } catch(e) {
     bodyEl.innerHTML = `<p style="color:#E24B4A;padding:12px">오류: ${e.message}</p>`;
@@ -4804,13 +4585,7 @@ async function loadDocHistory() {
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
-    const now = Date.now();
-    const docs = (await res.json()).filter(d => {
-      if (d.doc_type === '__residents__') return false;
-      // 24시간 이내 문서만 표시
-      const age = now - new Date(d.created_at).getTime();
-      return age <= 24 * 60 * 60 * 1000;
-    });
+    const docs = (await res.json()).filter(d => d.doc_type !== '__residents__');
 
     if (!docs.length) {
       body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">아직 저장된 문서가 없어요.</div>';
@@ -4830,7 +4605,7 @@ async function loadDocHistory() {
             <button onclick="document.getElementById('hist-doc-modal').style.display='none'"
               style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">✕</button>
           </div>
-          <iframe id="hist-modal-body" style="width:100%;height:80vh;border:none" frameborder="0"></iframe>
+          <div id="hist-modal-body" style="padding:16px;max-height:80vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
         </div>`;
       m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
       document.body.appendChild(m);
@@ -4908,7 +4683,7 @@ async function loadResultsDocs() {
             <button onclick="document.getElementById('results-doc-modal').style.display='none'"
               style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">✕</button>
           </div>
-          <iframe id="results-modal-body" style="width:100%;height:85vh;border:none" frameborder="0"></iframe>
+          <div id="results-modal-body" style="padding:20px;max-height:85vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
         </div>`;
       m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
       document.body.appendChild(m);
@@ -4966,15 +4741,20 @@ function openResultDoc(idx) {
   const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
   document.getElementById('results-modal-title').textContent = `${d.resident_name} · ${d.doc_type}`;
   document.getElementById('results-modal-date').textContent = `${d.center_name || ''} · ${dateStr}`;
-  const rmb = document.getElementById('results-modal-body');
-  const rcontent = d.doc_content || '';
-  if (rcontent.includes('<!DOCTYPE') || rcontent.includes('<html')) {
-    rmb.srcdoc = rcontent;
-  } else if (rcontent) {
-    rmb.srcdoc = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${rcontent}</body></html>`;
+
+  const content = d.doc_content || '';
+  const modalBody = document.getElementById('results-modal-body');
+
+  // 완전한 HTML 문서면 iframe으로 표시
+  const trimmed = content.trim();
+  if (trimmed.toLowerCase().startsWith('<!doctype') || trimmed.toLowerCase().startsWith('<html')) {
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    modalBody.innerHTML = `<iframe src="${blobUrl}" style="width:100%;height:75vh;border:none;border-radius:6px" onload="setTimeout(()=>URL.revokeObjectURL('${blobUrl}'),3000)"></iframe>`;
   } else {
-    rmb.srcdoc = '<html><body><p style="color:#aaa;padding:20px">내용 없음</p></body></html>';
+    modalBody.innerHTML = content || '<p style="color:#aaa">내용 없음</p>';
   }
+
   modal.style.display = 'block';
   modal.scrollTop = 0;
 }
@@ -4987,900 +4767,99 @@ function openHistDoc(idx) {
   const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
   document.getElementById('hist-modal-title').textContent = `${d.resident_name} · ${d.doc_type}`;
   document.getElementById('hist-modal-date').textContent = `${d.center_name || ''} · ${dateStr} 생성`;
-  const hmb = document.getElementById('hist-modal-body');
-  const hcontent = d.doc_content || '';
-  if (hcontent.includes('<!DOCTYPE') || hcontent.includes('<html')) {
-    hmb.srcdoc = hcontent;
-  } else if (hcontent) {
-    hmb.srcdoc = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${hcontent}</body></html>`;
+
+  const content = d.doc_content || '';
+  const modalBody = document.getElementById('hist-modal-body');
+
+  const trimmed = content.trim();
+  if (trimmed.toLowerCase().startsWith('<!doctype') || trimmed.toLowerCase().startsWith('<html')) {
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    modalBody.innerHTML = `<iframe src="${blobUrl}" style="width:100%;height:75vh;border:none;border-radius:6px" onload="setTimeout(()=>URL.revokeObjectURL('${blobUrl}'),3000)"></iframe>`;
   } else {
-    hmb.srcdoc = '<html><body><p style="color:#aaa;padding:20px">내용 없음</p></body></html>';
+    modalBody.innerHTML = content || '<p style="color:#aaa">내용 없음</p>';
   }
+
   modal.style.display = 'block';
   modal.scrollTop = 0;
 }
 
-// ── 요금제 상수 ──
-const PRICING = {
-  promo_until: '2026-12-31',
-  periodic: { regular: 3000, promo: 1000 },
-  monthly:  { regular: 600,  promo: 300  },
-};
-function getPrice(docType, isPromo) {
-  const p = PRICING[docType] || PRICING.monthly;
-  return isPromo ? p.promo : p.regular;
-}
-function isPromoActive() {
-  return new Date().toISOString().slice(0,10) <= PRICING.promo_until;
-}
-
-async function renderUsageLog() {
+function renderUsageLog() {
+  const USAGE_KEY = 'daeum-usage-log';
+  const logs = JSON.parse(localStorage.getItem(USAGE_KEY) || '[]');
   const body = document.getElementById('usage-log-body');
   if (!body) return;
-  body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>';
 
-  const monthSel  = document.getElementById('usage-month-sel');
-  const centerSel = document.getElementById('usage-center-sel');
-  const selCenter = centerSel?.value || '';
-
-  let logs = [];
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/usage_logs?order=logged_at.desc&limit=1000`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-    );
-    if (res.ok) logs = await res.json();
-  } catch(e) {}
-
-  if (!Array.isArray(logs) || logs.length === 0) {
+  if (logs.length === 0) {
     body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">아직 기록이 없어요.</div>';
-    if (monthSel && !monthSel.options.length) {
-      const m = new Date().toISOString().slice(0,7);
-      monthSel.innerHTML = `<option value="${m}">${m}</option>`;
-    }
     return;
   }
 
-  // 월 목록 & 드롭다운
-  const months = [...new Set(logs.map(l => (l.logged_at||'').slice(0,7)))].sort().reverse();
-  if (monthSel) {
-    const cur = monthSel.value;
-    monthSel.innerHTML = months.map(m => `<option value="${m}"${m===cur?'selected':''}>${m}</option>`).join('');
-    if (!monthSel.value) monthSel.value = months[0];
-  }
-  const activeMonth = monthSel?.value || months[0];
-  const promo = isPromoActive();
+  // 오늘 날짜 기준 필터
+  const today = new Date().toISOString().slice(0, 10);
+  const todayLogs = logs.filter(l => l.ts?.startsWith(today));
+  const totalLogs = logs;
 
-  // 필터
-  const filtered = logs.filter(l =>
-    (l.logged_at||'').startsWith(activeMonth) &&
-    (!selCenter || l.center_code === selCenter)
-  );
+  const sumKRW  = (arr) => arr.reduce((s, l) => s + (l.costKRW || 0), 0);
+  const sumInput = (arr) => arr.reduce((s, l) => s + (l.input || 0), 0);
+  const sumOutput= (arr) => arr.reduce((s, l) => s + (l.output || 0), 0);
 
-  // 과금 계산
-  function calcBill(arr) {
-    const periodicMap = {};
-    let monthlyCount = 0;
-    arr.forEach(l => {
-      if (l.doc_type === 'periodic') {
-        const key = `${l.center_code}_${(l.logged_at||'').slice(0,10)}`;
-        if (!periodicMap[key]) periodicMap[key] = { steps: 0 };
-        periodicMap[key].steps++;
-      } else { monthlyCount++; }
-    });
-    const periodicSets = Object.values(periodicMap).reduce((s,v) => s + Math.ceil(v.steps/4), 0);
-    const periodicAmt  = periodicSets * getPrice('periodic', promo);
-    const monthlyAmt   = monthlyCount * getPrice('monthly', promo);
-    return { periodicSets, periodicAmt, monthlyCount, monthlyAmt, total: periodicAmt + monthlyAmt };
-  }
-  const bill = calcBill(filtered);
-
-  // 센터별 집계
+  // 센터별 집계 (전체)
   const byCtr = {};
-  filtered.forEach(l => {
-    const k = l.center_short || l.center_code || '?';
-    if (!byCtr[k]) byCtr[k] = { periodic:0, monthly:0, code:l.center_code };
-    if (l.doc_type === 'periodic') byCtr[k].periodic++;
-    else byCtr[k].monthly++;
+  totalLogs.forEach(l => {
+    const k = l.center || '?';
+    if (!byCtr[k]) byCtr[k] = { count: 0, costKRW: 0 };
+    byCtr[k].count++;
+    byCtr[k].costKRW += l.costKRW || 0;
   });
 
-  const today = new Date().toISOString().slice(0,10);
-  const todayFiltered = filtered.filter(l => (l.logged_at||'').startsWith(today));
-
   body.innerHTML = `
-    <div style="background:linear-gradient(135deg,#1F3864,#2d54a3);border-radius:10px;padding:14px 16px;margin-bottom:10px;color:#fff">
-      <div style="font-size:11px;font-weight:600;opacity:.8;margin-bottom:8px">
-        💰 ${activeMonth} 청구 예정${selCenter?' · '+(CENTERS[selCenter]?.short||selCenter):' · 전체'}
-        ${promo?'<span style="background:#F4D66C;color:#5D4037;border-radius:4px;padding:1px 6px;font-size:10px;margin-left:6px">프로모션</span>':''}
-      </div>
-      <div style="font-size:24px;font-weight:700;margin-bottom:8px">${bill.total.toLocaleString()}원</div>
-      <div style="display:flex;gap:10px;font-size:11px;opacity:.85;flex-wrap:wrap">
-        <span>정기 ${bill.periodicSets}세트 × ${getPrice('periodic',promo).toLocaleString()}원 = ${bill.periodicAmt.toLocaleString()}원</span>
-        <span>월간 ${bill.monthlyCount}건 × ${getPrice('monthly',promo).toLocaleString()}원 = ${bill.monthlyAmt.toLocaleString()}원</span>
-      </div>
-    </div>
-    <div style="background:#EEF2FF;border-radius:8px;padding:10px 13px;margin-bottom:8px">
-      <div style="font-size:11px;font-weight:600;color:#1F3864;margin-bottom:4px">📅 오늘 (${today})</div>
-      <div style="display:flex;gap:10px;font-size:12px;color:#333;flex-wrap:wrap">
-        <span>호출 <strong>${todayFiltered.length}건</strong></span>
-        <span>API실비 <strong style="color:#E24B4A">≈ ${todayFiltered.reduce((s,l)=>s+(l.cost_krw||0),0).toLocaleString()}원</strong></span>
+    <!-- 오늘 요약 -->
+    <div style="background:#EEF2FF;border-radius:8px;padding:10px 13px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:#1F3864;margin-bottom:6px">📅 오늘 (${today})</div>
+      <div style="display:flex;gap:12px;font-size:12px;color:#333">
+        <span>호출 <strong>${todayLogs.length}건</strong></span>
+        <span>입력 <strong>${sumInput(todayLogs).toLocaleString()}</strong> 토큰</span>
+        <span>출력 <strong>${sumOutput(todayLogs).toLocaleString()}</strong> 토큰</span>
+        <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(todayLogs).toLocaleString()}원</strong></span>
       </div>
     </div>
-    ${Object.keys(byCtr).length > 1 ? `
-    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">🏢 센터별 (${activeMonth})</div>
-    <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">
-      ${Object.entries(byCtr).map(([ctr,d]) => {
-        const sets = Math.ceil(d.periodic/4);
-        const amt  = sets*getPrice('periodic',promo) + d.monthly*getPrice('monthly',promo);
-        return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;background:#fff;border:1px solid #eee;border-radius:6px;padding:6px 10px">
-          <span style="font-weight:600">${ctr}</span>
-          <span style="color:#777;font-size:11px">정기 ${sets}세트 · 월간 ${d.monthly}건</span>
-          <strong style="color:#1F3864">${amt.toLocaleString()}원</strong>
-        </div>`;
-      }).join('')}
-    </div>` : ''}
-    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">최근 기록 (${activeMonth})</div>
+    <!-- 전체 요약 -->
+    <div style="background:#F5F5F5;border-radius:8px;padding:10px 13px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">📊 전체 누적 (${totalLogs.length}건)</div>
+      <div style="display:flex;gap:12px;font-size:12px;color:#333;flex-wrap:wrap">
+        <span>입력 <strong>${sumInput(totalLogs).toLocaleString()}</strong> 토큰</span>
+        <span>출력 <strong>${sumOutput(totalLogs).toLocaleString()}</strong> 토큰</span>
+        <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(totalLogs).toLocaleString()}원</strong></span>
+      </div>
+    </div>
+    <!-- 센터별 -->
+    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">센터별 집계</div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
+      ${Object.entries(byCtr).map(([ctr, d]) => `
+        <div style="display:flex;justify-content:space-between;font-size:12px;background:#fff;border:1px solid #eee;border-radius:6px;padding:6px 10px">
+          <span>${ctr}</span>
+          <span>${d.count}건 · <strong style="color:#E24B4A">≈ ${d.costKRW.toLocaleString()}원</strong></span>
+        </div>`).join('')}
+    </div>
+    <!-- 최근 10건 -->
+    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">최근 10건</div>
     <div style="display:flex;flex-direction:column;gap:3px">
-      ${filtered.slice(0,20).map(l => `
-        <div style="font-size:11px;color:#555;background:#fafafa;border:1px solid #eee;border-radius:5px;padding:5px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <span style="color:#aaa">${(l.logged_at||'').slice(0,16).replace('T',' ')}</span>
-          <span>${l.center_short||l.center_code||'?'} · ${l.doc_label||'?'}</span>
-          <span style="color:#888;font-size:10px;background:#f0f0f0;padding:1px 5px;border-radius:3px">${l.doc_type==='periodic'?'정기':'월간'}</span>
+      ${[...totalLogs].reverse().slice(0, 10).map(l => `
+        <div style="font-size:11px;color:#555;background:#fafafa;border:1px solid #eee;border-radius:5px;padding:5px 10px;display:flex;justify-content:space-between;gap:8px">
+          <span style="color:#aaa">${l.ts?.slice(0,16).replace('T',' ')}</span>
+          <span>${l.center || '?'} · ${l.doc || '?'}</span>
+          <span style="color:#E24B4A;white-space:nowrap">≈ ${(l.costKRW||0).toLocaleString()}원</span>
         </div>`).join('')}
     </div>`;
 }
 
-async function clearUsageLog() {
-  const options = Object.entries(CENTERS).map(([code,cfg])=>`  ${cfg.short} → ${code}`).join('\n');
-  const choice = prompt(`삭제할 센터코드 입력\n${options}\n\n전체 삭제: all`, '');
-  if (choice === null) return;
-  let url;
-  if (choice.trim() === 'all') {
-    if (!confirm('전체 사용량 기록을 삭제할까요?')) return;
-    url = `${SUPABASE_URL}/rest/v1/usage_logs`;
-  } else if (CENTERS[choice.trim()]) {
-    if (!confirm(`${CENTERS[choice.trim()].name} 사용량 기록을 삭제할까요?`)) return;
-    url = `${SUPABASE_URL}/rest/v1/usage_logs?center_code=eq.${choice.trim()}`;
-  } else {
-    alert('올바른 센터코드를 입력하세요 (sapgyo / center2 / center3 / all)');
-    return;
-  }
-  try {
-    const res = await fetch(url, {
-      method:'DELETE',
-      headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` }
-    });
-    if (res.ok) { alert('삭제 완료'); renderUsageLog(); }
-    else alert('삭제 실패: ' + res.status);
-  } catch(e) { alert('오류: ' + e.message); }
+function clearUsageLog() {
+  if (!confirm('사용량 기록을 모두 삭제할까요?')) return;
+  localStorage.removeItem('daeum-usage-log');
+  renderUsageLog();
 }
 
-async function printBill() {
-  const monthSel  = document.getElementById('usage-month-sel');
-  const centerSel = document.getElementById('usage-center-sel');
-  const activeMonth = monthSel?.value;
-  const selCenter   = centerSel?.value || '';
-  if (!activeMonth) return alert('월을 선택해주세요.');
-
-  let logs = [];
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/usage_logs?order=logged_at.desc&limit=1000`,
-      { headers:{ 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` } }
-    );
-    if (res.ok) logs = await res.json();
-  } catch(e) {}
-
-  const filtered = logs.filter(l =>
-    (l.logged_at||'').startsWith(activeMonth) &&
-    (!selCenter || l.center_code === selCenter)
-  );
-  const promo = isPromoActive();
-
-  const periodicMap = {};
-  let monthlyCount = 0;
-  filtered.forEach(l => {
-    if (l.doc_type === 'periodic') {
-      const key = `${l.center_code}_${(l.logged_at||'').slice(0,10)}`;
-      if (!periodicMap[key]) periodicMap[key] = { steps:0, date:(l.logged_at||'').slice(0,10), ctr:l.center_short||l.center_code };
-      periodicMap[key].steps++;
-    } else { monthlyCount++; }
-  });
-  const periodicSets = Object.values(periodicMap).reduce((s,v)=>s+Math.ceil(v.steps/4),0);
-  const periodicAmt  = periodicSets * getPrice('periodic', promo);
-  const monthlyAmt   = monthlyCount * getPrice('monthly', promo);
-  const totalAmt     = periodicAmt + monthlyAmt;
-  const apiCost      = filtered.reduce((s,l)=>s+(l.cost_krw||0),0);
-
-  const centerLabel = selCenter ? (CENTERS[selCenter]?.name||selCenter) : '전체 센터';
-  const issueDate   = new Date().toLocaleDateString('ko-KR');
-  const [yr, mo]    = activeMonth.split('-');
-
-  const billHtml = `<!DOCTYPE html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<title>Day:음 이용요금 청구서 ${activeMonth}</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px}
-.page{background:#fff;max-width:680px;margin:0 auto;padding:44px 52px 52px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
-.logo{font-size:18pt;font-weight:700;color:#1F3864;letter-spacing:2px;margin-bottom:2px}
-.logo-sub{font-size:9pt;color:#888;margin-bottom:28px}
-.bill-title{font-size:16pt;font-weight:700;letter-spacing:4px;text-align:center;color:#1F3864;border-bottom:2.5px solid #1F3864;padding-bottom:10px;margin-bottom:22px}
-.meta-tbl{width:100%;border-collapse:collapse;margin-bottom:26px;font-size:10pt}
-.meta-tbl th{background:#EEF2FF;border:1px solid #C5CAE9;padding:7px 12px;text-align:left;font-weight:600;color:#1F3864;width:90px}
-.meta-tbl td{border:1px solid #C5CAE9;padding:7px 12px}
-.sec-title{font-size:10.5pt;font-weight:700;color:#1F3864;margin-bottom:8px;padding-left:6px;border-left:3px solid #1F3864}
-.item-tbl{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:10pt}
-.item-tbl th{background:#1F3864;color:#fff;padding:8px 12px;text-align:center;font-weight:600}
-.item-tbl td{border:1px solid #ddd;padding:8px 12px;text-align:center}
-.item-tbl tr:nth-child(even) td{background:#F8F9FF}
-.total-box{background:#EEF2FF;border:2px solid #1F3864;border-radius:8px;padding:16px 22px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
-.total-label{font-size:12pt;font-weight:700;color:#1F3864}
-.total-amt{font-size:20pt;font-weight:700;color:#1F3864}
-.note-box{background:#FFFBF0;border:1px solid #F4D66C;border-radius:6px;padding:12px 16px;font-size:9.5pt;color:#7A5C00;line-height:1.9}
-.footer{margin-top:32px;padding-top:14px;border-top:1px solid #eee;font-size:9pt;color:#aaa;text-align:center;line-height:1.9}
-@media print{body{background:#fff;padding:0}.page{box-shadow:none;padding:32px 40px}}
-</style></head><body><div class="page">
-  <div class="logo">Day:음</div>
-  <div class="logo-sub">하루의 기록이 문서를 만듭니다.</div>
-  <div class="bill-title">이 용 요 금 청 구 서</div>
-  <table class="meta-tbl">
-    <tr><th>청구 대상</th><td>${centerLabel}</td><th>청구 기간</th><td>${yr}년 ${mo}월</td></tr>
-    <tr><th>발행일</th><td>${issueDate}</td><th>적용 요금</th><td>${promo?'프로모션가 (∼2026.12.31)':'정가'}</td></tr>
-  </table>
-  <div class="sec-title" style="margin-bottom:10px">이용 내역</div>
-  <table class="item-tbl">
-    <thead><tr><th>구분</th><th>단가</th><th>수량</th><th>금액</th></tr></thead>
-    <tbody>
-      <tr>
-        <td style="text-align:left">정기문서 세트<br><span style="font-size:9pt;color:#888">기초평가 + 욕구사정 + 결과평가 + 계획서</span></td>
-        <td>${getPrice('periodic',promo).toLocaleString()}원</td>
-        <td>${periodicSets}세트</td>
-        <td><strong>${periodicAmt.toLocaleString()}원</strong></td>
-      </tr>
-      <tr>
-        <td style="text-align:left">월간문서<br><span style="font-size:9pt;color:#888">상담일지, 보호자 상담일지 등</span></td>
-        <td>${getPrice('monthly',promo).toLocaleString()}원</td>
-        <td>${monthlyCount}건</td>
-        <td><strong>${monthlyAmt.toLocaleString()}원</strong></td>
-      </tr>
-    </tbody>
-  </table>
-  <div class="total-box">
-    <span class="total-label">청구 합계</span>
-    <span class="total-amt">${totalAmt.toLocaleString()} 원</span>
-  </div>
-  <div class="note-box">
-    ${promo?'※ 시범운영 프로모션 요금 적용 중 (정가: 정기 3,000원 / 월간 600원)<br>':''}
-    ※ 프로모션 기간: 2026년 12월 31일까지<br>
-    ※ API 실비 참고: 약 ${apiCost.toLocaleString()}원<br>
-    ※ 문의: Day:음 관리자
-  </div>
-  <div class="footer">
-    Day:음 · Day:음 운영<br>
-    저작권 등록 완료 (한국저작권위원회 cros.or.kr)<br>
-    본 청구서는 Day:음 시스템에서 자동 생성되었습니다.
-  </div>
-</div></body></html>`;
-
-  const w = window.open('', '_blank');
-  w.document.write(billHtml);
-  w.document.close();
-  setTimeout(() => w.print(), 800);
-}
-
-
-
-// ── 보고서 샘플 확인 ──
-const REPORT_SAMPLE_HTML = `<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<title>재난·화재 대응훈련 결과보고서</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px;line-height:1.75}
-.page{background:#fff;max-width:800px;margin:0 auto 36px auto;padding:44px 52px 52px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
-
-/* 헤더 */
-.doc-header{text-align:center;margin-bottom:28px}
-.agency-name{font-size:11pt;color:#555;margin-bottom:6px;letter-spacing:.5px}
-.doc-title{font-size:18pt;font-weight:700;letter-spacing:4px;color:#1a1a1a;border-bottom:3px double #1a1a1a;padding-bottom:10px;margin-bottom:6px}
-.doc-subtitle{font-size:10pt;color:#888;letter-spacing:1px}
-
-/* 기본정보 표 */
-.info-tbl{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:10pt}
-.info-tbl th{background:#2C3E6B;color:#fff;border:1px solid #2C3E6B;padding:7px 12px;text-align:center;font-weight:600;white-space:nowrap;width:110px}
-.info-tbl td{border:1px solid #B0B8CC;padding:7px 14px}
-.info-tbl tr:nth-child(even) td{background:#F8F9FC}
-
-/* 섹션 */
-.sec-title{background:#2C3E6B;color:#fff;font-size:10.5pt;font-weight:700;padding:8px 16px;margin-top:22px;margin-bottom:0;letter-spacing:.5px}
-.sec-body{border:1px solid #B0B8CC;border-top:none;padding:14px 18px 16px;font-size:10pt;line-height:1.95}
-
-/* 세부 항목 */
-.item-label{font-weight:700;color:#2C3E6B;margin-top:10px;margin-bottom:4px;font-size:10pt}
-.item-label:first-child{margin-top:0}
-.item-body{padding-left:10px;color:#333}
-
-/* 결과표 */
-.result-tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt}
-.result-tbl th{background:#E8ECF5;border:1px solid #B0B8CC;padding:7px 12px;text-align:center;font-weight:600;color:#2C3E6B}
-.result-tbl td{border:1px solid #B0B8CC;padding:7px 12px;text-align:center}
-.result-tbl td.left{text-align:left;padding-left:14px}
-.badge-good{background:#E8F5E9;color:#1B5E20;border-radius:4px;padding:1px 8px;font-size:9.5pt;font-weight:600}
-.badge-warn{background:#FFF8E1;color:#E65100;border-radius:4px;padding:1px 8px;font-size:9.5pt;font-weight:600}
-
-/* 개선사항 */
-.improve-item{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
-.improve-num{background:#2C3E6B;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:9pt;font-weight:700;flex-shrink:0;margin-top:2px}
-
-/* 서명란 */
-.sign-wrap{margin-top:28px;border:1.5px solid #B0B8CC;border-radius:6px;padding:18px 22px}
-.sign-title{font-size:10pt;font-weight:700;color:#2C3E6B;margin-bottom:14px;text-align:center;letter-spacing:1px}
-.sign-row{display:flex;gap:0;border:1px solid #B0B8CC}
-.sign-cell{flex:1;padding:14px 16px;border-right:1px solid #B0B8CC}
-.sign-cell:last-child{border-right:none}
-.sign-cell-label{font-size:10pt;font-weight:700;color:#555;margin-bottom:8px}
-.sign-cell-name{font-size:10.5pt;color:#1a1a1a;margin-bottom:6px}
-.sign-cell-line{border-bottom:1px solid #888;margin-top:22px;position:relative}
-.sign-cell-line::after{content:'(인)';position:absolute;right:0;bottom:2px;font-size:9pt;color:#aaa}
-
-/* 평가지표 안내 */
-.indicator-box{background:#EEF2FF;border:1px solid #C5CAE9;border-radius:6px;padding:10px 14px;margin-top:18px;font-size:9.5pt;color:#3949AB;line-height:1.8}
-
-@media print{body{background:#fff;padding:0}.page{box-shadow:none;padding:32px 40px}}
-</style>
-</head>
-<body>
-<div class="page">
-
-  <div style="background:#FFF8E1;border:1.5px solid #F4D66C;border-radius:8px;padding:10px 16px;margin-bottom:18px;text-align:center;font-size:11pt;color:#7A5C00;font-family:'Noto Sans KR',sans-serif">
-    📋 <strong>Day:음 보고서 샘플</strong> — 실제 생성 시 입력 내용과 첨부 자료를 바탕으로 AI가 작성합니다.
-  </div>
-  <!-- 헤더 -->
-  <div class="doc-header">
-    <div class="agency-name">Day:음</div>
-    <div class="doc-title">재난·화재 대응훈련 결과보고서</div>
-    <div class="doc-subtitle">2026년 상반기 소방훈련</div>
-  </div>
-
-  <!-- 기본 정보 -->
-  <table class="info-tbl">
-    <tr>
-      <th>훈련명</th>
-      <td colspan="3">2026년 상반기 화재 대응 소방훈련</td>
-    </tr>
-    <tr>
-      <th>실시일자</th>
-      <td>2026년 6월 10일 (화)</td>
-      <th>훈련시간</th>
-      <td>10:30 ~ 11:10 (약 40분)</td>
-    </tr>
-    <tr>
-      <th>훈련장소</th>
-      <td colspan="3">Day:음 전체 (프로그램실, 식당, 복도 → 외부 대피장소: 주차장)</td>
-    </tr>
-    <tr>
-      <th>참가 인원</th>
-      <td colspan="3">
-        직원 7명 (요양보호사 5명, 사회복지사 1명, 간호조무사 1명)<br>
-        수급자 12명 / <strong>총 19명</strong>
-      </td>
-    </tr>
-    <tr>
-      <th>훈련 종류</th>
-      <td>화재 대응 소방훈련 (대피 실습 + 소화기 시연)</td>
-      <th>작성자</th>
-      <td>사회복지사 ○○○</td>
-    </tr>
-  </table>
-
-  <!-- 1. 훈련 목적 -->
-  <div class="sec-title">1. 훈련 목적</div>
-  <div class="sec-body">
-    화재 발생 시 수급자와 직원이 신속하고 안전하게 대피할 수 있도록 대응 절차를 숙지하고,
-    실제 상황에 준하는 훈련을 통해 대피 역량을 강화하고자 함.
-    특히 거동이 불편한 수급자를 위한 맞춤형 대피 절차를 반복 훈련하여 실제 화재 발생 시
-    인명피해를 최소화하는 것을 목적으로 함.
-  </div>
-
-  <!-- 2. 훈련 내용 -->
-  <div class="sec-title">2. 훈련 내용 및 진행 절차</div>
-  <div class="sec-body">
-    <div class="item-label">① 훈련 시나리오</div>
-    <div class="item-body">
-      오전 10시 30분, 프로그램실에서 인지활동형 프로그램 진행 중 주방 가스레인지 과열로
-      인한 화재 발생 상황을 가정하여 훈련 실시.
-    </div>
-
-    <div class="item-label">② 대피 절차 진행</div>
-    <div class="item-body">
-      화재 발견(요양보호사) → 119 신고(사회복지사) → 원내 비상벨 작동 →
-      수급자 대피 유도(요양보호사 1:1 담당) → 외부 대피장소(주차장) 이동 →
-      인원 점검(간호조무사) → 훈련 종료 선언
-    </div>
-
-    <div class="item-label">③ 소화기 실제 작동 시연</div>
-    <div class="item-body">
-      요양보호사 2명, 사회복지사 1명 소화기 직접 작동 시연 실시.
-      안전핀 제거 → 호스 방향 조준 → 손잡이 압착 방법 전 직원 확인 완료.
-    </div>
-
-    <div class="item-label">④ 훈련 종료 후 교육</div>
-    <div class="item-body">
-      전체 직원 대상 미비점 공유 및 개선 토의 약 20분 실시.
-      소화기 위치 재확인, 휠체어 이용 어르신 대피 시 2인 1조 원칙 재교육.
-    </div>
-  </div>
-
-  <!-- 3. 훈련 결과 -->
-  <div class="sec-title">3. 훈련 결과</div>
-  <div class="sec-body">
-    <table class="result-tbl">
-      <thead>
-        <tr>
-          <th style="width:30%">평가 항목</th>
-          <th style="width:20%">목표</th>
-          <th style="width:20%">결과</th>
-          <th style="width:30%">평가</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="left">전체 대피 완료 시간</td>
-          <td>10분 이내</td>
-          <td><strong>8분 30초</strong></td>
-          <td><span class="badge-good">✓ 목표 달성</span></td>
-        </tr>
-        <tr>
-          <td class="left">119 신고 절차 숙지</td>
-          <td>전 직원</td>
-          <td>전 직원 확인</td>
-          <td><span class="badge-good">✓ 양호</span></td>
-        </tr>
-        <tr>
-          <td class="left">소화기 위치 숙지</td>
-          <td>전 직원</td>
-          <td>일부 미숙지 (3명)</td>
-          <td><span class="badge-warn">△ 보완 필요</span></td>
-        </tr>
-        <tr>
-          <td class="left">휠체어 어르신 대피 대응</td>
-          <td>안전 대피</td>
-          <td>2인 1조 대피 완료</td>
-          <td><span class="badge-good">✓ 양호</span></td>
-        </tr>
-        <tr>
-          <td class="left">수급자 불안 대응</td>
-          <td>안정적 대응</td>
-          <td>담당자 즉시 대응</td>
-          <td><span class="badge-good">✓ 양호</span></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="item-label" style="margin-top:14px">종합 평가</div>
-    <div class="item-body">
-      전체 대피 완료 시간 8분 30초로 목표 시간(10분 이내)을 달성하였음.
-      휠체어 이용 수급자 3명에 대해 요양보호사 2인 1조로 안전하게 대피를 완료하였으며,
-      훈련 중 불안 증상을 보인 수급자 1명에 대해 담당 요양보호사가 즉각적으로 안정적 대응을
-      하여 빠르게 안정을 되찾았음. 다만, 일부 직원의 소화기 위치 미숙지가 확인되어
-      훈련 후 즉시 재교육을 실시하였음.
-    </div>
-  </div>
-
-  <!-- 4. 미비점 및 개선 사항 -->
-  <div class="sec-title">4. 미비점 및 개선 계획</div>
-  <div class="sec-body">
-    <div class="improve-item">
-      <div class="improve-num">1</div>
-      <div>
-        <strong>소화기 위치 미숙지</strong><br>
-        직원 3명이 소화기 위치를 정확히 파악하지 못한 것으로 확인됨.
-        → 소화기 위치 안내도를 직원 휴게실 및 프로그램실에 부착하고,
-        월 1회 위치 확인 교육을 포함한 안전 브리핑 실시 예정 (담당: 사회복지사).
-      </div>
-    </div>
-    <div class="improve-item">
-      <div class="improve-num">2</div>
-      <div>
-        <strong>휠체어 어르신 대피 시 인력 배치 기준 명확화</strong><br>
-        휠체어 이용 수급자 대피 시 2인 1조 원칙이 현장에서 즉각 적용되지 않은 사례 확인.
-        → 대피 역할 분담표를 작성하여 각 수급자별 담당 직원을 사전 지정,
-        프로그램실 및 식당에 비치 예정 (담당: 간호조무사).
-      </div>
-    </div>
-    <div class="improve-item">
-      <div class="improve-num">3</div>
-      <div>
-        <strong>불안 증상 수급자 대응 매뉴얼 보완</strong><br>
-        훈련 중 불안 증상을 보인 수급자 발생에 대비한 개별 대응 방안 미흡.
-        → 불안·인지장애 수급자 개별 대피 카드 작성 및 담당 요양보호사 공유 예정.
-      </div>
-    </div>
-  </div>
-
-  <!-- 5. 향후 계획 -->
-  <div class="sec-title">5. 향후 훈련 계획</div>
-  <div class="sec-body">
-    <table class="result-tbl">
-      <thead>
-        <tr>
-          <th>회차</th>
-          <th>예정 시기</th>
-          <th>훈련 종류</th>
-          <th>비고</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>2026년 상반기</td>
-          <td>2026. 06. 10. <span class="badge-good">완료</span></td>
-          <td class="left">화재 대응 소방훈련</td>
-          <td>본 보고서</td>
-        </tr>
-        <tr>
-          <td>2026년 하반기</td>
-          <td>2026. 11월 예정</td>
-          <td class="left">지진·풍수해 재난 대응훈련</td>
-          <td>반기 1회 이상 충족</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 평가지표 안내 -->
-  <div class="indicator-box">
-    📌 본 훈련은 <strong>2026년 장기요양기관 평가지표 제23호 (재난상황 대응훈련, 2점)</strong>에
-    해당하는 활동으로, 수급자와 직원을 대상으로 반기별 1회 이상 실시 기준을 충족함.<br>
-    ※ 재난대응훈련은 단순 교육이 아닌 실제 대피 실습이 포함되어야 하며, 사진 자료 첨부 필수.
-  </div>
-
-  <!-- 서명란 -->
-  <div class="sign-wrap">
-    <div class="sign-title">결 재</div>
-    <div class="sign-row">
-      <div class="sign-cell">
-        <div class="sign-cell-label">작성자</div>
-        <div class="sign-cell-name">사회복지사 &nbsp; ○○○</div>
-        <div class="sign-cell-line"></div>
-      </div>
-      <div class="sign-cell">
-        <div class="sign-cell-label">검토자</div>
-        <div class="sign-cell-name">간호조무사 &nbsp; ○○○</div>
-        <div class="sign-cell-line"></div>
-      </div>
-      <div class="sign-cell">
-        <div class="sign-cell-label">기관장</div>
-        <div class="sign-cell-name">&nbsp;</div>
-        <div class="sign-cell-line"></div>
-      </div>
-    </div>
-    <div style="text-align:right;font-size:9.5pt;color:#888;margin-top:12px">
-      작성일: 2026년 6월 10일 &nbsp;|&nbsp; Day:음
-    </div>
-  </div>
-
-</div>
-</body>
-</html>
-`;
-
-function showReportSample() {
-  const modal = document.getElementById('report-sample-modal');
-  const iframe = document.getElementById('report-sample-iframe');
-  iframe.srcdoc = REPORT_SAMPLE_HTML;
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-function closeReportSample() {
-  document.getElementById('report-sample-modal').style.display = 'none';
-  document.body.style.overflow = '';
-}
-
-// ════════════════════════════════════════
-//  보고서 작성 탭
-// ════════════════════════════════════════
-
-const REPORT_CONFIG = {
-  fire: {
-    label: '재난·화재 대응훈련 결과보고서',
-    badge: '📌 평가지표 23 (재난상황 대응훈련) · 2점 · 반기 1회 이상 실시 필수',
-    defaultTitle: '화재 대응 소방훈련',
-    method: false,      // 교육방법 표시 여부
-    instructor: false,  // 강사명 표시 여부
-    participants: '직원+수급자',
-  },
-  disaster: {
-    label: '재난상황 대응훈련 결과보고서',
-    badge: '📌 평가지표 23 (재난상황 대응훈련) · 2점 · 반기 1회 이상 실시 필수 · 사진 첨부 필수',
-    defaultTitle: '재난상황 대응훈련 (지진·풍수해)',
-    method: false,
-    instructor: false,
-    participants: '직원+수급자',
-  },
-  human_rights: {
-    label: '노인인권 및 학대예방교육 결과보고서',
-    badge: '📌 평가지표 19 (노인인권교육) · 반기 1회 이상 · 참석자 서명 필수',
-    defaultTitle: '노인인권 및 학대예방교육',
-    method: true,
-    instructor: true,
-    participants: '직원 전원',
-  },
-  operation: {
-    label: '운영규정 교육 결과보고서',
-    badge: '📌 평가지표 6 (직원교육) · 2점 · 연 1회 이상 · 참석자 서명 필수',
-    defaultTitle: '운영규정 교육',
-    method: true,
-    instructor: true,
-    participants: '직원 전원',
-  },
-  care_guide: {
-    label: '급여제공지침 교육 결과보고서',
-    badge: '📌 평가지표 6 (직원교육) · 2점 · 연 1회 이상 · 각 지침별 내용 포함',
-    defaultTitle: '급여제공지침 교육',
-    method: true,
-    instructor: true,
-    participants: '직원 전원',
-  },
-  infection: {
-    label: '감염관리 교육 결과보고서',
-    badge: '📌 평가지표 15 (감염관리활동) · 2점 · 감염병 예방·대응 포함',
-    defaultTitle: '감염관리 교육',
-    method: true,
-    instructor: true,
-    participants: '직원 전원',
-  },
-  volunteer: {
-    label: '자원봉사 활동 결과보고서',
-    badge: '📌 평가지표 3 (지역사회자원활용) · 자원봉사 활동일지 · VMS/1365 연계 인정',
-    defaultTitle: '자원봉사 활동',
-    method: false,
-    instructor: false,
-    participants: '자원봉사자 + 수급자',
-  },
-  health_check: {
-    label: '건강검진 실시 결과보고서',
-    badge: '📌 평가지표 7 (건강검진) · 연 1회 이상 · 결핵검진 포함',
-    defaultTitle: '직원 건강검진 실시 결과',
-    method: false,
-    instructor: false,
-    participants: '전체 직원',
-  },
-};
-
-function onReportTypeChange() {
-  const type = document.getElementById('report-type').value;
-  const badge = document.getElementById('report-indicator-badge');
-  const formCard = document.getElementById('report-form-card');
-  const genBtn = document.getElementById('report-gen-btn');
-
-  if (!type) {
-    badge.style.display = 'none';
-    formCard.style.display = 'none';
-    genBtn.style.display = 'none';
-    return;
-  }
-
-  const cfg = REPORT_CONFIG[type];
-  if (!cfg) return;
-
-  // 배지
-  badge.style.display = 'block';
-  badge.textContent = cfg.badge;
-
-  // 기본값 채우기
-  document.getElementById('report-title').value = cfg.defaultTitle;
-
-  // 오늘 날짜
-  const today = new Date().toISOString().slice(0,10);
-  if (!document.getElementById('report-date').value)
-    document.getElementById('report-date').value = today;
-
-  // 교육방법 표시 여부
-  document.getElementById('report-method-wrap').style.display = cfg.method ? 'block' : 'none';
-  document.getElementById('report-instructor-wrap').style.display = cfg.instructor ? 'block' : 'none';
-
-  // 참석자 플레이스홀더
-  const pEl = document.getElementById('report-participants');
-  if (cfg.participants === '직원+수급자') {
-    pEl.placeholder = '예) 직원 7명, 수급자 12명 (총 19명)';
-  } else if (cfg.participants === '직원 전원') {
-    pEl.placeholder = '예) 요양보호사 5명, 사회복지사 1명, 간호조무사 1명 (총 7명)';
-  } else {
-    pEl.placeholder = '예) 자원봉사자 3명, 수급자 15명';
-  }
-
-  formCard.style.display = 'block';
-  genBtn.style.display = 'block';
-}
-
-function handleReportFile(input) {
-  const f = input.files[0];
-  if (!f) return;
-  window._reportFile = f;
-  document.getElementById('report-fname').textContent = f.name;
-  document.getElementById('report-fname-wrap').style.display = 'block';
-  document.getElementById('report-upload-placeholder').style.display = 'none';
-  document.getElementById('report-upload').classList.add('has-file');
-}
-
-async function startReportGenerate() {
-  const type = document.getElementById('report-type').value;
-  const date = document.getElementById('report-date').value;
-  const participants = document.getElementById('report-participants').value.trim();
-
-  if (!type) return alert('보고서 종류를 선택해주세요.');
-  if (!date) return alert('실시일자를 입력해주세요.');
-  if (!participants) return alert('참석자 정보를 입력해주세요.');
-
-  const detail_check = document.getElementById('report-detail').value.trim();
-  if (!detail_check) return alert('실시 내용 및 특이사항을 입력해주세요.\n실제 진행된 내용을 바탕으로 AI가 보고서 초안을 작성합니다.');
-
-  const hasFile = document.getElementById('report-upload').classList.contains('has-file');
-  if (!hasFile) return alert('자료를 첨부해주세요.\n사진 또는 교육자료(PDF·이미지)를 첨부하면\nAI가 실제 내용을 반영한 보고서를 작성합니다.');
-
-  // AI 검토 안내 모달
-  await new Promise(resolve => showDisclaimerModal(resolve));
-
-  const cfg = REPORT_CONFIG[type];
-  const title       = document.getElementById('report-title').value || cfg.defaultTitle;
-  const place       = document.getElementById('report-place').value.trim() || 'Day:음';
-  const instructor  = document.getElementById('report-instructor').value.trim();
-  const method      = document.querySelector('input[name="report-method"]:checked')?.value || '';
-  const detail      = document.getElementById('report-detail').value.trim();
-  const centerCfg   = CENTERS[centerCode] || CENTERS['sapgyo'];
-
-  // 프로그레스 표시
-  const prog = document.getElementById('report-prog');
-  prog.classList.add('show');
-  document.getElementById('report-result').classList.remove('show');
-  const rpSteps = ['rp1','rp2','rp3','rp4'];
-  rpSteps.forEach(id => {
-    const el = document.getElementById(id);
-    if(el){ el.classList.remove('running','complete'); el.querySelector('.picon').textContent = ['📋','🔍','✏️','✅'][rpSteps.indexOf(id)]; }
-  });
-
-  const rSetPct = (pct) => {
-    const el  = document.getElementById('report-pct');
-    const bar = document.getElementById('report-pct-bar');
-    if(el)  el.textContent  = pct + '%';
-    if(bar) bar.style.width = pct + '%';
-  };
-  rSetPct(0);
-
-  const rStep = (idx, complete=false) => {
-    if(idx > 0) {
-      const prev = document.getElementById(rpSteps[idx-1]);
-      if(prev){ prev.classList.remove('running'); prev.classList.add('complete'); prev.querySelector('.picon').textContent = '✓'; }
-    }
-    if(!complete) {
-      const cur = document.getElementById(rpSteps[idx]);
-      if(cur) cur.classList.add('running');
-    }
-  };
-
-  try {
-    rStep(0); rSetPct(10);
-    await new Promise(r => setTimeout(r, 500));
-    rStep(1); rSetPct(25);
-    await new Promise(r => setTimeout(r, 400));
-    rStep(2); rSetPct(40);
-
-    // 시스템 프롬프트
-    const systemPrompt = `당신은 장기요양기관 행정 문서 전문가입니다.
-주어진 정보를 바탕으로 "${cfg.label}"을 작성하세요.
-
-[작성 규칙]
-1. 반드시 HTML 형식으로 작성하세요. (DOC_CSS 스타일 적용)
-2. 문서 구성: 제목 → 기본 정보 표 → 실시 내용 → 결과 및 향후 계획 → 작성자 서명란
-3. 평가지표 기준(${cfg.badge})에 부합하는 내용으로 작성
-4. 교육/훈련 내용은 실제 현장에서 이루어진 것처럼 구체적으로 작성
-5. 결과 및 평가 섹션에는 참석자 반응, 이해도, 향후 계획 포함
-6. 작성자 서명란 포함 (기관장, 작성자)
-7. 장기요양 평가를 대비한 공식 문서 형식 유지
-
-[기관 정보]
-- 기관명: ${centerCfg.name}
-- 보고서 종류: ${cfg.label}
-- 실시일자: ${date}
-- 장소: ${place}
-- 제목/명칭: ${title}
-${instructor ? `- 강사/진행자: ${instructor}` : ''}
-${method ? `- 교육방법: ${method}` : ''}
-- 참석자: ${participants}
-${detail ? `- 실시 내용 및 특이사항: ${detail}` : ''}
-
-아래 HTML만 출력하세요. 마크다운 코드블록 없이 순수 HTML만 작성하세요.
-반드시 <style> 태그로 시작하고 Noto Sans KR 폰트를 사용하세요.`;
-
-    // 파일이 있으면 첨부
-    let userContent;
-    const rFile = window._reportFile;
-    if (rFile) {
-      const b64 = await fileToBase64(rFile);
-      const isPDF = rFile.type === 'application/pdf' || rFile.name.endsWith('.pdf');
-      const isImg = rFile.type?.startsWith('image/');
-      userContent = [
-        isPDF ? { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } }
-               : isImg ? { type:'image', source:{ type:'base64', media_type:rFile.type, data:b64 } }
-               : null,
-        { type:'text', text: `위 첨부 자료를 참고하여 ${cfg.label}을 작성해주세요.` }
-      ].filter(Boolean);
-    } else {
-      userContent = `${cfg.label}을 작성해주세요. 입력된 정보를 최대한 활용하여 구체적이고 완성도 높은 보고서를 작성하세요.`;
-    }
-
-    // 진행률 서서히 증가
-    let rPct = 40;
-    const rTimer = setInterval(() => { if(rPct < 85){ rPct++; rSetPct(rPct); } else clearInterval(rTimer); }, 700);
-
-    const result = await callClaude(systemPrompt, userContent, '보고서작성', 8000);
-    clearInterval(rTimer);
-    rSetPct(90);
-
-    rStep(3); rSetPct(95);
-    await new Promise(r => setTimeout(r, 400));
-    // 마지막 스텝 완료
-    const last = document.getElementById('rp4');
-    if(last){ last.classList.remove('running'); last.classList.add('complete'); last.querySelector('.picon').textContent = '✓'; }
-    rSetPct(100);
-    await new Promise(r => setTimeout(r, 300));
-
-    prog.classList.remove('show');
-
-    // 결과 렌더링
-    window._reportHtml = result;
-    window._reportTitle = `${centerCfg.name}_${title}_${date}`;
-    const iframe = document.getElementById('report-iframe');
-    iframe.srcdoc = result;
-    document.getElementById('report-result').classList.add('show');
-
-  } catch(err) {
-    prog.classList.remove('show');
-    alert('보고서 작성 중 오류가 발생했어요.\n' + (err.message || ''));
-  }
-}
-
-function downloadReportWord() {
-  if (!window._reportHtml) return alert('먼저 보고서를 생성해주세요.');
-  const cfg = CENTERS[centerCode] || CENTERS['sapgyo'];
-  const name = window._reportTitle || '결과보고서';
-  const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-</head><body>${window._reportHtml}</body></html>`], { type: 'application/msword' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${name}.doc`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function resetReport() {
-  document.getElementById('report-type').value = '';
-  document.getElementById('report-indicator-badge').style.display = 'none';
-  document.getElementById('report-form-card').style.display = 'none';
-  document.getElementById('report-gen-btn').style.display = 'none';
-  document.getElementById('report-result').classList.remove('show');
-  document.getElementById('report-date').value = '';
-  document.getElementById('report-place').value = '';
-  document.getElementById('report-title').value = '';
-  document.getElementById('report-instructor').value = '';
-  document.getElementById('report-participants').value = '';
-  document.getElementById('report-detail').value = '';
-  document.getElementById('report-fname-wrap').style.display = 'none';
-  document.getElementById('report-upload-placeholder').style.display = 'block';
-  document.getElementById('report-upload').classList.remove('has-file');
-  window._reportFile = null;
-  window._reportHtml = null;
-  const bar = document.getElementById('report-pct-bar');
-  if(bar) bar.style.width = '0%';
-  const pct = document.getElementById('report-pct');
-  if(pct) pct.textContent = '0%';
-}
 
 // ────── 가이드 탭 서브탭 ──────
 function switchGuideTab(tab) {
@@ -5937,11 +4916,14 @@ function switchSub(id, btn) {
   document.getElementById(id).classList.add('active');
 }
 function goOverview() {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.tab-btn').classList.add('active');
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-overview').classList.add('active');
-  renderOverview();
+  const btn = document.querySelector('.tab-btn[onclick*="tab-overview"]');
+  if (btn) switchTab('tab-overview', btn);
+  else {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-overview').classList.add('active');
+    renderOverview();
+  }
 }
 
 // ────── 파일 → base64 변환 ──────
@@ -6069,27 +5051,11 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
         output: outputTokens,
         costKRW
       };
-      // Supabase usage_logs 저장 (기기 간 공유, 센터별 누적)
-      fetch(`${SUPABASE_URL}/rest/v1/usage_logs`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({
-          center_code: centerCode,
-          center_name: cfg.name || centerCode,
-          center_short: cfg.short || centerCode,
-          doc_label: log.doc,
-          doc_type: (['월간문서','상담일지','보호자 상담일지','사례관리 회의록','월간 현황 요약','프로그램업무수행일지'].includes(log.doc)) ? 'monthly' : 'periodic',
-          input_tokens: log.input,
-          output_tokens: log.output,
-          cost_krw: log.costKRW,
-          logged_at: log.ts
-        })
-      }).catch(() => {}); // 실패 시 무시
+      const USAGE_KEY = 'daeum-usage-log';
+      const prev = JSON.parse(localStorage.getItem(USAGE_KEY) || '[]');
+      prev.push(log);
+      if (prev.length > 500) prev.splice(0, prev.length - 500);
+      localStorage.setItem(USAGE_KEY, JSON.stringify(prev));
     } catch(e) {}
 
     return data.content[0].text;
@@ -6100,10 +5066,7 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
 
 // ────── 월간 문서 프롬프트 ──────
 // ────── 문서 HTML CSS 상수 (프롬프트에서 분리) ──────
-const DOC_CSS = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px;line-height:1.75}.page{background:#fff;max-width:880px;margin:0 auto 36px auto;padding:38px 50px 44px 50px;box-shadow:0 3px 16px rgba(0,0,0,0.18)}.doc-title-main{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1a3a6e;padding-bottom:10px;border-bottom:2.5px solid #1a3a6e;margin-bottom:6px}.doc-title-sub{text-align:center;font-size:9.5pt;color:#555;margin-bottom:18px;letter-spacing:1px}.doc-title-guardian{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1e5c28;padding-bottom:10px;border-bottom:2.5px solid #1e5c28;margin-bottom:6px}.info-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10pt}.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e}.info-tbl td{border:1px solid #9aaecc;padding:5px 10px}.session-hd{background:#1a3a6e;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.session-hd-guardian{background:#1e5c28;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.meta-tbl{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:0}.meta-tbl th{background:#eef2fb;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e;width:100px}.meta-tbl td{border:1px solid #9aaecc;padding:5px 10px}.meta-tbl-g th{background:#e4f0e6;color:#1e5c28;border-color:#8abf92}.meta-tbl-g td{border-color:#8abf92}.content-hd{background:#eef2fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.content-box{border:1px solid #9aaecc;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.soap-para{margin-bottom:14px}.soap-para:last-child{margin-bottom:0}.soap-label{font-weight:bold;color:#1a3a6e;font-size:10.5pt}.action-hd{background:#f0f4fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.action-body{border:1px solid #9aaecc;border-top:none;padding:12px 18px;font-size:10.5pt;line-height:2.05}.action-body .item{padding:1px 0}.action-body .dt{color:#4a5a7a;font-size:10pt}.benefit-hd{background:#fdf6e0;border:1px solid #c8a84b;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#7a5c10;letter-spacing:.5px}.benefit-body{border:1px solid #c8a84b;border-top:none;padding:14px 18px 16px 18px;font-size:10.5pt;line-height:1.95;background:#fffdf5}.b-row{margin-bottom:8px}.b-row:last-child{margin-bottom:0}.blabel{font-weight:bold;color:#7a5c10;min-width:76px;display:inline-block}.b-detail{padding-left:20px;margin-top:4px}.b-basis{padding-left:36px;font-size:10pt;color:#555;margin-top:3px;line-height:1.85}.b-basis-item{margin-bottom:1px}.content-hd-g{background:#e8f4ea;border:1px solid #8abf92;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1e5c28}.content-box-g{border:1px solid #8abf92;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.divider{border:none;border-top:2px dashed #b0bccc;margin:32px 0}.case-hd-bar{background:#a02020;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.case-box{border:1px solid #b84040;border-top:none;padding:16px 22px 18px 22px;background:#fff8f8;font-size:10.5pt;line-height:1.95}.case-box .clabel{font-weight:bold;color:#a02020;display:inline-block;min-width:76px}.case-box .crow{margin-bottom:6px}.case-box .cbasis{padding-left:14px;margin-top:6px;line-height:2.0}.case-box .cbasis p{margin-bottom:4px}.source-report{background:#f0f4ff;border:1px solid #c5cae9;border-radius:8px;padding:14px;margin-top:20px;font-size:10pt;line-height:1.8}.case-draft-notice{background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:11pt;color:#5D4037;line-height:1.7}.ai-draft-notice{background:#FFF8E1;border:1.5px solid #D4A017;border-radius:8px;padding:12px 18px;margin:0 0 20px 0;font-size:10.5pt;color:#5D4037;line-height:1.8}`;
-
-// ── AI 초안 경고 문구 (모든 문서 공통) ──
-const DRAFT_NOTICE = `<div class="ai-draft-notice">※ 이 문서는 AI(Day:음)가 작성한 초안입니다. 채택 여부는 담당자가 결정하시고, 실제 내용을 반영하여 수정해 주세요.</div>`;
+const DOC_CSS = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px;line-height:1.75}.page{background:#fff;max-width:880px;margin:0 auto 36px auto;padding:38px 50px 44px 50px;box-shadow:0 3px 16px rgba(0,0,0,0.18)}.doc-title-main{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1a3a6e;padding-bottom:10px;border-bottom:2.5px solid #1a3a6e;margin-bottom:6px}.doc-title-sub{text-align:center;font-size:9.5pt;color:#555;margin-bottom:18px;letter-spacing:1px}.doc-title-guardian{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1e5c28;padding-bottom:10px;border-bottom:2.5px solid #1e5c28;margin-bottom:6px}.info-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10pt}.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e}.info-tbl td{border:1px solid #9aaecc;padding:5px 10px}.session-hd{background:#1a3a6e;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.session-hd-guardian{background:#1e5c28;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.meta-tbl{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:0}.meta-tbl th{background:#eef2fb;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e;width:100px}.meta-tbl td{border:1px solid #9aaecc;padding:5px 10px}.meta-tbl-g th{background:#e4f0e6;color:#1e5c28;border-color:#8abf92}.meta-tbl-g td{border-color:#8abf92}.content-hd{background:#eef2fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.content-box{border:1px solid #9aaecc;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.soap-para{margin-bottom:14px}.soap-para:last-child{margin-bottom:0}.soap-label{font-weight:bold;color:#1a3a6e;font-size:10.5pt}.action-hd{background:#f0f4fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.action-body{border:1px solid #9aaecc;border-top:none;padding:12px 18px;font-size:10.5pt;line-height:2.05}.action-body .item{padding:1px 0}.action-body .dt{color:#4a5a7a;font-size:10pt}.benefit-hd{background:#fdf6e0;border:1px solid #c8a84b;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#7a5c10;letter-spacing:.5px}.benefit-body{border:1px solid #c8a84b;border-top:none;padding:14px 18px 16px 18px;font-size:10.5pt;line-height:1.95;background:#fffdf5}.b-row{margin-bottom:8px}.b-row:last-child{margin-bottom:0}.blabel{font-weight:bold;color:#7a5c10;min-width:76px;display:inline-block}.b-detail{padding-left:20px;margin-top:4px}.b-basis{padding-left:36px;font-size:10pt;color:#555;margin-top:3px;line-height:1.85}.b-basis-item{margin-bottom:1px}.content-hd-g{background:#e8f4ea;border:1px solid #8abf92;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1e5c28}.content-box-g{border:1px solid #8abf92;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.divider{border:none;border-top:2px dashed #b0bccc;margin:32px 0}.case-hd-bar{background:#a02020;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.case-box{border:1px solid #b84040;border-top:none;padding:16px 22px 18px 22px;background:#fff8f8;font-size:10.5pt;line-height:1.95}.case-box .clabel{font-weight:bold;color:#a02020;display:inline-block;min-width:76px}.case-box .crow{margin-bottom:6px}.case-box .cbasis{padding-left:14px;margin-top:6px;line-height:2.0}.case-box .cbasis p{margin-bottom:4px}.source-report{background:#f0f4ff;border:1px solid #c5cae9;border-radius:8px;padding:14px;margin-top:20px;font-size:10pt;line-height:1.8}.case-draft-notice{background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:11pt;color:#5D4037;line-height:1.7}`;
 
 function buildMonthlyPrompt(opinion) {
   // 선택된 문서 확인
@@ -6116,40 +5079,12 @@ function buildMonthlyPrompt(opinion) {
   };
 
   const docList = [];
-  const consultFormat = document.querySelector('input[name="consult-format"]:checked')?.value || 'soap';
-  if (docs.m1) docList.push(consultFormat === 'narrative'
-    ? '1. 분기별 상담일지 (최대 3회차) — 서술형 형식, 급여제공반영 포함'
-    : '1. 분기별 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
+  if (docs.m1) docList.push('1. 분기별 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
   if (docs.m2) docList.push('2. 보호자 상담일지 — 이슈 발생 시');
-  if (docs.m3) docList.push(`3. 사례관리 회의록 + 사례관리 회의 평가 (세트로 작성)
-
-[사례관리 회의록]
-상단에 반드시 "※ 사례관리 회의록 초안입니다. 채택 여부는 담당자가 결정하세요." 안내 포함.
-상담일지 P항목과 연계하여 작성.
-구성:
-① 선정사유 (문제점 및 욕구 파악) — 선정 기준 항목명 + 구체적 근거
-② 증상의 발견 — 어떻게 발견했는지 (관찰 경위)
-③ 회의내용 — 직종별 발언 (시설장·사회복지사·간호조무사·요양보호사 각각)
-④ 사례관리 계획 — 구체적 실행 계획 (담당자·기한 포함).
-   [절대 금지] 표(table)/셀(td/th)/격자 형태 사용 금지. 위반 시 문서 전체 무효.
-   [필수] 아래 형식으로만 작성:
-   <div class="case-box">
-   <p class="crow"><span class="clabel">계획 1.</span> 내용 (담당: 담당자명, 기한: YYYY.MM.DD)</p>
-   <p class="crow"><span class="clabel">계획 2.</span> 내용 (담당: 담당자명, 기한: YYYY.MM.DD)</p>
-   </div>
-
-[사례관리 회의 평가] — 급여 반영일로부터 30일 이내 작성
-회의록 아래에 이어서 별도 섹션으로 작성.
-구성:
-· 평가일자: (급여 반영일 + 30일 이내)
-· 반영내용: 회의에서 결정된 사례관리 계획이 실제 급여에 어떻게 반영되었는지 서술
-· 선정사유 해결여부: ○ 해결 / ○ 미해결 (기록지 내용 기반으로 판단)
-· 선정사유의 해결 내용: 해결된 경우 — 구체적으로 어떻게 개선되었는지 서술
-                        미해결인 경우 — 현재 상태 및 향후 지속 관리 계획 서술
-※ "사례관리 회의 후 급여 등에 반영하고, 급여 등에 반영일로부터 30일 이내에 사례관리 회의를 평가합니다." 문구 하단에 포함.`);
+  if (docs.m3) docList.push('3. 사례관리 회의록 — 반드시 초안 제시, 상단에 "※ 사례관리 회의록 초안입니다. 채택 여부는 담당자가 결정하세요." 안내 포함, 상담일지 P항목과 연계하여 작성');
   if (docs.m4) docList.push('4. 월간 현황 요약 — 이용일수·혈압·식사·프로그램 한 페이지');
   if (docs.m5) docList.push(`5. 인지활동형 프로그램관리자 업무수행일지 [별지 제24호의2서식]
-   - 대상: 5등급 및 인지지원등급 수급자 모두 해당 (주야간보호 이용 시 모든 치매 관련 등급 포함)
+   - 대상: 인지지원등급 수급자 (5등급과 인지지원등급은 별개 등급)
    - 작성 단위: 해당 월 단위로 작성
    - 필수 항목 순서대로 작성:
      1) 기본정보: 수급자명, 장기요양인정번호, 장기요양등급, 작성일자(해당 월 마지막 이용일), 작성자 성명, 시설장(관리책임자) 성명
@@ -6168,43 +5103,15 @@ function buildMonthlyPrompt(opinion) {
      7) 향후계획 및 기타사항: 수급자 욕구 변화 여부 / 급여제공계획 재작성 여부 / 다음 달 세부계획`);
 
   if (docList.length === 0) docList.push('1. 분기별 상담일지 (기본)');
-  // m5만 선택됐을 때 프롬프트 최상단에 강조
-  const onlyM5 = docs.m5 && !docs.m1 && !docs.m2 && !docs.m3 && !docs.m4;
 
-  return `${getStylePrompt('m')}${onlyM5 ? '[최우선 작성 대상] 인지활동형 프로그램관리자 업무수행일지 1건만 작성할 것. 상담일지·회의록 등 다른 문서는 절대 작성하지 말 것.\n\n' : ''}파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
+  return `${getStylePrompt('m')}파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
 파악할 항목: 수급자명 / 생년월일 / 장기요양등급 / 장기요양인정번호 / 기관명 / 기관기호 / 기록지에 기재된 작성자(담당자) 성명 / 기록 대상 연월(시작월~종료월).
 
-■ 출력 형식
-
-[분기별 상담일지 — SOAP 구조를 반드시 JSON으로 출력]
-상담일지의 각 회차는 HTML이 아닌 JSON으로 출력할 것.
-상담일지 전체를 아래 마커 사이에 JSON 배열로 감쌀 것:
-
-<!--CONSULT_JSON_START-->
-[
-  {
-    "session": 1,
-    "date": "YYYY.MM.DD",
-    "time": "HH:MM~HH:MM",
-    "type": "분기별 상담",
-    "target": "수급자",
-    "method": "대면",
-    "counselor": "홍길동",
-    "S": "상담 계기 내용 (어르신 발언·행동·변화에서 시작된 계기)",
-    "O": "면담 중 어르신이 직접 하신 말씀과 관찰 내용",
-    "A": "사회복지사의 전문적 판단",
-    "P": "조치 및 향후 계획 (항목별 서술)",
-    "actions": ["▶ 조치1 (YYYY.MM.DD)", "▶ 조치2 (YYYY.MM.DD)", "▶ 향후 관찰 계획 (~할 예정임.)"],
-    "benefit_date": "YYYY.MM.DD",
-    "benefit_type": "급여구분",
-    "benefit_content": "반영 내용",
-    "benefit_reason": "반영 사유 한 문장"
-  }
-]
-<!--CONSULT_JSON_END-->
-
-보호자 상담일지·사례관리 회의록·프로그램업무수행일지는 기존 HTML 형식으로 출력.
-조치내용은 ▶ 항목 형식으로 출력할 것.
+■ HTML 출력 형식
+상담일시·상담구분·상담대상·상담형태·상담자 성명 등 회차별 메타 정보는 표(table) 형태로 출력할 것.
+상담 내용(S·O·A·P)은 셀로 분리하지 않고, 단일 테두리 박스 안에 흐르는 텍스트로 작성할 것.
+S·O·A·P 레이블은 각 단락 맨 앞에 굵은 텍스트로 단독 한 줄에 표기하고, 내용은 다음 줄부터 이어서 서술할 것.
+조치내용은 별도 박스로 분리하여 ▶ 항목 형식으로 출력할 것.
 
 ■ 작성 형식
 모든 문서는 공식 문어체로 작성. 모든 문장은 "~하였음." "~확인됨." "~제공하였음." 등 공문서 어미로 통일.
@@ -6213,86 +5120,14 @@ function buildMonthlyPrompt(opinion) {
 
 ■ 분기별 상담일지 작성 기준
 
-[핵심 원칙] 상담일지는 어르신과 담당자가 실제로 면담한 내용을 기록하는 문서임.
-급여제공기록지는 '상담 계기'를 찾기 위한 참고자료로만 활용할 것.
-한자 사용 절대 금지 (예: 前週→지난주, 轉落→낙상). 모든 내용 한글로만 작성.
+S (관찰 및 상담 계기)
+담당자가 현장에서 어르신을 직접 관찰하거나 서비스 제공 중 발견한 내용을 계기로 상담이 시작된 것으로 서술.
+"기록을 검토한 결과", "서비스 제공 기록을 전반적으로 검토한 결과" 등 행정적 메타 서술 사용 금지.
+상담일시로 확정된 날짜 이후에 발생한 사건은 S에 포함하지 않을 것.
 
-[상담자 지정 원칙 — 반드시 준수]
-① 상담자는 가능한 한 사회복지사로 지정할 것. (평가지표상 자격 제한은 없으나 사회복지사의 주 업무임)
-② 상담일시로 확정된 날짜에 실제 출근한 직원만 상담자로 지정할 것.
-   — 제공기록지의 해당 날짜 작성자 성명을 반드시 확인하여 출근 여부를 검증할 것.
-   — 해당 날짜 기록지에 사회복지사 이름이 없으면, 출근한 직원 중 직급이 가장 높은 사람을 상담자로 지정할 것.
-   — 절대 금지: 해당 날짜 기록지에 이름이 없는 직원을 상담자로 기재하는 것.
-
-S (상담 계기)
-어르신의 모습·발언·변화에서 상담이 시작된 구체적 계기를 서술.
-예) "어르신이 무릎이 아프다고 하셔서" / "표정이 어두워 보여 여쭤보니" / "지난주 낙상 이후 보행이 불안정하여"
-절대 금지: "기록을 검토한 결과", "서비스 제공 기록을 전반적으로 검토한 결과" 등 행정적 메타 서술.
-절대 금지: 상담일시 이후에 발생한 사건 포함.
-
-O (면담 내용)
-어르신이 면담 중 직접 하신 말씀과 담당자가 면담하며 관찰한 내용만 기재.
-예) "별로 불편한 데는 없다고 하심" / "요즘 잠을 못 잔다고 하심" / "다리가 무겁다고 표현하심"
-
-[O항목 절대 포함 금지 — 아래 내용은 상담 내용이 아님]
-- 혈압·체온·혈당 등 일상 측정 수치
-- 목욕·세면·구강·식사·화장실 등 일상 제공 내역
-- 이동서비스(송영) 관련 내용
-- 결석 날짜·사유 (단, 결석이 상담 주제인 경우는 예외)
-- 프로그램 참여 목록 나열
-- 이용일수·이용시간 등 통계성 정보
-
-위 내용은 O항목에 절대 쓰지 말 것. 어르신이 면담 중 직접 말씀하신 내용만 O에 포함.
-
----
-
-■ 서술형 상담일지 작성 기준 (형식 선택: 서술형인 경우에만 적용)
-
-[핵심 원칙] 상황이 시간 순서대로 자연스럽게 흘러가도록 서술. S·O·A·P 구분 없이 하나의 문단 또는 여러 문단으로 자유롭게 작성.
-
-구성 흐름 (반드시 이 순서로):
-① 상담이 시작된 계기 또는 발생한 상황 (육하원칙 기반으로 구체적으로)
-② 어르신 또는 보호자의 반응·발언·행동 (직접 표현 중심)
-③ 직원의 대응 및 개입 내용
-④ 결과 및 향후 조치·계획
-
-작성 원칙:
-- 한 문장씩 끊어 쓰지 않고 상황이 연결되어 흐르도록 서술할 것
-- 어르신·보호자의 발언은 간접화법으로 자연스럽게 녹여 쓸 것 (큰따옴표 남용 금지)
-- 시간 흐름이 명확하게 드러나도록 서술할 것
-- 한자 사용 절대 금지
-- 혈압·체온·프로그램 목록 등 일상 수치·제공 내역 나열 금지 (상황과 직접 관련된 경우에만 포함)
-
-형식 예시:
-점심 식사 후 자유 휴식 시간 중 어르신이 다른 이용자분들의 대화 소음에 불편함을 표현하시며 조용히 해달라고 강하게 요구하셨음. 해당 시간은 담소 및 TV 시청이 가능한 자유 시간임을 안내드렸으나 화를 내시며 "나오지 않겠다"고 말씀하시고 개인 짐을 정리하셨음. 직원들이 번갈아 안정을 시도하였으나 감정이 진정되지 않아 보호자께 현 상황을 안내드리고 향후 대응 방안을 논의하였음. 보호자께서는 최근 감정기복이 심해진 상황에 공감하시며 당분간 가정에서 휴식을 취하도록 하는 방향에 동의하셨음.
-
-급여제공반영: 서술형도 각 회차 말미에 반드시 포함. 형식은 동일.
-
----
-
-■ 목표 품질 기준 (아래 수준으로 작성할 것)
-
-[상담일지 품질 예시 — SOAP형]
-다음은 실제 작성된 고품질 상담일지 예시임. 이 수준의 서술 깊이·맥락·현장감을 갖추어 작성할 것.
-
-예시 1 (상담 계기: 망상 증상 후 면담):
-S: 4월 15일부터 17일까지 사흘 연속으로 "집에 도둑이 들었다", "누군가를 잡으러 가야 한다"며 귀가를 강하게 요구하는 망상 증상이 반복 발현되어 직원이 매일 귀가를 동행하였음. 보호자 협의를 통해 항정신병약이 추가 처방되어 복용을 시작하였으나, 약물 부작용으로 기력 저하 및 졸림 증상이 관찰되어 면담을 실시하였음.
-O: "오늘은 기운이 없어서 그냥 쉬고 싶다"고 하셨음. 아침 인사를 드리자 오랜만에 밝게 웃으시며 반겨주셨음. 집에 가겠다는 발언은 없었으며 면담 중 차분한 상태를 유지하셨음.
-A: 약물 복용 초기로 약물 부작용(기력 저하·졸림)이 관찰되고 있으나 망상 증상은 완화된 것으로 판단됨. 약물 복용 후 상태 변화에 대한 지속적인 모니터링이 필요함.
-P: 약물 복용 후 상태 변화(망상 빈도·기력·보행 안정성)를 매 이용일마다 기록하겠음. 기력 저하가 심한 날은 활동량을 조절하고 충분한 휴식을 제공하겠음. 보호자에게 약물 복용 경과를 정기적으로 공유하겠음.
-
-예시 2 (상담 계기: 망상 재발):
-S: 5월 말까지 망상 증상이 현저히 감소하여 안정적인 이용이 유지되었으나, 점심 식사 후 갑자기 "집에 가야 한다", "누군가를 잡으러 가야 한다"는 발언이 재발하여 면담을 실시하였음.
-O: "집에 가야 한다, 누가 있는지 확인해야 한다"고 반복적으로 말씀하셨음. "여기(센터)에 안 나오겠다"고 하셨으나 시간이 지난 후 색칠 공부를 하시면서 안정을 찾으셨음. 옷 주머니에 현금을 소지하고 다니신다는 사실이 확인되었으며, "누가 가져갈까봐 가지고 다닌다"고 하셨음.
-A: 약물 복용에도 불구하고 망상 증상이 재발하였으며, 이전보다 설득에 대한 반응이 약해진 것으로 보임. 현금 소지 행동은 도난 피해 망상과 연관된 것으로 판단됨. 보호자에게 즉시 공유하고 약물 증량 여부를 협의할 필요가 있음.
-P: 망상 증상 재발 상황을 보호자에게 즉시 공유하고 약물 증량 협의를 실시하였음. 망상 발현 시 직접적인 부정 대신 공감과 주의 전환 방식으로 대응하겠음.
-
-A (상담자 판단)
-면담 내용을 토대로 사회복지사의 전문적 판단을 서술.
-어르신의 현재 상태·욕구·변화를 해석하고 케어 방향 판단.
-
-P (조치 및 계획)
-면담 결과 결정된 구체적 조치와 향후 계획을 항목별 서술.
+O (상담 내용): 어르신의 직접 발언, 객관적 수치(혈압·체온 등), 서비스 제공 내역을 항목별 서술.
+A (상담자 판단): 관찰 및 상담 내용을 종합한 전문적 판단 서술.
+P (조치 및 계획): 결정된 구체적 조치사항과 향후 계획을 항목별 서술.
 
 상담일시 확정 전 필수 검증:
 ① 해당 날짜가 기록지에 실제 이용 기록이 있는 날인지 확인
@@ -6335,158 +5170,37 @@ ${opinion ? `[작성자 현장 의견 — 반영 필수]\n${opinion}\n` : ''}
 [작성할 문서 — 선택된 항목만 작성]
 ${docList.join('\n')}
 
-[출력 형식 — 문서 유형별로 반드시 구분]
+[출력] 마크다운 금지. HTML로 출력. <style> 태그 없이 body 태그부터 시작. CSS는 이미 로드됨.
+각 문서는 별도 <div class="page">로 구분.
 
-◆ 분기별 상담일지 → JSON으로 출력 [선택된 형식: ${consultFormat === 'narrative' ? '서술형' : 'SOAP형'}]
-${consultFormat === 'narrative' ? `<!--CONSULT_JSON_START-->
-[
-  {
-    "session": 1,
-    "date": "YYYY.MM.DD",
-    "time": "HH:MM~HH:MM",
-    "type": "분기별 상담",
-    "target": "수급자",
-    "method": "대면",
-    "counselor": "담당자명",
-    "format": "narrative",
-    "S": "",
-    "O": "",
-    "A": "",
-    "P": "",
-    "narrative": "상황이 시간 순서대로 흐르는 서술형 텍스트. 상담 계기 → 어르신 반응·발언 → 직원 대응 → 결과 및 향후 조치 순으로 자연스럽게 서술.",
-    "actions": ["▶ 조치1 (YYYY.MM.DD)", "▶ 향후 관찰 계획 (~할 예정임.)"],
-    "benefit_date": "YYYY.MM.DD",
-    "benefit_type": "급여구분",
-    "benefit_content": "반영 내용",
-    "benefit_reason": "반영 사유 한 문장"
-  }
-]
-<!--CONSULT_JSON_END-->` : `<!--CONSULT_JSON_START-->
-[
-  {
-    "session": 1,
-    "date": "YYYY.MM.DD",
-    "time": "HH:MM~HH:MM",
-    "type": "분기별 상담",
-    "target": "수급자",
-    "method": "대면",
-    "counselor": "담당자명",
-    "format": "soap",
-    "S": "상담 계기 내용 (어르신 발언·행동·변화에서 시작된 계기)",
-    "O": "면담 중 어르신이 직접 하신 말씀과 관찰 내용",
-    "A": "사회복지사 전문적 판단",
-    "P": "조치 및 향후 계획 (항목별 서술)",
-    "narrative": "",
-    "actions": ["▶ 조치1 (YYYY.MM.DD)", "▶ 향후 관찰 계획 (~할 예정임.)"],
-    "benefit_date": "YYYY.MM.DD",
-    "benefit_type": "급여구분",
-    "benefit_content": "반영 내용",
-    "benefit_reason": "반영 사유 한 문장"
-  }
-]
-<!--CONSULT_JSON_END-->`}
+■ 분기별 상담일지 HTML 구조
+doc-title-main(제목) → info-tbl(기본정보 표) → 각 회차별:
+  session-hd("N회차 상담") → meta-tbl(상담일시·구분·대상·형태·상담자 표) → content-hd("상담 내용") → content-box(S/O/A/P 각 단락: <p class="soap-para"><span class="soap-label">S</span><br>내용</p>) → action-hd("조치내용") → action-body(▶ 항목들, 날짜는 <span class="dt">(YYYY.MM.DD)</span>) → benefit-hd("[ 급여제공반영 ]") → benefit-body(반영일·급여구분·급여내용·반영사유 각각 <div class="b-row"><span class="blabel">항목명</span> 내용</div>)
 
-◆ 사례관리 회의록 → JSON으로 출력
-<!--CASE_JSON_START-->
-{
-  "선정사유": "선정 기준 항목명 + 구체적 근거",
-  "증상발견": "어떻게 발견했는지 관찰 경위",
-  "회의일시": "YYYY.MM.DD HH:MM~HH:MM",
-  "참석자": "직종: 성명 형식으로",
-  "회의내용": {
-    "시설장": "발언 내용",
-    "사회복지사": "발언 내용",
-    "간호조무사": "발언 내용",
-    "요양보호사": "발언 내용"
-  },
-  "계획": [
-    {"내용": "구체적 실행 계획", "담당": "담당자명", "기한": "YYYY.MM.DD"},
-    {"내용": "계획2", "담당": "담당자명", "기한": "YYYY.MM.DD"}
-  ],
-  "평가일자": "YYYY.MM.DD",
-  "반영내용": "회의 결정사항이 급여에 반영된 내용",
-  "해결여부": "해결",
-  "해결내용": "해결된 내용 또는 향후 지속 관리 계획"
-}
-<!--CASE_JSON_END-->
+■ 보호자 상담일지 HTML 구조 (회차별 반복)
+doc-title-guardian("보호자 상담일지") → info-tbl(수급자명·생년월일·등급·인정번호·기관명 기본정보 표) → 각 회차별:
+  <div class="session-hd-guardian">N회차 — [회차 제목]</div>
+  <table class="meta-tbl meta-tbl-g"><tr><th>상담일시</th><td>YYYY.MM.DD (요일) / HH:MM~HH:MM</td><th>상담방법</th><td>유선/대면</td></tr><tr><th>상담대상자명(관계)</th><td>이름 (관계)</td><th>상담직원명</th><td>이름</td></tr></table>
+  <div class="content-hd-g">상담 내용</div>
+  <div class="content-box-g">상담 내용 서술 (공문서 어미, 단락 구분)</div>
+  <div class="action-hd">조치내용</div>
+  <div class="action-body"><div class="item">▶ 조치 내용. <span class="dt">(YYYY.MM.DD)</span></div> ... </div>
+※ 마크다운(**, --, ##) 절대 사용 금지. 모든 강조는 <strong> 태그 사용.
 
-◆ 프로그램업무수행일지 → JSON으로 출력 [별지 제24호의2서식 구조 준수]
-<!--PGM_JSON_START-->
-{
-  "연월": "YYYY년 MM월",
-  "기관명": "",
-  "수급자명": "",
-  "인정번호": "",
-  "등급": "",
-  "작성일": "YYYY년 MM월 DD일",
-  "작성자": "",
-  "시설장": "",
-
-  "욕구조사": {
-    "보유질환_없음": false,
-    "보유질환_내용": "예) 치매, 고혈압",
-    "영양상태": "양호",
-    "보행상태": "보장구를 사용하여 자립보행 가능",
-    "신체기능_바닥에서일어서기": "직접(부축) 도움",
-    "신체기능_누워서앉기": "혼자수행",
-    "배뇨기능": "기타(잔뇨감으로 화장실 이용이 빈번함)",
-    "배변기능": "양호",
-    "ADL_식사하기": "[0]",
-    "ADL_세수하기": "[0]",
-    "ADL_양치질하기": "[1]",
-    "ADL_화장실사용하기": "[0]",
-    "인지기능": "기억력 저하(단기)",
-    "행동증상_없음": true,
-    "행동증상_내용": "",
-    "동거인": "자녀, 며느리·사위, 손자녀"
-  },
-
-  "심신변화": [
-    {"항목": "가. 식사 및 영양상태", "판정": "유지", "근거": ""},
-    {"항목": "나. 신체상태(보행·신체기능·배뇨·배변)", "판정": "유지", "근거": ""},
-    {"항목": "다. 일상생활기능(위생·일상생활수행)", "판정": "유지", "근거": ""},
-    {"항목": "라. 인지기능", "판정": "유지", "근거": ""},
-    {"항목": "마. 행동증상", "판정": "유지", "근거": ""},
-    {"항목": "바. 가족 및 생활환경", "판정": "유지", "근거": ""},
-    {"항목": "사. 기타 및 종합의견", "판정": null, "근거": ""}
-  ],
-
-  "급여계획": [
-    {"유형": "신체기능프로그램", "필요내용": "", "제공방법": "", "제공여부": "제공", "확인내용": "", "미제공사유": ""},
-    {"유형": "인지기능프로그램", "필요내용": "", "제공방법": "", "제공여부": "제공", "확인내용": "", "미제공사유": ""},
-    {"유형": "사회적응프로그램", "필요내용": "", "제공방법": "", "제공여부": "제공", "확인내용": "", "미제공사유": ""}
-  ],
-
-  "인지활동": [
-    {"유형": "인지자극활동", "필요내용": "", "향후계획": "", "제공여부": "제공", "확인내용": "", "미제공사유": ""},
-    {"유형": "일상생활함께하기", "필요내용": "", "향후계획": "", "제공여부": "제공", "확인내용": "", "미제공사유": ""}
-  ],
-
-  "상담": {
-    "일시": "YYYY.MM.DD HH:MM ~ HH:MM",
-    "상담자성명": "",
-    "상담방법": "대면상담",
-    "내용": ""
-  },
-
-  "향후계획": {
-    "욕구변화": "변화 없음",
-    "재작성여부": "급여제공계획 유지",
-    "세부계획": ""
-  }
-}
-<!--PGM_JSON_END-->
-[작성 기준]
-- 욕구조사: 체크 항목은 실제 해당 항목명 그대로 기재. ADL은 [0]~[3] 숫자로.
-- 심신변화: 판정은 반드시 "유지"/"악화"/"호전" 중 하나. "사. 기타"는 판정 null, 근거에 종합의견 서술.
-- 급여계획(4번): 필요내용·제공방법·제공여부·확인내용·미제공사유 모두 기재.
-- 인지활동(5번): 필요내용·향후계획·제공여부·확인내용·미제공사유 모두 기재.
-- 상담(6번): 상담자는 담당 사회복지사 성명으로.
-- 향후계획(7번): 욕구변화는 "서비스 욕구 변화 있음"/"심신상태 등 변화 있음"/"변화 없음" 중 택일.
-  재작성여부는 "급여제공계획 유지"/"욕구조사 재실시 및 급여제공계획서 재작성" 중 택일.
-
-◆ 보호자 상담일지 → 기존 HTML 형식 유지 (doc-title-guardian → meta-tbl-g → content-hd-g/content-box-g)
-◆ 월간 현황 요약 → 기존 HTML 형식 유지
+■ 사례관리 회의록 HTML 구조
+<div class="case-draft-notice">※ 이 사례관리 회의록은 AI(Day:음)가 작성한 초안입니다. 채택 여부는 담당자가 결정하시고, 실제 회의 내용을 반영하여 수정해 주세요.</div>
+그 다음부터 항목별로:
+  <div class="case-hd-bar">1. 선정사유 (문제점 및 욕구 파악)</div>
+  <div class="case-box"><div class="crow">내용</div></div>
+  <div class="case-hd-bar">2. 증상의 발견</div>
+  <div class="case-box">...</div>
+  <div class="case-hd-bar">3. 회의내용</div>
+  <div class="case-box">회의일시·참석자 먼저, 이후 참석자별 발언을 <div class="crow"><span class="clabel">[직책]</span> 발언내용</div> 형식으로</div>
+  <div class="case-hd-bar">4. 사례관리 계획</div>
+  <div class="case-box"><div class="cbasis"><p>계획 1. 내용 (담당: 이름 / 기한: YYYY.MM.DD)</p><p>계획 2. ...</p></div></div>
+  <div class="case-hd-bar">사례관리 회의 평가</div>
+  <div class="case-box"><div class="crow"><span class="clabel">평가일자</span> YYYY.MM.DD</div><div class="crow"><span class="clabel">반영내용</span> ...</div><div class="crow"><span class="clabel">해결여부</span> 미해결/해결</div>내용...</div>
+  마지막: <p style="font-size:9.5pt;color:#888;margin-top:16px">※ 사례관리 회의 후 급여 등에 반영하고, 급여 등에 반영일로부터 30일 이내에 사례관리 회의를 평가합니다.</p>
 
 마지막: <div class="source-report"><strong>📋 출처 보고</strong><br>[사용 날짜]...[혈압]...[주요사건]...[제외내용]...</div>`;
 }
@@ -6561,7 +5275,7 @@ function buildPeriodicPrompt(opinion) {
 - 한자 혼용 절대 금지 (예: 分析 → 분석, 變化 → 변화)
 - 날짜·사건 인용: 반드시 두 번 이상 교차 확인 후 확실한 경우에만 명시. 불확실하면 날짜 특정 않고 서술.
 - 치매안심센터 등 타 기관 연계 직접 언급 금지 → 현재 이용 중인 주간보호센터 중심 서술
-- 자원이용 욕구(8번) 판단근거: 현재 이용 중인 주간보호센터 내 서비스 중심으로 서술. 타 기관 직접 연계 언급 금지.
+- 자원이용 욕구(8번) 판단근거: 삽교주간보호센터 내 서비스 중심으로 서술. 타 기관 직접 연계 언급 금지.
 
 ## 판단근거 공통 작성 기준 — 2단 구조 (전 영역 적용)
 판단근거는 현장에서 어르신을 직접 관찰하고 돌보며 파악한 내용을 전문적 문서 언어로 서술한 것임.
@@ -6617,39 +5331,17 @@ function buildPeriodicPrompt(opinion) {
 
 ## 욕구사정 양식 구조 — 10개 영역
 
-[HTML 출력 원칙]
-각 영역은 반드시 아래 구조로 출력:
-<table class="needs-tbl">
-  <tr><th class="needs-area">영역명</th><td>
-    <div class="needs-row"><span class="needs-label">항목명</span>
-      <span class="unsel">○ 선택지1</span> <span class="sel">● 선택된항목</span> <span class="unsel">○ 선택지3</span>
-    </div>
-    ... (모든 항목 동일하게)
-  </td></tr>
-  <tr><th class="needs-judge">판단근거</th><td class="judge-text">서술 내용</td></tr>
-</table>
-CSS: .needs-tbl{width:100%;border-collapse:collapse;margin-bottom:14px} .needs-area{background:#1a3a6e;color:#fff;width:80px;text-align:center;vertical-align:top;padding:8px;font-size:11px;writing-mode:vertical-rl;text-orientation:mixed} .needs-judge{background:#dce6f5;color:#1a3a6e;width:80px;text-align:center;vertical-align:top;padding:8px;font-size:11px} td{border:1px solid #9aaecc;padding:8px 12px;vertical-align:top} .needs-row{margin-bottom:5px;font-size:12px} .needs-label{font-weight:700;color:#1a3a6e;min-width:80px;display:inline-block} .sel{font-weight:700;color:#000} .unsel{color:#aaa} .judge-text{font-size:12px;line-height:1.85;background:#f9f9f9}
-
 ### 1. 영양상태
-※ 서식 구조: 1번 영역 안에 "영양"과 "배설양상" 두 소구분이 존재함. HTML 출력 시 좌측에 "영양" / "배설양상" rowspan 셀로 구분하여 표시할 것.
-
-[영양 소구분]
-영양상태: ○ 양호 ○ 적당 ○ 부족 ○ 매우 나쁨
-식사형태: □ 일반식 □ 다진식 □ 죽식 □ 미음 □ 유동식(경관식) □ 연하식 □ 갈은식 □ 기타( ) □ 치료식이(□당뇨식 □저염식 □고단백식 □체중조절식)
-식사 시 문제점: □ 양호 □ 저작곤란 □ 소화불량 □ 오심·구토 □ 연하곤란 □ 기타( )
-기피식품: ○ 없음 / ○ 있음( )
+영양상태: ○ 양호 / ○ 적당 / ○ 부족 / ○ 매우 나쁨
+식사형태: □ 일반식 / □ 다진식 / □ 죽식 / □ 미음 / □ 유동식(경관식) / □ 연하식 / □ 갈은식 / □ 기타 / □ 치료식이(□당뇨식 □저염식 □고단백식 □체중조절식)
+식사 시 문제점: □ 양호 / □ 저작곤란 / □ 소화불량 / □ 오심·구토 / □ 연하곤란 / □ 기타
+기피식품: ○ 없음 / ○ 있음
 - 기피식품 없음 → 간단 서술
 - 기피식품 있음 → 해당 식재료 포함 메뉴 제공 시 대체 식품과 영양 보완 방법 서술 (2026 지표20 신설)
-
-[배설양상 소구분]
-소변상태: □ 양호 □ 요실금 □ 배뇨곤란 □ 유치도뇨관 □ 방광루 □ 요루 □ 기타( )
-대변상태: □ 양호 □ 지속적인 설사 □ 변비 □ 장루 □ 기타( )
+소변상태: □ 양호 / □ 요실금 / □ 배뇨곤란 / □ 유치도뇨관 / □ 방광루 / □ 요루 / □ 기타
+대변상태: □ 양호 / □ 지속적인 설사 / □ 변비 / □ 장루 / □ 기타
 기저귀여부: □ 기저귀
-
-판단근거: ①현상 명명 및 임상적 해석 (영양 상태 + 배설 양상 함께 서술) ②변화 분석 (2단 구조)
-
-■ 목표 품질 기준 — 판단근거 예시 (이 수준으로 작성할 것)
-예시: "① 영양 상태는 양호하며 일반식을 기본으로 정량 섭취하고 있음. 틀니를 착용하고 계시어 딱딱하거나 질긴 음식은 갈은식으로 대체 제공하고 있으며, 밥과 국에 반찬을 말아서 드시는 것을 선호하심. 전립선비대증으로 일 3~5회 소변을 보고 계시며, 소변이 의류에 묻는 상황이 간헐적으로 발생하고 있음. ② 기저귀를 착용하고 있으나 본인이 교환을 거부하는 경우가 있어 자존감을 존중하는 방식의 접근이 필요하며, 정기적인 배설 유도를 통해 배설 기능을 관리할 필요가 있음." 
+판단근거: ①현상 명명 및 임상적 해석 ②변화 분석 (2단 구조)
 
 ### 2. 구강상태 (2026 지표20 신설 — 구강상태 및 기피식품 반드시 파악)
 치아상태: ○ 양호 / ○ 청결불량 / ○ 치아 약함 / ○ 틀니 / ○ 잔존 치아 없음 / ○ 기타
@@ -6665,11 +5357,8 @@ CSS: .needs-tbl{width:100%;border-collapse:collapse;margin-bottom:14px} .needs-a
 호흡기계: □ 호흡곤란 / □ 결핵 / □ 기관지 절개관 / □ 흡인 / □ 산소요법 / □ 기타
 만성 신장질환: □ 만성신부전증(□복막투석 □혈액투석) / □ 기타
 기타 질환: □ 알레르기(□식품 □기타) / □ 기타
-욕창단계: ○1단계 ○2단계 ○3단계 ○4단계
-욕창부위: □ 머리 □ 등 □ 어깨 □ 팔꿈치 □ 엉덩이 □ 뒤꿈치 □ 기타( )
-욕창방지: □ 욕창방지 (도구: )
+욕창: ○1단계 / ○2단계 / ○3단계 / ○4단계 / 부위 / □ 욕창방지
 판단근거: ①②2단 구조
-과거 병력 / 현 진단명도 반드시 기재 (기록지에서 확인된 내용 작성, 없으면 공란)
 
 ### 4. 신체상태(ADL 10항목)
 각 항목: ○ 완전자립 / ○ 부분도움 / ○ 완전도움
@@ -6707,14 +5396,10 @@ CIST 평가 시행 여부 반드시 명시. 없으면 "작성일 기준 최근 C
 판단근거: ①②2단 구조
 
 ### 8. 자원이용 욕구
-진료 병원: 병원명(진료과) / 전화번호 / 정기진료 ○무 ○유
-종교활동: ○천주교 ○기독교 ○불교 ○기타( )
-지역사회 자원:
-□ 노인맞춤 돌봄 서비스(□노인돌봄기본 □노인돌봄종합 □단기가사 □독거노인사회관계활성화 □초기독거노인자립지원)
-□ 가사간병 □ 재가복지 □ 급식 및 도시락 배달 □ 보건소 사업
-□ 개인 간병인 □ 산업재해 간병인 □ 치매안심센터 □ 복지관(마을회관)
-□ 노인정 □ 이동 서비스 □ 종교단체 □ 이·미용 □ 주거개선 사업
-⚠ 타 기관(치매안심센터·보건소·복지관·재가복지 등) 직접 연계 언급 절대 금지. 연계를 '검토할 수 있음', '권고함' 등 표현도 금지. 현재 이용 중인 주간보호센터 내 서비스 중심으로만 서술할 것.
+진료 병원: 병원명(진료과), 정기진료 ○무/○유
+종교활동: ○천주교 / ○기독교 / ○불교 / ○기타
+지역사회 자원: □노인맞춤 돌봄 서비스 / □가사간병 / □재가복지 / □급식 및 도시락 배달 / □보건소 사업 / □개인 간병인 / □산업재해 간병인 / □복지관(마을회관) / □노인정 / □이동 서비스 / □종교단체 / □이·미용 / □주거개선 사업
+⚠ 치매안심센터 등 타 기관 직접 연계 언급 금지. 삽교주간보호센터 내 서비스 중심으로 서술.
 판단근거: ①②2단 구조
 
 ### 9. 주관적 욕구
@@ -6804,29 +5489,27 @@ CIST 평가 시행 여부 반드시 명시. 없으면 "작성일 기준 최근 C
 
 출력 형식: 표 형식 사용 금지 — 복사·붙여넣기 가능한 순수 텍스트. 체크사항 + 총평 구조.
 
-체크사항 판단 기준 (체크만 표시 — 각 항목에 대한 별도 서술 금지):
+체크사항 판단 기준:
 
 1. 수급자의 기능상태에 맞는 급여제공계획으로 진행된 급여 서비스
-   → 해당 영역에 체크(■)만 표시. 판단 근거 서술 금지.
-   선택지: □신체활동지원 □인지관리지원·정서지원 □건강관리·간호처치 □기능회복훈련
+   ( )신체활동지원 ( )인지관리지원,정서지원 ( )건강관리,간호처치 ( )기능회복훈련
+   → 제공기록지에서 해당 영역이 실제 제공되었는지 확인. 이유 서술 없이 체크만.
 
-2. 수급자나 보호자의 욕구가 반영되었는지 여부
-   → ○반영 또는 ○미반영 중 하나만 체크. 판단 근거 서술 금지.
+2. 수급자나 보호자의 욕구가 반영되었는지 여부: ( )반영 ( )미반영
+   → 이전 욕구사정의 주관적 욕구 → 계획서 반영 여부 확인
 
-3. 급여제공계획 이후 어르신의 상태 변화 여부
-   → ○상태변화 또는 ○기능유지 중 하나만 체크. 판단 근거 서술 금지.
-   판단 기준(체크 결정용, 출력하지 않음):
-   - 상태변화: 신규 진단, 신규 행동증상, 기능 수준 유의미한 변화
-   - 기능유지: 이전 평가와 동일한 경향 지속
+3. 급여제공계획 이후 어르신의 상태 변화 여부: ( )상태변화 ( )기능유지
+   판단 기준:
+   - 상태변화: 신규 임상 도메인 출현(신규 진단, 신규 행동증상 등), 기능 수준 유의미한 변화
+   - 기능유지: 이전 평가와 동일한 경향이 지속될 때. 단순 트렌드 유지는 상태변화 아님.
 
-4. 평가결과에 따라 급여제공계획서 재작성 필요 여부
-   → ○30일 이내 재작성 또는 ○필요없음(급여계획유지) 중 하나만 체크. 판단 근거 서술 금지.
-   재작성 필요 판단 기준(체크 결정용, 출력하지 않음):
+4. 평가결과에 따라 급여제공계획서 재작성 필요 여부: ( )30일 이내 재작성 ( )필요없음(급여계획유지)
+   30일 이내 재작성이 필요한 경우:
    - 상태변화 확인 + 계획서에 없던 신규 영역 출현
-   - 인지지원등급이고 인지활동형 프로그램(K01) 매일 1회 60분 이상 미충족
-   - 등급 변경 또는 인정 정보 변경
+   - 인지지원등급인데 인지활동형 프로그램(K01) 매일 1회 60분 이상 기준 미충족
+   - 등급 변경 또는 인정 정보 변경으로 계획서 갱신 필요
 
-   ⚠ 1~4번 체크사항은 표 형식으로 간결하게 출력. 각 항목 아래 설명·근거 추가 절대 금지.
+   ⚠ 인지지원등급 필수 확인: 인지활동형 프로그램(K01)이 매일 1회 60분 이상 제공되었는지 제공기록지로 반드시 확인. 미충족 시 → 재작성 체크 + 총평에 사유 명시.
 
 총평 작성 기준:
 - 단락 2~3개 분량의 흐르는 산문체 (과도하게 길 필요 없음 — 핵심 변화와 방향 중심으로 간결하게)
@@ -6835,19 +5518,8 @@ CIST 평가 시행 여부 반드시 명시. 없으면 "작성일 기준 최근 C
 - 유지된 기능, 변화된 기능, 새로 출현한 과제를 구분하여 서술
 - 향후 급여제공계획서 변경이 필요한 경우 주요 변경 방향 간략 제시
 - "기록지 상 확인됨" 표현 사용 금지
-- 타 기관 직접 언급 금지
+- 치매안심센터 등 타 기관 직접 언급 금지
 - 욕구사정 결과와 이전 급여제공계획서를 교차 비교하여 근거 기반으로 서술
-
-■ 목표 품질 기준 (아래 수준으로 작성할 것)
-
-[급여제공결과평가 총평 예시]
-이 수준의 서술 깊이로 작성할 것:
-
-"어르신은 이용 개시 이후 약 15개월간 신체활동지원·건강관리·인지관리지원·기능회복훈련 전 영역에 걸쳐 계획에 준한 서비스가 제공되었음. 이전 욕구사정에서 확인된 보호자의 핵심 욕구(정서적 안정, 여가·인지 프로그램 참여, 복약 관리, 보행 안전)는 이용 기간 전반에 걸쳐 반영되었음.
-
-상태 변화 측면에서 가장 두드러진 변화는 BPSD(치매 행동심리증상)의 심화임. 망상·배회·폭력적 언행이 반복 발현되어 항정신병약이 추가 처방되었으며, 복용 후 부분적으로 완화되는 시기도 있었으나 재발이 확인된 상태임. 대다수 ADL 항목에서 높은 자립도를 유지하고 있으며, 슬링재활운동·백세체조·색칠 공부·윷놀이 등 프로그램에 높은 참여 의지를 보이고 있음. 인지선별검사 결과 인지기능 저하가 확인되어 인지기능 관리 강화가 필요한 시점임.
-
-이번 평가 결과를 반영하여 BPSD 대응 전략 강화, 낙상 위험 관리를 위한 이동 안전 지원 보강, 인지활동 프로그램 확충, 기저귀 관리 접근 방식 개선 등을 포함한 급여제공계획서를 30일 이내 재작성할 계획임." 
 
 ---
 
@@ -6888,117 +5560,6 @@ CIST 평가 시행 여부 반드시 명시. 없으면 "작성일 기준 최근 C
 - **T61** 사회적응훈련: 주기=1(월), 횟수=1, 시간=60
 - 통증간호: **Q50** → 모니터링구분코드 L40 (K30 아님)
 
-### 항목 선택 원칙 — 반드시 준수
-[핵심] 계획서는 어르신의 상태에 맞는 항목을 충분히 골라 작성해야 함. 최소한의 항목만 선택하는 것은 부실한 계획서임.
-각 영역별로 해당하는 항목을 아래 전체 코드 목록에서 빠짐없이 선택하여 작성할 것.
-
-판단 기준:
-- 어르신이 해당 활동에 도움이 필요한가? → 포함
-- 건강 상태상 관리가 필요한가? → 포함
-- 안전을 위해 지원이 필요한가? → 포함
-- 해당 사항이 전혀 없는 경우에만 제외
-
-### 전체 사용 가능 코드 목록 (어르신 상태에 맞게 선택)
-
-[A10 신체활동지원 — 착탈의 (주기그룹: A10P01)]
-A01 입을 옷 준비하기 / A02 옷갈아입기 지시 및 지켜보기 도움 / A03 옷갈아입기 도움
-A06 옷 입고 뒷정리 하기 / A07 전적인 도움받아 옷 갈아입기
-
-[A10 신체활동지원 — 세면 (주기그룹: A10P02)]
-A50 세면도구 준비 / A51 세면 지시 및 지켜보기 / A52 세면도움
-A55 세면 후 뒷정리 하기 / A56 전적인 도움받아 세수하기
-
-[A10 신체활동지원 — 구강 (주기그룹: A10P03)]
-B01 양치도구 준비 / B02 양치질 지시 및 지켜보기 / B03 양치질 도움
-B04 틀니관리 / B07 전적인 도움받아 양치질하기
-
-[A10 신체활동지원 — 목욕 (주기그룹: A10P04)]
-B50 몸씻기 준비 / B51 몸씻기 지시 및 지켜보기 / B52 몸씻기 도움 / B55 전적인 도움받아 몸씻기
-
-[A10 신체활동지원 — 머리감기 (주기그룹: A10P13)]
-C01 머리감기 지시 및 지켜보기 / C02 머리감기 도움 / C05 전적인 도움받아 머리감기
-
-[A10 신체활동지원 — 외모관리]
-C50 몸단장 물품 준비와 지켜보기 (A10A16_1) / C51 손발톱깎기 (A10A16_2)
-C55 화장 등 외모관리 (A10A16_3) / C53 머리단장 (A10A16_4)
-
-[A20 식사제공 (주기그룹: A20P05)]
-E11 기능상태에 맞는 음식 준비 / E12 안전하게 식사하기 도움 / E13 치아상태(틀니) 관찰 및 씹는 기능확인
-E14 적절한 수분 섭취 / E15 식사 지시 및 지켜보기 / E16 반찬 종류·위치 알려주기 등 도움
-E17 균형잡힌 식단 관리 / E18 전적인 식사도움
-E52 경관영양 준비 / E53 영양물 주입 / E54 경관영양 제공 후 뒷정리
-
-[A30 체위변경 (주기그룹: A30P06)]
-F00 규칙적인 체위변경 실시 / F01 체위변경 지시 및 지켜보기 / F02 욕창호발부위 사정
-
-[A40 일어나앉기 (주기그룹: A40P07)]
-F50 일어나 앉기 지시 및 지켜보기 / F51 일어나 앉기 도움 / F53 올바른 앉은 자세 유지
-
-[A50 이동 (주기그룹: A50P08)]
-G05 이동 지시 및 지켜보기 / G06 이동 시 부축 도움 / G07 이동 시 적절한 보조기구 사용 도움
-G08 휠체어 이용한 이동 도움 / G50 위험요소 최소화 및 안전관리로 낙상예방
-
-[A60 배설 (주기그룹: A60P10)]
-H01 화장실 이용 지시 및 지켜보기 / H02 화장실 이용 도움 / H03 이동변기 사용 도움
-H04 기저귀 교환 도움 / H05 침상 배설도움 / H50 배변문제 관리
-H51 장루(인공항문)관리 도움 / I01 배뇨문제 관리 / I02 요루·도뇨관 관리
-
-[A80 복약 (주기그룹: A80A03)]
-J01 정확한 복약도움(시간·용량·용법 등)
-
-[A90 관절운동 (주기그룹: A90A04)]
-J50 관절운동지원
-
-[B30 인지관리 (주기그룹: B10R99)]
-K01 인지활동형 프로그램 실시(인지자극활동·일상생활 함께하기) ← 인지지원등급 필수
-K02 인지기능악화 예방활동(인지활동형 프로그램 이외)
-
-[C10 치매·정서 (주기그룹: C10A99)]
-K60 정서적 안정된 환경조성 / K61 생활공간 내 위험요소 제거
-K62 관찰을 통한 행동변화 예방 및 적절한 대처 / K63 행동변화와 관련된 영양문제 관리
-
-[D10 의사소통 (주기그룹: D10J91)]
-L01 다양한 방법으로 의사소통 도움 / L02 욕구파악을 위한 관찰(행동·소리·동작 등)
-L04 비상연락망 준비 / L05 말벗 및 위로 등 정서적 지원
-
-[G10 외출동행]
-M01 외출시 동행 (G10S77_1) / M02 병원동행 (G10S77_2) / M03 산책동행 도움 (G10S77_3)
-
-[K10 투약관리 (주기그룹: K10S60)]
-N50 투약관리 지도 / N51 약 복용 및 인슐린 주사
-
-[K20 관절구축 (주기그룹: K20A07)]
-O01 관절구축예방간호
-
-[K30 건강관리]
-O50 건강상태 관찰 및 측정 (K30A08_1) / O51 건강교육 및 상담 (K30A08_2)
-O52 감염간호 (K30A08_3) / O53 의사진료 지원 (K30A08_4)
-O56 치매간호 (K30A08_5) / O55 의료기관 의뢰 (K30A08_6)
-
-[L10 흡인·호흡 (주기그룹: L10N02)]
-P01 호흡기 흡인 간호 / P02 기관절개관 관리 / P03 산소요법관리
-
-[L20 욕창 (주기그룹: L20N10)]
-P50 욕창간호(예방관리) / P51 피부간호·상처간호
-
-[L40 통증 (주기그룹: L40N06)]
-Q50 통증간호 ← 모니터링구분코드 반드시 L40
-
-[M10 기능회복훈련]
-T51 신체기능의 훈련 (M10L50_2) ← 필수
-T52 기본동작 훈련 (M10L50_3) ← T51 직후 필수
-T53 일상생활동작 훈련 (M10L50_4)
-T55 물리치료 (M10L50_9) ← 통증 어르신 필수
-T58 여가·정서 프로그램 (M10L50_6)
-T61 사회적응훈련 (M10L50_7) ← 월 1회 60분
-T60 인지기능프로그램 (M10L50_5) ← 4등급 이상
-T62 가족대상 프로그램 (M10L50_8)
-T57 작업치료 (M10L50_10)
-
-[M30 환경·생활지원]
-U54 송영서비스 (M30A50) / U50 침구린넨 교환 및 정리 (M30A12_1)
-U51 환경관리 (M30A12_2) / U52 물품관리 (M30A12_3)
-
 ### 세부제공내용 작성 원칙
 형식: "어떤 부분을 지원하겠음" / "이렇게 지원하겠음"
 포함 금지:
@@ -7007,24 +5568,6 @@ U51 환경관리 (M30A12_2) / U52 물품관리 (M30A12_3)
 - 현황·상태 설명 단순 나열 ("~한 상태임")
 - 급여제공결과평가 내용 인용
 - 등급 기준 언급 ("인지지원등급 수급자로~")
-
-■ 목표 품질 기준 — 세부제공내용 예시 (이 수준으로 작성할 것)
-
-치매간호(O56): "망상·배회·폭력적 언행 등 BPSD 증상을 매 이용일마다 관찰하고 기록하겠음. 증상 발현 시 공감·주의 전환(선호 활동 유도) 방식으로 대응하겠음. 경과를 보호자와 정기 공유하겠음."
-
-기저귀 교환 도움(H04): "기저귀 교환 시 어르신이 원하시는 색상이나 방식을 반영하여 자율성을 존중하겠음. 거부 반응이 있을 경우 강요하지 않고 부드럽게 안내하겠음. 피부 상태를 함께 관찰하겠음."
-
-행동변화 예방 및 대처(K62): "망상 발현 시 직접 부정하지 않고 공감한 후 색칠 공부·윷놀이 등 선호 활동으로 주의를 전환하겠음. 대응 방식을 전 직원이 통일하여 적용하겠음. 이상 행동 발현 시 즉시 기록하겠음."
-
-목욕 도움(B52): "목욕의자를 활용하여 안전한 샤워를 지원하겠음. 이동 전 과정에 동행하고 미끄럼 방지 환경을 조성하겠음. 목욕 거부 시 강요하지 않고 어르신의 의사를 존중하며 부드럽게 유도하겠음."
-
-여가·정서 프로그램(T58): "대왕윷놀이·느림교실(꽃나무 만들기·인지미술)·레크리에이션 등을 제공하겠음. 어르신이 윷놀이에서 팀이 이기면 박수를 치며 즐기시는 모습을 살려 적극적인 참여를 유도하겠음."
-
-이동 낙상예방(G50): "이동 경로의 장애물 및 미끄럼 위험 요소를 사전에 제거하겠음. 식사 후 졸음 상태에서 급격히 기립하는 행동을 방지하겠음. 낙상 발생 시 즉시 보고 절차를 준수하겠음." 
-
-### 열 순서 (반드시 이 순서 준수)
-순번 | 상태코드 | 추가위치 | 장기요양관리번호 | 모니터링구분코드 | 필요내용코드 | 필요내용_수기 | 세부목표내용 | 세부제공내용 | 작성자 | 면허번호 | 주기그룹코드 | 주기 | 횟수 | 시간
-※ 세부목표내용이 세부제공내용보다 앞에 위치함 (절대 순서 바꾸지 말 것)
 
 ### 세부목표내용 작성 원칙
 - 같은 영역 내 항목들은 동일한 세부목표 문장 사용
@@ -7074,7 +5617,7 @@ M10(기능회복훈련): T50→M10L50_1, T51→M10L50_2, T52→M10L50_3, T53→M
 **③ 보호자 안내 카카오톡 문구**
 아래 형식으로 작성 (주요 항목은 해당 어르신 계획서 내용에 맞게 구체적으로 기재):
 ---
-안녕하세요, Day:음입니다.
+안녕하세요, 삽교주간보호센터입니다.
 [수급자명] 어르신의 급여제공계획서를 카카오톡으로 전송해 드렸습니다.
 계획서에는 신체활동지원([주요 항목 2~3개]), 인지관리지원([주요 항목 1~2개]),
 건강관리([주요 항목 1~2개]), 기능회복훈련([주요 항목 1~2개]) 항목이 포함되어 있습니다.
@@ -7138,416 +5681,6 @@ ${(function(){
 }
 
 // ────── 결과 HTML 렌더링 ──────
-
-// ══════════════════════════════════════════════════
-// 고정 HTML 템플릿 조립 함수 (AI 내용만 받아 코드가 구조 확정)
-// ══════════════════════════════════════════════════
-
-// ── 1. 분기별 상담일지 (SOAP / 서술형) ──
-function buildConsultHtml(sessions) {
-  if (!sessions || sessions.length === 0) return '';
-  return sessions.map((s, idx) => {
-    const metaRows = `
-      <tr>
-        <th>상담일시</th><td>${s.date || ''} ${s.time || ''}</td>
-        <th>상담구분</th><td>${s.type || '분기별 상담'}</td>
-      </tr>
-      <tr>
-        <th>상담대상</th><td>${s.target || '수급자'}</td>
-        <th>상담형태</th><td>${s.method || '대면'}</td>
-      </tr>
-      <tr>
-        <th>상담자</th><td colspan="3">${s.counselor || ''}</td>
-      </tr>`;
-
-    // 서술형 vs SOAP 분기
-    // 서술형 vs SOAP 분기
-    const br = function(t){ return (t||'').split('\n').join('<br>'); };
-    const isNarrative = s.format === 'narrative' || (!s.S && !s.O && s.narrative);
-    const contentHtml = isNarrative
-      ? '<div class="soap-para" style="line-height:2.0">' + br(s.narrative) + '</div>'
-      : '<div class="soap-para"><span class="soap-label">S</span><br>' + br(s.S) + '</div>'
-      + '<div class="soap-para"><span class="soap-label">O</span><br>' + br(s.O) + '</div>'
-      + '<div class="soap-para"><span class="soap-label">A</span><br>' + br(s.A) + '</div>'
-      + '<div class="soap-para"><span class="soap-label">P</span><br>' + br(s.P) + '</div>';
-
-    const actionsHtml = (s.actions || []).map(a => `<div class="item">${a}</div>`).join('');
-
-    const benefitHtml = (s.benefit_date || s.benefit_content) ? `
-      <div class="benefit-hd">[ 급여제공반영 ]</div>
-      <div class="benefit-body">
-        <div class="b-row"><span class="blabel">반영일</span>${s.benefit_date || ''}</div>
-        <div class="b-row"><span class="blabel">급여구분</span>${s.benefit_type || ''}</div>
-        <div class="b-row"><span class="blabel">급여내용</span>${s.benefit_content || ''}</div>
-        <div class="b-row"><span class="blabel">반영사유</span>${s.benefit_reason || ''}</div>
-      </div>` : '';
-
-    return `
-      <div class="session-hd">${idx+1}회차 상담</div>
-      <table class="meta-tbl">${metaRows}</table>
-      <div class="content-hd">상담 내용</div>
-      <div class="content-box">${contentHtml}</div>
-      <div class="action-hd">조치내용</div>
-      <div class="action-body">${actionsHtml}</div>
-      ${benefitHtml}`;
-  }).join('');
-}
-
-// ── 3. 사례관리 회의록 ──
-function buildCaseHtml(c) {
-  if (!c) return '';
-  const planRows = (c.계획 || []).map((p, i) =>
-    `<p class="crow"><span class="clabel">계획 ${i+1}.</span> ${p.내용||''} <span style="color:#888;font-size:10pt">(담당: ${p.담당||''} / 기한: ${p.기한||''})</span></p>`
-  ).join('');
-
-  const speakerRows = Object.entries(c.회의내용 || {}).map(([role, msg]) =>
-    `<p class="crow"><span class="clabel">[${role}]</span> ${msg}</p>`
-  ).join('');
-
-  return `
-    <div class="case-draft-notice">※ 이 사례관리 회의록은 AI(Day:음)가 작성한 초안입니다. 채택 여부는 담당자가 결정하시고, 실제 회의 내용을 반영하여 수정해 주세요.</div>
-    <div class="case-hd-bar">1. 선정사유 (문제점 및 욕구 파악)</div>
-    <div class="case-box"><p>${c.선정사유||''}</p></div>
-    <div class="case-hd-bar">2. 증상의 발견</div>
-    <div class="case-box"><p>${c.증상발견||''}</p></div>
-    <div class="case-hd-bar">3. 회의내용</div>
-    <div class="case-box">
-      <p class="crow" style="margin-bottom:6px;color:#888;font-size:10pt">회의일시: ${c.회의일시||''} &nbsp;|&nbsp; 참석자: ${c.참석자||''}</p>
-      ${speakerRows}
-    </div>
-    <div class="case-hd-bar">4. 사례관리 계획</div>
-    <div class="case-box">${planRows}</div>
-    <div style="margin-top:24px;padding-top:16px;border-top:1.5px dashed #b84040">
-      <div class="case-hd-bar">사례관리 회의 평가</div>
-      <div class="case-box">
-        <p class="crow"><span class="clabel">평가일자</span> ${c.평가일자||''}</p>
-        <p class="crow"><span class="clabel">반영내용</span> ${c.반영내용||''}</p>
-        <p class="crow"><span class="clabel">해결여부</span> ${c.해결여부||''}</p>
-        <div class="cbasis"><p>${c.해결내용||''}</p></div>
-        <p style="margin-top:10px;font-size:10pt;color:#888">※ 사례관리 회의 후 급여 등에 반영하고, 급여 등에 반영일로부터 30일 이내에 사례관리 회의를 평가합니다.</p>
-      </div>
-    </div>`;
-}
-
-// ── 5. 프로그램업무수행일지 [별지 제24호의2서식] ──
-function buildPgmHtml(p) {
-  if (!p) return '';
-
-  const nd = p.욕구조사 || {};
-  const sc = p.상담 || {};
-  const hp = p.향후계획 || {};
-
-  // 체크박스 헬퍼
-  const chk  = (val) => val ? '■' : '□';
-  const sel  = (v) => `<span style="font-weight:700">${v}</span>`;
-  const unsel= (v) => `<span style="color:#999">${v}</span>`;
-
-  // 심신변화 유지/악화/호전 체크
-  const chgRow = (r) => {
-    const color = r.판정==='악화' ? '#C0392B' : r.판정==='호전' ? '#1D9E75' : '#555';
-    const u = unsel, s = (v,t) => r.판정===t ? `<span style="font-weight:700">${v}</span>` : `<span style="color:#999">${v}</span>`;
-    if (r.판정 === null) {
-      return `<tr>
-        <td style="border:1px solid #888;padding:4px 8px;font-weight:600;background:#eaeaea;font-size:10pt">${r.항목||''}</td>
-        <td colspan="3" style="border:1px solid #888;padding:4px 8px;text-align:center;color:#999;font-size:9.5pt">—</td>
-        <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.근거||''}</td>
-      </tr>`;
-    }
-    return `<tr>
-      <td style="border:1px solid #888;padding:4px 8px;font-weight:600;background:#eaeaea;font-size:10pt">${r.항목||''}</td>
-      <td style="border:1px solid #888;padding:4px 8px;text-align:center">${s('■','유지')}</td>
-      <td style="border:1px solid #888;padding:4px 8px;text-align:center">${s('■','악화')}</td>
-      <td style="border:1px solid #888;padding:4px 8px;text-align:center">${s('■','호전')}</td>
-      <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.근거||''}</td>
-    </tr>`;
-  };
-
-  // 급여계획(4번) 행
-  const benRow = (r) => `<tr>
-    <td style="border:1px solid #888;padding:4px 8px;text-align:center;font-weight:600;font-size:10pt;white-space:nowrap">${r.유형||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.필요내용||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.제공방법||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;text-align:center;font-size:10pt">
-      ${r.제공여부==='제공' ? sel('■ 제공') : unsel('□ 제공')}<br>
-      ${r.제공여부==='미제공' ? sel('■ 미제공') : unsel('□ 미제공')}
-    </td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.확인내용||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;color:#888">${r.미제공사유||'—'}</td>
-  </tr>`;
-
-  // 인지활동(5번) 행
-  const cogRow = (r) => `<tr>
-    <td style="border:1px solid #888;padding:4px 8px;text-align:center;font-weight:600;font-size:10pt;white-space:nowrap">${r.유형||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.필요내용||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.향후계획||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;text-align:center;font-size:10pt">
-      ${r.제공여부==='제공' ? sel('■ 제공') : unsel('□ 제공')}<br>
-      ${r.제공여부==='미제공' ? sel('■ 미제공') : unsel('□ 미제공')}
-    </td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;line-height:1.8">${r.확인내용||''}</td>
-    <td style="border:1px solid #888;padding:4px 8px;font-size:10pt;color:#888">${r.미제공사유||'—'}</td>
-  </tr>`;
-
-  const T  = 'width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:2px';
-  const TH = 'background:#eaeaea;border:1px solid #888;padding:4px 8px;text-align:center;font-weight:600;white-space:nowrap;font-size:10pt';
-  const TD = 'border:1px solid #888;padding:4px 8px;vertical-align:top;line-height:1.8;font-size:10pt';
-  const TL = `${TH};text-align:left;width:130px`;
-  const SH = 'background:#1a3a6e;color:#fff;font-size:10.5pt;font-weight:700;padding:6px 12px;margin-top:14px;letter-spacing:.3px';
-
-  // 욕구확인 라디오
-  const yok = hp.욕구변화 || '';
-  const yc1 = yok.includes('서비스') ? sel('■') : unsel('□');
-  const yc2 = yok.includes('심신') ? sel('■') : unsel('□');
-  const yc3 = yok.includes('변화 없') ? sel('■') : unsel('□');
-
-  const rc  = hp.재작성여부 || '';
-  const rc1 = rc.includes('유지') ? sel('■') : unsel('□');
-  const rc2 = rc.includes('재작성') ? sel('■') : unsel('□');
-
-  return `
-    <div style="font-size:8.5pt;color:#666;margin-bottom:4px">장기요양급여 제공기준 및 급여비용 산정방법 등에 관한 세부사항 [별지 제24호의 2서식]</div>
-    <div style="text-align:center;font-size:15pt;font-weight:700;border:2px solid #1a1a1a;padding:8px 0;margin-bottom:4px;letter-spacing:2px">주야간보호기관 인지활동형 프로그램관리자 업무수행 일지</div>
-    <div style="text-align:center;font-size:11pt;font-weight:600;margin-bottom:2px">${p.연월||''}</div>
-    <div style="text-align:right;font-size:10.5pt;font-weight:600;margin-bottom:14px">${p.기관명||''}</div>
-
-    <div style="${SH}">1. 기본정보</div>
-    <table style="${T}">
-      <tr>
-        <th style="${TL};width:90px" rowspan="2">수급자</th>
-        <td style="${TD};width:110px" rowspan="2">${p.수급자명||''}</td>
-        <th style="${TL}">장기요양인정번호</th>
-        <td style="${TD}">${p.인정번호||''}</td>
-      </tr>
-      <tr>
-        <th style="${TL}">장기요양등급</th>
-        <td style="${TD}">${p.등급||''}</td>
-      </tr>
-      <tr>
-        <th style="${TL}" rowspan="2">작성일자</th>
-        <td style="${TD}" rowspan="2">${p.작성일||''}</td>
-        <th style="${TL}">작성자 성명</th>
-        <td style="${TD}">${p.작성자||''}</td>
-      </tr>
-      <tr>
-        <th style="${TL}">시설장(관리책임자) 성명</th>
-        <td style="${TD}">${p.시설장||''}</td>
-      </tr>
-    </table>
-
-    <div style="${SH}">2. 욕구조사</div>
-    <table style="${T}">
-      <tr>
-        <th style="${TL}">가. 보유질환</th>
-        <td style="${TD}">
-          ${nd.보유질환_없음 ? sel('■ 없음') : unsel('□ 없음')}<br>
-          ${!nd.보유질환_없음 ? sel('■ 있음') : unsel('□ 있음')} (${nd.보유질환_내용||''})
-        </td>
-      </tr>
-      <tr>
-        <th style="${TL}">나. 영양상태</th>
-        <td style="${TD}">
-          ${nd.영양상태==='양호' ? sel('■ 양호') : unsel('□ 양호')} &nbsp;
-          ${nd.영양상태==='불량' ? sel('■ 불량') : unsel('□ 불량')}
-        </td>
-      </tr>
-      <tr>
-        <th style="${TL}" rowspan="4">다. 신체상태</th>
-        <td style="${TD}">
-          <strong>1) 보행상태</strong><br>
-          ${['자립보행 가능','보장구를 사용하여 자립보행 가능','부축해주면 보행 가능','보장구를 사용하여 부축을 받아 보행 가능','보행 불가'].map(v =>
-            (nd.보행상태||'').includes(v.replace('■ ','')) ? sel('■ '+v) : unsel('□ '+v)
-          ).join(' &nbsp; ')}
-        </td>
-      </tr>
-      <tr>
-        <td style="${TD}">
-          <strong>2) 신체기능</strong>
-          <table style="margin-top:4px;width:100%;border-collapse:collapse">
-            <tr>
-              <td style="border:1px solid #bbb;background:#f5f5f5;font-weight:600;font-size:9.5pt;padding:3px 7px;width:50%">바닥에 앉은 상태에서 일어서기</td>
-              <td style="border:1px solid #bbb;font-size:9.5pt;padding:3px 7px">
-                ${['혼자수행','지시(준비) 도움','직접(부축) 도움','전혀 수행할 수 없음'].map(v =>
-                  (nd.신체기능_바닥에서일어서기||'').includes(v) ? sel('■ '+v) : unsel('□ '+v)
-                ).join(' &nbsp; ')}
-              </td>
-            </tr>
-            <tr>
-              <td style="border:1px solid #bbb;background:#f5f5f5;font-weight:600;font-size:9.5pt;padding:3px 7px">누운 상태에서 몸 일으켜 앉기</td>
-              <td style="border:1px solid #bbb;font-size:9.5pt;padding:3px 7px">
-                ${['혼자수행','지시(준비) 도움','직접(부축) 도움','전혀 수행할 수 없음'].map(v =>
-                  (nd.신체기능_누워서앉기||'').includes(v) ? sel('■ '+v) : unsel('□ '+v)
-                ).join(' &nbsp; ')}
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td style="${TD}">
-          <strong>3) 배뇨기능</strong><br>
-          ${['양호','요실금','배뇨곤란(배뇨 시 통증, 배뇨지연 등)','요의 느끼지 못함'].map(v =>
-            (nd.배뇨기능||'').includes(v) ? sel('■ '+v) : unsel('□ '+v)
-          ).join(' &nbsp; ')}
-          &nbsp; ${(nd.배뇨기능||'').includes('기타') ? sel('■ 기타') : unsel('□ 기타')}
-          (${(nd.배뇨기능||'').includes('기타') ? nd.배뇨기능.replace(/.*기타\(?/,'').replace(/\)?.*/,'') : ''})
-        </td>
-      </tr>
-      <tr>
-        <td style="${TD}">
-          <strong>4) 배변기능</strong><br>
-          ${['양호','변실금','잦은 설사','변비','변의 느끼지 못함'].map(v =>
-            (nd.배변기능||'').includes(v) ? sel('■ '+v) : unsel('□ '+v)
-          ).join(' &nbsp; ')}
-        </td>
-      </tr>
-      <tr>
-        <th style="${TL}">라. 일상생활기능</th>
-        <td style="${TD}">
-          <div style="font-size:9pt;color:#555;margin-bottom:4px">※ [0] 혼자 할 수 있음, [1] 지시(준비)도움, [2] 직접(부축)도움, [3] 전혀 수행할 수 없음</div>
-          <table style="width:100%;border-collapse:collapse">
-            <tr>
-              <th style="background:#f0f0f0;border:1px solid #bbb;padding:3px 7px;width:45%">구분</th>
-              <th style="background:#f0f0f0;border:1px solid #bbb;padding:3px 7px;width:55px;text-align:center">확인</th>
-              <th style="background:#f0f0f0;border:1px solid #bbb;padding:3px 7px;width:45%">구분</th>
-              <th style="background:#f0f0f0;border:1px solid #bbb;padding:3px 7px;width:55px;text-align:center">확인</th>
-            </tr>
-            <tr>
-              <td style="border:1px solid #bbb;padding:3px 7px">1) 식사하기</td>
-              <td style="border:1px solid #bbb;padding:3px 7px;text-align:center;font-weight:700">${nd.ADL_식사하기||''}</td>
-              <td style="border:1px solid #bbb;padding:3px 7px">3) 양치질하기(틀니관리)</td>
-              <td style="border:1px solid #bbb;padding:3px 7px;text-align:center;font-weight:700">${nd.ADL_양치질하기||''}</td>
-            </tr>
-            <tr>
-              <td style="border:1px solid #bbb;padding:3px 7px">2) 세수하기</td>
-              <td style="border:1px solid #bbb;padding:3px 7px;text-align:center;font-weight:700">${nd.ADL_세수하기||''}</td>
-              <td style="border:1px solid #bbb;padding:3px 7px">4) 화장실(이동변기) 사용하기</td>
-              <td style="border:1px solid #bbb;padding:3px 7px;text-align:center;font-weight:700">${nd.ADL_화장실사용하기||''}</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <th style="${TL}" rowspan="2">마. 인지 및 행동증상</th>
-        <td style="${TD}">
-          <strong>1) 인지기능</strong><br>
-          ${(nd.인지기능||'').includes('양호') ? sel('■ 양호') : unsel('□ 양호')} &nbsp;
-          ${(nd.인지기능||'').includes('기억력') ? sel('■ 기억력 저하') : unsel('□ 기억력 저하')}
-          (${(nd.인지기능||'').includes('단기') ? '[V]단기' : '[&nbsp;]단기'},&nbsp;
-           ${(nd.인지기능||'').includes('장기') ? '[V]장기' : '[&nbsp;]장기'})<br>
-          ${(nd.인지기능||'').includes('지남력') ? sel('■ 지남력 저하') : unsel('□ 지남력 저하')} &nbsp;
-          ${(nd.인지기능||'').includes('판단력') ? sel('■ 판단력 저하') : unsel('□ 판단력 저하')} &nbsp;
-          ${(nd.인지기능||'').includes('이해력') ? sel('■ 이해력 저하') : unsel('□ 이해력 저하')} &nbsp;
-          ${(nd.인지기능||'').includes('주의력') ? sel('■ 주의력 저하') : unsel('□ 주의력 저하')}
-        </td>
-      </tr>
-      <tr>
-        <td style="${TD}">
-          <strong>2) 행동증상</strong><br>
-          ${nd.행동증상_없음 ? sel('■ 없음') : unsel('□ 없음')} &nbsp;
-          ${!nd.행동증상_없음 ? sel('■ 있음') : unsel('□ 있음')}
-          ${nd.행동증상_내용 ? '(' + nd.행동증상_내용 + ')' : ''}
-        </td>
-      </tr>
-      <tr>
-        <th style="${TL}">바. 동거인</th>
-        <td style="${TD}">
-          ${['독거','배우자','자녀','며느리·사위','형제·자매','손자녀','부모','친척'].map(v =>
-            (nd.동거인||'').includes(v) ? sel('■ '+v) : unsel('□ '+v)
-          ).join(' &nbsp; ')} &nbsp; ${unsel('□ 기타')}
-        </td>
-      </tr>
-    </table>
-
-    <div style="${SH}">3. 수급자의 심신상태 및 환경변화 <span style="font-size:9pt;font-weight:400">※ 직전 상담내용과 비교하여 작성</span></div>
-    <table style="${T}">
-      <tr>
-        <th style="${TH};width:160px">심신상태 구분</th>
-        <th style="${TH};width:45px">유지</th>
-        <th style="${TH};width:45px">악화</th>
-        <th style="${TH};width:45px">호전</th>
-        <th style="${TH}">판단근거 (구체적 변화 내용)</th>
-      </tr>
-      ${(p.심신변화||[]).map(r => chgRow(r)).join('')}
-    </table>
-
-    <div style="${SH}">4. 급여제공 계획 및 내용 확인 <span style="font-size:9pt;font-weight:400">※ 주야간보호형 통합재가서비스 제공기관만 급여관리 업무로 필수 작성</span></div>
-    <table style="${T}">
-      <tr>
-        <th style="${TH};width:90px" rowspan="2">구분</th>
-        <th style="${TH}" colspan="2">제공계획</th>
-        <th style="${TH}" colspan="3">계획에 따른 급여제공 확인내용</th>
-      </tr>
-      <tr>
-        <th style="${TH}">필요내용</th>
-        <th style="${TH};width:100px">제공방법</th>
-        <th style="${TH};width:70px">필요내용<br>제공여부</th>
-        <th style="${TH}">제공 확인내용</th>
-        <th style="${TH};width:70px">미제공 사유</th>
-      </tr>
-      ${(p.급여계획||[]).map(r => benRow(r)).join('')}
-    </table>
-
-    <div style="${SH}">5. 인지활동형 프로그램 제공 계획 및 내용 확인 <span style="font-size:9pt;font-weight:400">※ 인지활동형 프로그램관리자만 필수 작성</span></div>
-    <table style="${T}">
-      <tr>
-        <th style="${TH};width:90px" rowspan="2">인지활동형<br>프로그램</th>
-        <th style="${TH}" colspan="2">제공계획</th>
-        <th style="${TH}" colspan="3">계획에 따른 급여제공 확인내용</th>
-      </tr>
-      <tr>
-        <th style="${TH}">필요내용</th>
-        <th style="${TH}">향후 제공계획</th>
-        <th style="${TH};width:70px">제공여부</th>
-        <th style="${TH}">제공 확인내용</th>
-        <th style="${TH};width:70px">미제공 사유</th>
-      </tr>
-      ${(p.인지활동||[]).map(r => cogRow(r)).join('')}
-    </table>
-
-    <div style="${SH}">6. 수급자(보호자) 상담 <span style="font-size:9pt;font-weight:400">※ 월 중 1회 통합상담한 경우, 각 급여종류별 상담내용 모두 기재</span></div>
-    <table style="${T}">
-      <tr>
-        <th style="${TL}">일시</th>
-        <td style="${TD}" colspan="3">${sc.일시||''}</td>
-      </tr>
-      <tr>
-        <th style="${TL}">상담자 성명 및 관계</th>
-        <td style="${TD}">${sc.상담자성명||''}</td>
-        <th style="${TL}">상담방법</th>
-        <td style="${TD}">${sc.상담방법||''}</td>
-      </tr>
-      <tr>
-        <th style="${TL}">내용</th>
-        <td style="${TD}" colspan="3">${(sc.내용||'').split('\n').join('<br>')}</td>
-      </tr>
-    </table>
-
-    <div style="${SH}">7. 향후계획 및 기타사항 <span style="font-size:9pt;font-weight:400">※ 통합재가서비스 제공기관은 유의사항 및 세부계획에 급여종류별 조치</span></div>
-    <table style="${T}">
-      <tr>
-        <th style="${TL}">수급자 욕구 확인</th>
-        <td style="${TD}">
-          ${yc1} 서비스 욕구 변화 있음<br>
-          ${yc2} 수급자 심신상태 등 변화 있음<br>
-          ${yc3} 변화 없음
-        </td>
-      </tr>
-      <tr>
-        <th style="${TL}">급여제공계획<br>재작성 여부</th>
-        <td style="${TD}">
-          ${rc1} 급여제공계획 유지<br>
-          ${rc2} 욕구조사 재실시 및 급여제공계획서 재작성
-        </td>
-      </tr>
-      <tr>
-        <th style="${TL}">급여제공 관련<br>유의사항 및<br>세부계획</th>
-        <td style="${TD}">${(hp.세부계획||'').split('\n').join('<br>')}</td>
-      </tr>
-    </table>`;
-}
-
-
-
 function renderMonthlyResult(html) {
   const bodyEl = document.getElementById('m-r1');
   const bodyEl2 = document.getElementById('m-r2');
@@ -7566,40 +5699,16 @@ function renderMonthlyResult(html) {
   if (lastTag !== -1 && lastTag < cleanHtml.length - 1) cleanHtml = cleanHtml.slice(0, lastTag + 1);
   cleanHtml = cleanHtml.trim();
 
-  // ── JSON 마커 파싱 → 고정 HTML 조립 ──
-  function parseAndReplace(html, startMark, endMark, buildFn, isArray) {
-    const s = html.indexOf(startMark);
-    const e = html.indexOf(endMark);
-    if (s === -1 || e === -1) return html;
-    try {
-      const jsonStr = html.slice(s + startMark.length, e).trim();
-      const data = JSON.parse(jsonStr);
-      const built = buildFn(isArray ? data : data);
-      return html.slice(0, s) + built + html.slice(e + endMark.length);
-    } catch(err) {
-      console.warn(startMark, '파싱 오류:', err);
-      return html;
-    }
-  }
-  // 상담일지 (배열)
-  cleanHtml = parseAndReplace(cleanHtml,
-    '<!--CONSULT_JSON_START-->', '<!--CONSULT_JSON_END-->',
-    buildConsultHtml, true);
-  // 사례관리 회의록 (단일 객체)
-  cleanHtml = parseAndReplace(cleanHtml,
-    '<!--CASE_JSON_START-->', '<!--CASE_JSON_END-->',
-    buildCaseHtml, false);
-  // 프로그램업무수행일지 (단일 객체)
-  cleanHtml = parseAndReplace(cleanHtml,
-    '<!--PGM_JSON_START-->', '<!--PGM_JSON_END-->',
-    buildPgmHtml, false);
-
   // CSS 주입
   let finalHtml = cleanHtml;
   if (!cleanHtml.includes('<style>')) {
-    finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${DOC_CSS}</style></head><body>${DRAFT_NOTICE}${cleanHtml}</body></html>`;
+    finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${DOC_CSS}</style></head><body>${cleanHtml}</body></html>`;
   }
   window._monthlyHtml = finalHtml;
+
+  // 크게보기 버튼 표시
+  const viewBtn = document.getElementById('view-btn-m1');
+  if (viewBtn) viewBtn.style.display = 'inline-block';
 
   // 케어 이벤트 동적 추출 — source-report에서 주요 사건 파싱
   const eventBox = document.getElementById('event-summary-box');
@@ -7679,7 +5788,7 @@ function renderPeriodicBox(boxNum, html) {
 
   cleanHtml = cleanHtml.trim();
 
-  const finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${DRAFT_NOTICE}${cleanHtml}</body></html>`;
+  const finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${cleanHtml}</body></html>`;
 
   // 박스별 HTML 저장
   window[`_periodicHtml${boxNum}`] = finalHtml;
@@ -7700,6 +5809,15 @@ function openPeriodicBox(boxNum) {
   w.document.close();
 }
 
+function openMonthlyBox() {
+  const html = window._monthlyHtml;
+  if (!html) return;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
 function renderPeriodicResult(html) {
   // 하위 호환 - 전체 HTML을 박스1에 표시
   renderPeriodicBox(1, html);
@@ -7713,38 +5831,23 @@ function renderPeriodicResult(html) {
 }
 
 // ────── 생성 메인 함수 ──────
-// ════════════════════════════════════════
-//  AI 검토 안내 모달
-// ════════════════════════════════════════
-function showDisclaimerModal(callback) {
-  const today = new Date().toISOString().slice(0, 10);
-  const seen  = localStorage.getItem('daeum-disclaimer-seen');
-  if (seen === today) { callback(); return; }
-  const modal = document.getElementById('ai-disclaimer-modal');
-  modal.style.cssText = 'display:block;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:99999;';
-  modal._pendingCallback = callback;
-}
-function closeDisclaimerModal() {
-  const today = new Date().toISOString().slice(0, 10);
-  localStorage.setItem('daeum-disclaimer-seen', today);
-  const modal = document.getElementById('ai-disclaimer-modal');
-  modal.style.display = 'none';
-  if (typeof modal._pendingCallback === 'function') {
-    modal._pendingCallback();
-    modal._pendingCallback = null;
-  }
-}
-
-// ── AI 작업 중 모든 생성 버튼 비활성화 ──
-function setGenBtnsDisabled(disabled) {
-  const ids = ['adhoc-gen-btn', 'report-gen-btn'];
-  ids.forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.disabled = disabled;
+// ────── AI 작업 중 UI 잠금 ──────
+function setUiLock(locked) {
+  // 탭 버튼 전체
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.disabled = locked;
+    btn.style.opacity = locked ? '0.45' : '';
+    btn.style.pointerEvents = locked ? 'none' : '';
   });
-  // gen-btn 전체 (월간·정기 포함)
-  document.querySelectorAll('.gen-btn, .survey-gen-btn').forEach(btn => {
-    btn.disabled = disabled;
+  // 서브탭 버튼
+  document.querySelectorAll('.sub-tab').forEach(btn => {
+    btn.disabled = locked;
+    btn.style.pointerEvents = locked ? 'none' : '';
+  });
+  // 생성 버튼들
+  document.querySelectorAll('.gen-btn, .split-run-btn').forEach(btn => {
+    btn.disabled = locked;
+    btn.style.opacity = locked ? '0.45' : '';
   });
 }
 
@@ -7755,10 +5858,6 @@ async function startGenerate(type) {
     alert('먼저 파일을 업로드하거나 샘플을 선택해주세요.');
     return;
   }
-  // AI 검토 안내 모달 (오늘 첫 생성 시 1회)
-  await new Promise(resolve => showDisclaimerModal(resolve));
-  // AI 작업 시작 — 모든 생성 버튼 비활성화
-  setGenBtnsDisabled(true);
 
   // 월간 문서: 선택된 항목 기반으로 프로그레스 스텝 텍스트 업데이트
   if (type === 'monthly') {
@@ -7800,6 +5899,7 @@ async function startGenerate(type) {
   document.getElementById(type === 'monthly' ? 'monthly-input' : 'periodic-input').style.display = 'none';
   const prog = document.getElementById(type + '-prog');
   prog.classList.add('show');
+  setUiLock(true);
 
   const steps = type === 'monthly'
     ? ['mp1','mp2','mp3','mp4','mp5','mp6','mp7','mp8']
@@ -7892,30 +5992,6 @@ async function startGenerate(type) {
     if (type === 'monthly') {
       // ── 월간문서: 단일 API 호출 ──
       const systemPrompt = buildMonthlyPrompt(opinion);
-
-      // 월간 진행률 바 제어
-      let mCurrentPct = 0;
-      let mPctTimer = null;
-      const mSetPct = (pct) => {
-        mCurrentPct = pct;
-        const el  = document.getElementById('monthly-pct');
-        const bar = document.getElementById('monthly-pct-bar');
-        if (el)  el.textContent   = pct + '%';
-        if (bar) bar.style.width  = pct + '%';
-      };
-      const mStartPctTimer = (from, to) => {
-        if (mPctTimer) clearInterval(mPctTimer);
-        let cur = from;
-        mPctTimer = setInterval(() => {
-          if (cur < to - 1) { cur += 1; mSetPct(cur); }
-          else clearInterval(mPctTimer);
-        }, 600);
-      };
-      const mStopPctTimer = () => { if (mPctTimer) { clearInterval(mPctTimer); mPctTimer = null; } };
-
-      // 분석 단계 (1~3): 0→35%
-      mSetPct(0);
-      mStartPctTimer(0, 35);
       const apiPromise = callClaude(systemPrompt, userContent, '월간문서');
 
       for (let i = 3; i < steps.length - 1; i++) {
@@ -7924,16 +6000,9 @@ async function startGenerate(type) {
         document.getElementById(steps[i-1]).classList.add('complete');
         document.getElementById(steps[i-1]).querySelector('.picon').textContent = '✓';
         document.getElementById(steps[i]).classList.add('running');
-        // 각 문서 작성 단계마다 퍼센트 증가 (35→85%)
-        const stepPct = 35 + Math.round(((i - 3) / (steps.length - 5)) * 50);
-        mStopPctTimer();
-        mSetPct(stepPct);
-        mStartPctTimer(stepPct, Math.min(stepPct + 15, 85));
       }
 
       const result = await apiPromise;
-      mStopPctTimer();
-      mSetPct(90);
 
       const lastIdx = steps.length - 1;
       document.getElementById(steps[lastIdx-1]).classList.remove('running');
@@ -7941,13 +6010,11 @@ async function startGenerate(type) {
       document.getElementById(steps[lastIdx-1]).querySelector('.picon').textContent = '✓';
       document.getElementById(steps[lastIdx]).classList.add('running');
       await new Promise(r => setTimeout(r, 500));
-      mSetPct(100);
       document.getElementById(steps[lastIdx]).classList.remove('running');
       document.getElementById(steps[lastIdx]).classList.add('complete');
       document.getElementById(steps[lastIdx]).querySelector('.picon').textContent = '✓';
 
       await new Promise(r => setTimeout(r, 400));
-      mStopPctTimer();
       prog.classList.remove('show');
       document.getElementById(type + '-result').classList.add('show');
       renderMonthlyResult(result);
@@ -8001,8 +6068,8 @@ async function startGenerate(type) {
       stepComplete('pp3'); stepRun('pp4'); setPct(5);
 
       // 선택된 단계 수 계산 (진행률 균등 배분)
-      const numSteps = [hasEval123, hasNeeds, hasResult, hasPlan6].filter(Boolean).length;
-      const pctPerStep = numSteps > 0 ? Math.floor(90 / numSteps) : 22;
+      const steps = [hasEval123, hasNeeds, hasResult, hasPlan6].filter(Boolean).length;
+      const pctPerStep = steps > 0 ? Math.floor(90 / steps) : 22;
       let curPct = 5;
       let result1 = '', result2 = '', result3 = '', result4 = '';
 
@@ -8030,16 +6097,6 @@ async function startGenerate(type) {
 
 [이번 호출 작성 대상] 욕구사정 평가지(10개 항목 전체) 만 작성할 것. 낙상/욕창/결과평가/계획서는 작성하지 않을 것.
 [절대 금지] 파일 종류를 이유로 작성 거부 또는 추가 자료 요청 금지. 업로드된 파일(기록지·계획서·평가지 등 종류 무관)에서 파악 가능한 모든 정보를 활용하여 즉시 10개 영역 전체를 작성할 것. 정보가 부족한 항목은 "향후 면담을 통해 추가 확인이 필요함"으로 마무리하고 작성을 계속 진행할 것.
-
-[평가 점수 수치 기재 금지 — 모든 문서 공통]
-AI가 산출한 평가 점수(낙상위험도 점수, 욕창위험도 점수, CIST 점수 등)를 문서 본문에 직접 기재하는 것을 절대 금지.
-이유: AI가 산출한 점수는 참고용이며, 현장에서 실제 평가한 점수와 다를 수 있음. 점수를 문서에 고정하면 실제 현장 평가 결과와 불일치할 경우 문제가 발생할 수 있음.
-적용 범위: 욕구사정·급여제공결과평가·상담일지·사례관리 회의록·급여제공계획서 등 모든 문서.
-대신 사용 가능한 표현:
-- 낙상 관련: "낙상 위험 요인이 확인되어 이동 시 밀착 보조가 필요함" (점수·수준 표현 금지)
-- 욕창 관련: "피부 상태 및 자세 변화를 지속적으로 관찰하며 욕창 예방 관리가 필요함" (점수·수준 표현 금지)
-- 인지 관련: "인지선별검사(CIST) 결과 인지기능 저하가 확인되어 인지활동 지원이 필요함" (점수 표현 금지)
-핵심: 점수도, 위험 수준(높음·낮음·약간 등)도 모두 기재 금지. 어르신 상태와 필요한 케어 방향 중심으로만 서술.
 [작성자 정보 — 반드시 그대로 사용]
 - 작성자: ${planAuthor || '(미입력)'}
 - 면허번호: ${planLicense || '(미입력)'}
@@ -8163,16 +6220,15 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       prog.classList.remove('show');
     }
 
-    // AI 작업 완료 — 버튼 활성화
-    setGenBtnsDisabled(false);
     // 날짜 검증 UI 자동 실행
     setTimeout(() => buildDateVerify(type), 600);
+    setUiLock(false);
 
     // 어르신 정보 저장 + 문서별 Supabase 저장
     const cfg = CENTERS[centerCode] || {};
     if (type === 'monthly') {
-      // 월간문서 — 합본 저장
-      const r = typeof result !== 'undefined' ? result : '';
+      // 월간문서 — 정제된 HTML로 저장
+      const r = window._monthlyHtml || '';
       await saveResidentFromResult(type, r);
       // 선택된 문서 타입별로 각각 저장
       const docMap = {
@@ -8194,27 +6250,27 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       // 정기문서 — 4단계 각각 저장
       const resName = window.currentLinkedName || '수급자';
       const saveMap = [
-        { result: typeof result1 !== 'undefined' ? result1 : null, label: '기초평가(낙상·욕창·인지)' },
-        { result: typeof result2 !== 'undefined' ? result2 : null, label: '욕구사정' },
-        { result: typeof result3 !== 'undefined' ? result3 : null, label: '급여제공결과평가' },
-        { result: typeof result4 !== 'undefined' ? result4 : null, label: '급여제공계획서' },
+        { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
+        { html: window._periodicHtml2, label: '욕구사정' },
+        { html: window._periodicHtml3, label: '급여제공결과평가' },
+        { html: window._periodicHtml4, label: '급여제공계획서' },
       ];
-      for (const { result: r, label } of saveMap) {
-        if (r) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, r);
+      for (const { html: h, label } of saveMap) {
+        if (h) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, h);
       }
-      // 어르신 현황 업데이트용 합본
-      const resultForSave = (typeof result1 !== 'undefined' ? result1 : '') +
-                            (typeof result2 !== 'undefined' ? result2 : '') +
-                            (typeof result3 !== 'undefined' ? result3 : '') +
-                            (typeof result4 !== 'undefined' ? result4 : '');
+      // 어르신 현황 업데이트용 합본 — 정제된 HTML 사용
+      const resultForSave = (window._periodicHtml1 || '') +
+                            (window._periodicHtml2 || '') +
+                            (window._periodicHtml3 || '') +
+                            (window._periodicHtml4 || '');
       await saveResidentFromResult(type, resultForSave);
     }
 
     // 샘플 모드일 때만 샘플 어르신 저장 (실제 파일이면 저장 안 함)
 
   } catch (err) {
-    setGenBtnsDisabled(false);
     prog.classList.remove('show');
+    setUiLock(false);
     const inputEl = document.getElementById(type === 'monthly' ? 'monthly-input' : 'periodic-input');
     inputEl.style.display = 'block';
     steps.forEach(id => {
@@ -8261,9 +6317,6 @@ function handleFile(prefix, input) {
   }
   fnameEl.style.display = 'block';
   document.getElementById(prefix+'-upload').classList.add('has-file');
-  // 클릭 업로드 시에도 dropFiles에 저장 (startGenerate에서 참조)
-  if (prefix === 'p') window._pDropFiles = files;
-  if (prefix === 'm') window._mDropFiles = [files[0]];
 }
 
 // ── 드래그앤드롭 공통 함수 ──
@@ -8425,18 +6478,13 @@ function toggleDoc(el, id) {
   }
   // 정기문서: 계획서(p6) 또는 결과평가(p5) 변경 시 사유 박스 업데이트
   if (id === 'p5' || id === 'p6') checkReasonBox();
-  // 상담일지(m1) 선택 시 형식 선택 wrap 표시
-  if (id === 'm1') {
-    const wrap = document.getElementById('consult-format-wrap');
-    if (wrap) wrap.style.display = cb.checked ? 'block' : 'none';
-  }
 }
 
 // ── 작성자 메모리 ──
-const WRITER_KEY = 'daeum-writer-memory';
+function getWriterKey() { return `daeum-writer-memory-${centerCode || 'default'}`; }
 
 function getWriterMemory() {
-  try { return JSON.parse(localStorage.getItem(WRITER_KEY) || '[]'); } catch(e) { return []; }
+  try { return JSON.parse(localStorage.getItem(getWriterKey()) || '[]'); } catch(e) { return []; }
 }
 
 function saveWriterMemory(author, license) {
@@ -8446,7 +6494,7 @@ function saveWriterMemory(author, license) {
   const filtered = list.filter(w => !(w.author === author && w.license === license));
   filtered.unshift({ author, license });
   // 최대 10명 저장
-  localStorage.setItem(WRITER_KEY, JSON.stringify(filtered.slice(0, 10)));
+  localStorage.setItem(getWriterKey(), JSON.stringify(filtered.slice(0, 10)));
 }
 
 function showWriterDropdown() {
@@ -8483,7 +6531,7 @@ function selectWriter(idx) {
 function deleteWriter(idx) {
   const list = getWriterMemory();
   list.splice(idx, 1);
-  localStorage.setItem(WRITER_KEY, JSON.stringify(list));
+  localStorage.setItem(getWriterKey(), JSON.stringify(list));
   showWriterDropdown();
 }
 
@@ -8980,8 +7028,7 @@ async function saveResidentFromResult(type, resultHtml) {
         const ct = cells[i].textContent.trim();
         if (ct === '수급자' || ct === '수급자명') {
           const nv = cells[i+1]?.textContent.trim();
-          const EXCL2 = ['수급자','어르신','욕구사정','결과평가','계획서','상담일지','기초평가','낙상위험','욕창위험','인지기능','보호자','담당자','작성자','사회복지','요양보호','간호조무','프로그램','주간보호','센터장','관리자'];
-          if (nv && /^[가-힣]{2,5}$/.test(nv) && !EXCL2.includes(nv)) { name = nv; break; }
+          if (nv && /^[가-힣]{2,5}$/.test(nv)) { name = nv; break; }
         }
       }
     }
@@ -8991,8 +7038,7 @@ async function saveResidentFromResult(type, resultHtml) {
       const text = (tmp.innerText || '').replace(/\s+/g, ' ');
       for (const pat of [/수급자명?\s*[:\|]?\s*([가-힣]{2,5})/, /수급자\s+([가-힣]{2,5})/, /성명\s*[:\|]?\s*([가-힣]{2,5})/]) {
         const m = text.match(pat);
-        const EXCLUDED = ['수급자','어르신','욕구사정','결과평가','계획서','상담일지','기초평가','낙상위험','욕창위험','인지기능','보호자','담당자','작성자','사회복지','요양보호','간호조무','프로그램','주간보호','센터장','관리자'];
-        if (m?.[1] && !EXCLUDED.includes(m[1])) { name = m[1]; break; }
+        if (m?.[1] && m[1] !== '수급자' && m[1] !== '어르신') { name = m[1]; break; }
       }
     }
     if (!name) return;
@@ -9500,6 +7546,8 @@ function resetSub(type) {
     window.currentLinkedFile = null;
     window.currentLinkedName = null;
     window._monthlyHtml = null;
+    const viewBtnM1 = document.getElementById('view-btn-m1');
+    if (viewBtnM1) viewBtnM1.style.display = 'none';
     // 연동 박스는 유지 (splitLinkedFiles가 있으면), 칩 선택만 해제
     if (window.splitLinkedFiles && Object.keys(window.splitLinkedFiles).length > 0) {
       document.querySelectorAll('#linked-elder-list button').forEach(b => {
@@ -9527,14 +7575,13 @@ async function loadAdhocResidents() {
   const list = await loadAll();
   const wrap = document.getElementById('adhoc-resident-list');
   const noMsg = document.getElementById('adhoc-no-resident');
-  const realList = (list || []).filter(r => !r.id?.startsWith('demo-'));
-  if (realList.length === 0) {
+  if (!list || list.length === 0) {
     wrap.innerHTML = '';
     noMsg.style.display = 'block';
     return;
   }
   noMsg.style.display = 'none';
-  wrap.innerHTML = realList.map(r =>
+  wrap.innerHTML = list.map(r =>
     `<button class="res-chip" onclick="selectAdhocResident('${r.id}',this)">${r.name}</button>`
   ).join('');
 }
@@ -9616,7 +7663,7 @@ async function startAdhocGenerate() {
   document.getElementById('adhoc-result').classList.add('show');
 
   const body = document.getElementById('adhoc-result-body');
-  body.innerHTML = DRAFT_NOTICE + aiResult;
+  body.innerHTML = aiResult;
 
   // 인쇄용 HTML 저장
   window.linkageDocHTML = aiResult;
@@ -9736,6 +7783,15 @@ HTML 코드만 출력하고 설명은 하지 않을 것. 인쇄 버튼은 포함
 // ────── 공통 문서 뷰어 (새 창으로 크게 열기) ──────
 function openDocViewer(html, title) {
   if (!html) { alert('먼저 문서를 생성해주세요.'); return; }
+  // 완전한 HTML 문서(<!DOCTYPE> 포함)는 blob URL로 새 창에서 직접 열기
+  const trimmed = html.trim();
+  if (trimmed.toLowerCase().startsWith('<!doctype') || trimmed.toLowerCase().startsWith('<html')) {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    return;
+  }
   const w = window.open('', '_blank');
   w.document.write(`<!DOCTYPE html>
 <html lang="ko">
@@ -10079,10 +8135,6 @@ function changeCenter() {
 
 // 헤더·타이틀 센터명 반영
 function applyCenterUI() {
-  // AI 검토 안내 팝업 — 날짜 초기화 (매 로그인마다 1회 표시)
-  const lastSeen = localStorage.getItem('daeum-disclaimer-seen');
-  const today = new Date().toISOString().slice(0,10);
-  if (lastSeen !== today) localStorage.removeItem('daeum-disclaimer-seen');
   const cfg = CENTERS[centerCode] || CENTERS['sapgyo'];
   document.title = `Day:음 — ${cfg.name}`;
   const hr = document.getElementById('header-center-name');
@@ -10285,34 +8337,10 @@ async function renderOverview() {
   const noData = document.getElementById('no-data-msg');
   const content = document.getElementById('overview-content');
   if(list.length===0){ resList.innerHTML=''; noData.style.display='block'; content.style.display='none'; return; }
-  resList.innerHTML = list.map((r,i)=>`
-    <div style="position:relative;display:inline-flex;align-items:center">
-      <button class="res-chip ${i===0?'active':''}" onclick="selectRes('${r.id}',this)" style="padding-right:22px">${r.name}</button>
-      <button onclick="event.stopPropagation();confirmDeleteResident('${r.id}','${r.name}')"
-        title="${r.name} 어르신 삭제"
-        style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;color:#bbb;font-size:11px;cursor:pointer;padding:2px;line-height:1;border-radius:3px;font-family:inherit"
-        onmouseover="this.style.color='#E24B4A'" onmouseout="this.style.color='#bbb'">✕</button>
-    </div>`).join('');
+  resList.innerHTML = list.map((r,i)=>`<button class="res-chip ${i===0?'active':''}" onclick="selectRes('${r.id}',this)">${r.name}</button>`).join('');
   noData.style.display='none'; content.style.display='block';
   renderResDetail(list[0]);
 }
-async function confirmDeleteResident(id, name) {
-  if (!confirm(`"${name}" 어르신 데이터를 삭제할까요?\n\n삭제하면 어르신 현황의 기록이 모두 사라집니다.\n(생성된 문서는 문서 결과 보기에서 확인 가능)`)) return;
-  try {
-    const list = await loadAll();
-    const filtered = list.filter(r => r.id !== id);
-    localStorage.setItem(getDbKey(), JSON.stringify(filtered));
-    // Supabase 동기화
-    syncResidentToSupabase(centerCode, filtered);
-    await renderOverview();
-    // 삭제 후 첫 번째 어르신 선택
-    const firstChip = document.querySelector('.res-chip');
-    if (firstChip) firstChip.click();
-  } catch(e) {
-    alert('삭제 중 오류가 발생했어요: ' + e.message);
-  }
-}
-
 function selectRes(id,btn) {
   document.querySelectorAll('.res-chip').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
@@ -10596,30 +8624,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.42
-</div>
-
-<!-- AI 검토 안내 모달 (body 직속) -->
-<div id="ai-disclaimer-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:99999;">
-  <div style="background:#fff;border-radius:16px;padding:28px 24px 22px;max-width:340px;width:90%;margin:80px auto 0;box-shadow:0 8px 32px rgba(0,0,0,.22);position:relative">
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:32px;margin-bottom:8px">📋</div>
-      <div style="font-size:15px;font-weight:700;color:#1F3864;margin-bottom:10px">AI 문서 생성 전 안내</div>
-      <div style="width:40px;height:3px;background:#1F3864;border-radius:2px;margin:0 auto 16px"></div>
-    </div>
-    <div style="background:#EEF2FF;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:#1F3864;line-height:1.8;font-weight:600;text-align:center">
-      생성된 문서는 반드시 검토가 필요합니다.
-    </div>
-    <div style="font-size:12.5px;color:#555;line-height:1.9;margin-bottom:18px">
-      AI는 급여제공기록지를 바탕으로 <strong>초안</strong>을 제시합니다.<br>
-      최종 문서의 내용에 대한 책임은 담당자에게 있으며,
-      생성 후 반드시 내용을 확인·수정하시기 바랍니다.<br><br>
-      <span style="color:#888;font-size:11.5px">※ 오늘 하루 동안 이 안내는 다시 표시되지 않습니다.</span>
-    </div>
-    <button onclick="closeDisclaimerModal()" style="width:100%;padding:12px;background:#1F3864;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.5px">
-      확인했습니다
-    </button>
-  </div>
+  Day:음 · v2026.06.15.01
 </div>
 </body>
 </html>
