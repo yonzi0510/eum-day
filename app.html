@@ -4757,80 +4757,127 @@ function openHistDoc(idx) {
   modal.scrollTop = 0;
 }
 
-function renderUsageLog() {
-  const USAGE_KEY = 'daeum-usage-log';
-  const logs = JSON.parse(localStorage.getItem(USAGE_KEY) || '[]');
+async function renderUsageLog() {
   const body = document.getElementById('usage-log-body');
   if (!body) return;
+  body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>';
 
-  if (logs.length === 0) {
+  let logs = [];
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/usage_logs?order=logged_at.desc&limit=500`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    if (res.ok) logs = await res.json();
+  } catch(e) { /* 네트워크 오류 무시 */ }
+
+  if (!Array.isArray(logs) || logs.length === 0) {
     body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">아직 기록이 없어요.</div>';
     return;
   }
 
   // 오늘 날짜 기준 필터
   const today = new Date().toISOString().slice(0, 10);
-  const todayLogs = logs.filter(l => l.ts?.startsWith(today));
+  const todayLogs = logs.filter(l => (l.logged_at || '').startsWith(today));
   const totalLogs = logs;
 
-  const sumKRW  = (arr) => arr.reduce((s, l) => s + (l.costKRW || 0), 0);
-  const sumInput = (arr) => arr.reduce((s, l) => s + (l.input || 0), 0);
-  const sumOutput= (arr) => arr.reduce((s, l) => s + (l.output || 0), 0);
+  const sumKRW   = (arr) => arr.reduce((s, l) => s + (l.cost_krw || 0), 0);
+  const sumInput  = (arr) => arr.reduce((s, l) => s + (l.input_tokens || 0), 0);
+  const sumOutput = (arr) => arr.reduce((s, l) => s + (l.output_tokens || 0), 0);
 
   // 센터별 집계 (전체)
   const byCtr = {};
   totalLogs.forEach(l => {
-    const k = l.center || '?';
-    if (!byCtr[k]) byCtr[k] = { count: 0, costKRW: 0 };
+    const k = l.center_short || l.center_code || '?';
+    if (!byCtr[k]) byCtr[k] = { count: 0, costKRW: 0, code: l.center_code || '' };
     byCtr[k].count++;
-    byCtr[k].costKRW += l.costKRW || 0;
+    byCtr[k].costKRW += l.cost_krw || 0;
   });
+
+  // 이달 집계 (현재 월)
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const monthLogs = logs.filter(l => (l.logged_at || '').startsWith(thisMonth));
 
   body.innerHTML = `
     <!-- 오늘 요약 -->
-    <div style="background:#EEF2FF;border-radius:8px;padding:10px 13px;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;color:#1F3864;margin-bottom:6px">📅 오늘 (${today})</div>
-      <div style="display:flex;gap:12px;font-size:12px;color:#333">
+    <div style="background:#EEF2FF;border-radius:8px;padding:10px 13px;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:600;color:#1F3864;margin-bottom:5px">📅 오늘 (${today})</div>
+      <div style="display:flex;gap:10px;font-size:12px;color:#333;flex-wrap:wrap">
         <span>호출 <strong>${todayLogs.length}건</strong></span>
         <span>입력 <strong>${sumInput(todayLogs).toLocaleString()}</strong> 토큰</span>
         <span>출력 <strong>${sumOutput(todayLogs).toLocaleString()}</strong> 토큰</span>
         <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(todayLogs).toLocaleString()}원</strong></span>
       </div>
     </div>
+    <!-- 이달 요약 -->
+    <div style="background:#FFF8E1;border-radius:8px;padding:10px 13px;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:600;color:#7A5C00;margin-bottom:5px">📆 이달 (${thisMonth})</div>
+      <div style="display:flex;gap:10px;font-size:12px;color:#333;flex-wrap:wrap">
+        <span>호출 <strong>${monthLogs.length}건</strong></span>
+        <span>입력 <strong>${sumInput(monthLogs).toLocaleString()}</strong> 토큰</span>
+        <span>출력 <strong>${sumOutput(monthLogs).toLocaleString()}</strong> 토큰</span>
+        <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(monthLogs).toLocaleString()}원</strong></span>
+      </div>
+    </div>
     <!-- 전체 요약 -->
-    <div style="background:#F5F5F5;border-radius:8px;padding:10px 13px;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">📊 전체 누적 (${totalLogs.length}건)</div>
-      <div style="display:flex;gap:12px;font-size:12px;color:#333;flex-wrap:wrap">
+    <div style="background:#F5F5F5;border-radius:8px;padding:10px 13px;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">📊 전체 누적 (${totalLogs.length}건)</div>
+      <div style="display:flex;gap:10px;font-size:12px;color:#333;flex-wrap:wrap">
         <span>입력 <strong>${sumInput(totalLogs).toLocaleString()}</strong> 토큰</span>
         <span>출력 <strong>${sumOutput(totalLogs).toLocaleString()}</strong> 토큰</span>
         <span>비용 <strong style="color:#E24B4A">≈ ${sumKRW(totalLogs).toLocaleString()}원</strong></span>
       </div>
     </div>
-    <!-- 센터별 -->
-    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">센터별 집계</div>
-    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
-      ${Object.entries(byCtr).map(([ctr, d]) => `
-        <div style="display:flex;justify-content:space-between;font-size:12px;background:#fff;border:1px solid #eee;border-radius:6px;padding:6px 10px">
-          <span>${ctr}</span>
-          <span>${d.count}건 · <strong style="color:#E24B4A">≈ ${d.costKRW.toLocaleString()}원</strong></span>
+    <!-- 센터별 집계 -->
+    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">🏢 센터별 누적</div>
+    <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">
+      ${Object.entries(byCtr).sort((a,b) => b[1].costKRW - a[1].costKRW).map(([ctr, d]) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;background:#fff;border:1px solid #eee;border-radius:6px;padding:6px 10px">
+          <span style="font-weight:600">${ctr}</span>
+          <span style="color:#777">${d.count}건</span>
+          <strong style="color:#E24B4A">≈ ${d.costKRW.toLocaleString()}원</strong>
         </div>`).join('')}
     </div>
-    <!-- 최근 10건 -->
-    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">최근 10건</div>
+    <!-- 최근 15건 -->
+    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">최근 15건</div>
     <div style="display:flex;flex-direction:column;gap:3px">
-      ${[...totalLogs].reverse().slice(0, 10).map(l => `
-        <div style="font-size:11px;color:#555;background:#fafafa;border:1px solid #eee;border-radius:5px;padding:5px 10px;display:flex;justify-content:space-between;gap:8px">
-          <span style="color:#aaa">${l.ts?.slice(0,16).replace('T',' ')}</span>
-          <span>${l.center || '?'} · ${l.doc || '?'}</span>
-          <span style="color:#E24B4A;white-space:nowrap">≈ ${(l.costKRW||0).toLocaleString()}원</span>
+      ${totalLogs.slice(0, 15).map(l => `
+        <div style="font-size:11px;color:#555;background:#fafafa;border:1px solid #eee;border-radius:5px;padding:5px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <span style="color:#aaa">${(l.logged_at || '').slice(0,16).replace('T',' ')}</span>
+          <span>${l.center_short || l.center_code || '?'} · ${l.doc_label || '?'}</span>
+          <span style="color:#E24B4A;white-space:nowrap">≈ ${(l.cost_krw||0).toLocaleString()}원</span>
         </div>`).join('')}
     </div>`;
 }
 
-function clearUsageLog() {
-  if (!confirm('사용량 기록을 모두 삭제할까요?')) return;
-  localStorage.removeItem('daeum-usage-log');
-  renderUsageLog();
+async function clearUsageLog() {
+  const options = [
+    ...Object.entries(CENTERS).map(([code, cfg]) => `  ${cfg.short}(${code})`),
+    '  전체'
+  ].join('\n');
+  const choice = prompt(`삭제할 범위를 선택하세요:\n${options}\n\n센터코드 입력 (전체 삭제는 "all"):`, '');
+  if (choice === null) return;
+
+  let url;
+  if (choice.trim() === 'all') {
+    if (!confirm('전체 사용량 기록을 삭제할까요?')) return;
+    url = `${SUPABASE_URL}/rest/v1/usage_logs`;
+  } else if (CENTERS[choice.trim()]) {
+    if (!confirm(`${CENTERS[choice.trim()].name} 사용량 기록을 삭제할까요?`)) return;
+    url = `${SUPABASE_URL}/rest/v1/usage_logs?center_code=eq.${choice.trim()}`;
+  } else {
+    alert('올바른 센터코드를 입력하세요 (sapgyo / center2 / center3 / all)');
+    return;
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    if (res.ok) { alert('삭제 완료'); renderUsageLog(); }
+    else alert('삭제 실패: ' + res.status);
+  } catch(e) { alert('오류: ' + e.message); }
 }
 
 
@@ -5021,11 +5068,26 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
         output: outputTokens,
         costKRW
       };
-      const USAGE_KEY = 'daeum-usage-log';
-      const prev = JSON.parse(localStorage.getItem(USAGE_KEY) || '[]');
-      prev.push(log);
-      if (prev.length > 500) prev.splice(0, prev.length - 500);
-      localStorage.setItem(USAGE_KEY, JSON.stringify(prev));
+      // Supabase usage_logs 저장 (기기 간 공유, 센터별 누적)
+      fetch(`${SUPABASE_URL}/rest/v1/usage_logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          center_code: centerCode,
+          center_name: cfg.name || centerCode,
+          center_short: cfg.short || centerCode,
+          doc_label: log.doc,
+          input_tokens: log.input,
+          output_tokens: log.output,
+          cost_krw: log.costKRW,
+          logged_at: log.ts
+        })
+      }).catch(() => {}); // 실패 시 무시
     } catch(e) {}
 
     return data.content[0].text;
@@ -8520,7 +8582,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.01
+  Day:음 · v2026.06.15.02
 </div>
 </body>
 </html>
