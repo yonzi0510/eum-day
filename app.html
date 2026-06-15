@@ -805,7 +805,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
              ondrop="zoneDrop(event,'m')">
           <div style="font-size:26px;margin-bottom:5px">📋</div>
           <div style="font-size:13px;color:#555;margin-bottom:2px">급여제공기록지 파일 업로드</div>
-          <div style="font-size:11px;color:#999">클릭하거나 파일을 여기로 끌어다 놓으세요<br>케어포 내보내기 PDF · Excel · 이미지</div>
+          <div style="font-size:11px;color:#999">클릭하거나 파일을 여기로 끌어다 놓으세요<br>케어포 내보내기 <strong style="color:#1F3864">PDF</strong> · 이미지 (Excel은 PDF로 변환 후 업로드)</div>
           <div id="m-fname" style="display:none;flex-wrap:wrap;gap:4px"></div>
         </div>
         <input type="file" id="m-file" style="display:none" onchange="handleFile('m',this)">
@@ -3479,10 +3479,10 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
   </div>
 
-  <!-- 문서 이력 조회 (관리자 전용) -->
-  <div class="card" id="doc-history-card" style="margin-top:8px;display:none">
+  <!-- 문서 이력 조회 -->
+  <div class="card" id="doc-history-card" style="margin-top:8px">
     <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
-      <span>📁 문서 생성 이력 <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 6px;border-radius:3px;margin-left:4px">관리자</span></span>
+      <span>📁 생성 문서 이력</span>
       <div style="display:flex;gap:6px">
         <select id="history-center-filter" onchange="loadDocHistory()" style="font-size:11px;padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit">
           <option value="">전체 센터</option>
@@ -4534,6 +4534,13 @@ function initFeedbackTab() {
   }
   updateFbPreview();
 
+  // 내 센터 필터 기본값 설정
+  const filterSel = document.getElementById('history-center-filter');
+  if (filterSel && centerCode) filterSel.value = centerCode;
+
+  // 문서 이력 항상 로드
+  loadDocHistory();
+
   // 관리자(0508) 로그인 여부 확인 후 사용량 카드 표시
   const isAdmin = sessionStorage.getItem('ium-admin') === '0508';
   const usageCard = document.getElementById('usage-card');
@@ -4571,21 +4578,48 @@ async function loadDocHistory() {
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
-    const docs = await res.json();
+    const docs = (await res.json()).filter(d => d.doc_type !== '__residents__');
 
     if (!docs.length) {
       body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">아직 저장된 문서가 없어요.</div>';
       return;
     }
 
-    body.innerHTML = docs.map(d => {
+    // 문서 보기 모달 (없으면 생성)
+    if (!document.getElementById('hist-doc-modal')) {
+      const m = document.createElement('div');
+      m.id = 'hist-doc-modal';
+      m.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9999;overflow-y:auto;padding:20px';
+      m.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:860px;margin:auto;overflow:hidden">
+          <div style="background:#1F3864;color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px">
+            <span id="hist-modal-title" style="font-size:14px;font-weight:600;flex:1"></span>
+            <span id="hist-modal-date" style="font-size:11px;opacity:.7"></span>
+            <button onclick="document.getElementById('hist-doc-modal').style.display='none'"
+              style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">✕</button>
+          </div>
+          <div id="hist-modal-body" style="padding:16px;max-height:80vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+        </div>`;
+      m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
+      document.body.appendChild(m);
+    }
+
+    body.innerHTML = docs.map((d,i) => {
       const dt = new Date(d.created_at);
       const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
       return `
-        <div style="border:1px solid #eee;border-radius:8px;padding:10px 12px;margin-bottom:6px;background:#fafafa">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:13px;font-weight:600;color:#1F3864">${d.resident_name || '이름 없음'}</span>
-            <span style="font-size:10px;background:#EEF2FF;color:#1F3864;padding:2px 7px;border-radius:4px">${d.doc_type || '문서'}</span>
+        <div style="border:1px solid #E8EAF0;border-radius:10px;padding:11px 14px;margin-bottom:8px;background:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="display:flex;align-items:center;gap:7px">
+              <span style="font-size:13px;font-weight:600;color:#1F3864">${d.resident_name || '이름 없음'}</span>
+              <span style="font-size:10px;background:#EEF2FF;color:#1F3864;padding:2px 7px;border-radius:4px;font-weight:500">${d.doc_type || '문서'}</span>
+            </div>
+            <button onclick="openHistDoc(${i})"
+              style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s"
+              onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
+              onmouseout="this.style.background='#fff';this.style.color='#1F3864'">
+              📄 문서 보기
+            </button>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:11px;color:#888">
             <span>${d.center_name || d.center_code}</span>
@@ -4593,9 +4627,26 @@ async function loadDocHistory() {
           </div>
         </div>`;
     }).join('');
+
+    // 문서 데이터 메모리 보관
+    window._histDocs = docs;
+
   } catch(e) {
     body.innerHTML = `<div style="color:#E24B4A;font-size:12px;padding:10px">조회 오류: ${e.message}</div>`;
   }
+}
+
+function openHistDoc(idx) {
+  const d = window._histDocs?.[idx];
+  if (!d) return;
+  const modal = document.getElementById('hist-doc-modal');
+  const dt = new Date(d.created_at);
+  const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+  document.getElementById('hist-modal-title').textContent = `${d.resident_name} · ${d.doc_type}`;
+  document.getElementById('hist-modal-date').textContent = `${d.center_name || ''} · ${dateStr} 생성`;
+  document.getElementById('hist-modal-body').innerHTML = d.doc_content || '<p style="color:#aaa">내용 없음</p>';
+  modal.style.display = 'block';
+  modal.scrollTop = 0;
 }
 
 function renderUsageLog() {
@@ -5203,27 +5254,63 @@ CIST 평가 시행 여부 반드시 명시. 없으면 "작성일 기준 최근 C
 
 ## 낙상위험도 평가 (Huhn Scale) — 욕구사정과 함께 작성
 
-항목별 점수 표 (선택 점수 셀: class="sel-cell" 하늘색 배경):
-연령: 80세 이상(3점) / 70~79세(2점) / 60~69세(1점) / 해당없음(0점)
-정신상태: 혼란·방향감각장애(4점) / 때때로 혼란(2점) / 해당없음(0점)
-배변: 소변·대변 실금(4점) / 조절능력 있지만 도움 필요(3점) / 유치도뇨관·인공항루(1점) / 해당없음(0점)
-낙상경험: 3회 이상(4점) / 1~2회(2점) / 해당없음(0점)
-활동: 전적으로 도움(4점) / 자리에서 일어나 앉기 도움(3점) / 자립·세면대·화장실 이용(1점)
-걸음걸이 및 균형: 불규칙·균형 거의 유지 못함(4점) / 기립성 빈혈·혈액순환 문제(3점) / 보행장애·보조도구 이용(2점) / 해당없음(0점)
-지난 7일간 약 복용: 3개 이상(4점) / 2개(3점) / 1개(2점) / 해당없음(0점)
+테이블 컬럼 순서: 구분 | 4점 | 3점 | 2점 | 1점 | 0점 | 점수
+선택된 항목 셀: class="sel-cell" (하늘색 배경 #bde0ff)
+
+항목 순서 및 배점 (케어포 기준 — 반드시 이 순서, 이 항목명, 이 배점 사용):
+1. 연령: 80세 이상(3점) / 70~79세(2점) / 60~69세(1점) / 해당없음(0점) ※4점 칸 없음
+2. 정신상태: 혼란스러움/방향감각장애(4점) / 때때로 혼란스러움/방향감각장애(2점) / 해당없음(0점) ※3점·1점 칸 없음
+3. 배변: 소변·대변 실금(4점) / 조절능력 있지만 도움 필요(3점) / 유치도뇨관·인공항루(1점) / 해당없음(0점) ※2점 칸 없음
+4. 낙상경험: 이미 세번 이상 넘어짐(4점) / 이미 한번 또는 두번 넘어짐(2점) / 해당없음(0점) ※3점·1점 칸 없음
+5. 활동: 전적으로 도움을 받음(4점) / 자리에서 일어나 앉기 도움(3점) / 자립/세면대 화장실이용(1점) / (2점·0점 칸 없음)
+6. 걸음걸이 및 균형: 불규칙/불안정·서 있을 때와 걸을 때 균형을 거의 유지 못함(4점) / 일어서기/걸을 때 기립성 빈혈·혈액순환문제(3점) / 보행장애/보조도구나 도움으로 걷기(2점) / 해당없음(0점) ※1점 칸 없음
+7. 지난 7일간 약복용이나 계획된 약물: 3개 또는 그 이상의 약 복용(4점) / 두가지 약 복용(3점) / 한가지 약복용(2점) / 해당없음(0점) ※1점 칸 없음
+
 위험 수준: 4점 이하(낮음) / 5~10점(높음) / 11점 이상(아주 높음)
 총점과 위험 수준을 명시하고 근거 한 단락 서술.
 
 ## 욕창위험도 평가 (Braden Scale) — 욕구사정과 함께 작성
 
-항목별 점수 표 (선택 점수 셀: class="sel-cell" 하늘색 배경):
-감각인지 정도: 완전 제한(1점) / 매우 제한(2점) / 약간 제한(3점) / 손상 없음(4점)
-습기 여부: 항상 젖어 있음(1점) / 자주(2점) / 가끔(3점) / 거의 없음(4점)
-활동상태: 항상 침대(1점) / 의자에만(2점) / 가끔 걸음(3점) / 자주 걸음(4점)
-움직임: 완전히 못 움직임(1점) / 매우 제한(2점) / 약간 제한(3점) / 제한 없음(4점)
-영양상태: 매우 나쁨(1점) / 부족함(2점) / 적당함(3점) / 양호함(4점)
-마찰력과 응전력: 문제 있음(1점) / 잠정적으로 문제 있음(2점) / 문제없음(3점)
-위험 수준: 19~23점(없음) / 15~18점(약간) / 13~14점(중간) / 10~12점(높음) / 9점 이하(매우 높음)
+테이블 컬럼 순서: 구분 | 1점 | 2점 | 3점 | 4점 | 점수  ※낙상과 반대 방향(낮은 점수→높은 점수)
+선택된 항목 셀: class="sel-cell" (하늘색 배경 #bde0ff)
+
+항목 순서 및 배점 (케어포 기준 — 반드시 이 순서, 이 항목명, 이 내용 사용):
+1. 감각인지 정도:
+   1점: 완전 제한(의식수준이 떨어지거나 진정/안정제 복용, 통증 자극에만 반응하거나 반응이 없음, 신체 대부분에서 통증 느끼지 못함)
+   2점: 매우 제한됨(통증 자극에만 반응하지만 불안정한 양으로, 통증을 나타내거나 신체의 1/2 이상에 통증이나 불편감 느끼지 못함)
+   3점: 약간 제한됨(말로 지시하면 반응하지만, 체위 변경을 해달라고 하거나 불편하다고 항상 말할 수 없음, 1~2개 사지에 통증이나 불편감 느끼지 못함)
+   4점: 감각 손상 없음(말로 지시하면 반응, 통증이나 불편감을 느끼고 말로 표현 가능)
+
+2. 습기여부:
+   1점: 항상 젖어 있음(피부가 땀, 소변으로 항상 축축함)
+   2점: 자주 젖어 있음(늘 축축한 것은 아니지만 자주 축축해져 8시간에 한 번은 린넨을 갈아주어야 함)
+   3점: 가끔 젖어 있음(가끔 축축하다, 하루에 한 번 정도 린넨 교환이 필요)
+   4점: 거의 젖어있지 않음(피부는 보통 건조하며 린넨은 평상시대로만 교환)
+
+3. 활동상태:
+   1점: 항상 침대에만 누워 있음(도움 없이는 몸통 손, 발을 조금도 움직이지 못함)
+   2점: 의자에 앉아 있을 수 있음(걸을 수 없거나 걷는 능력이 상당히 제한되어 있음, 체중을 지지할 수 없어 의자나 휠체어 이동 시 도움 필요)
+   3점: 가끔 걸을 수 있음(낮 동안에 도움을 받거나 도움 없이 매우 짧은 거리를 걸을 수 있음, 그러나 대부분의 시간은 침상 이나 의자에서 보냄)
+   4점: 자주 걸을 수 있음(적어도 하루에 두 번 밖에 걷고, 방안은 적어도 2시간마다 걷는다)
+
+4. 움직임:
+   1점: 완전히 못 움직임(스스로 움직일 수 없음, 도움이 있는 신체나 사지를 전혀 움직이지 못함)
+   2점: 매우 제한됨(신체나 사지의 체위를 가끔 조금 변경시킬 수 있지만 자주하거나 많이 변경시키지 못함)
+   3점: 약간 제한됨(조금이기는 하지만 혼자서 신체나 사지의 체위를 자주 변경시킴)
+   4점: 제한 없음(도움 없이도 체위를 자주 변경시킴)
+
+5. 영양상태:
+   1점: 매우 나쁨(제공된 음식의 1/3 이하를 섭취, 단백질 하루 2회 섭취량 이하, 수분을 잘 섭취 안 함, 또는 5일 이상 동안 금식이거나 유동식)
+   2점: 부족함(제공된 음식의 1/2을 먹음, 단백질 하루에 약 3회 섭취량 먹음, 가끔 영양보충식 섭취, 또는 위유동식이나 관영양을 적정량 미만으로 투여받음)
+   3점: 적당함(식사의 반 이상을 먹음, 단백질을 하루에 4회 섭취량 먹음, 가끔 식사를 거부하지만 보통 영양보충식을 섭취함, 또는 위관 영양이나 TPN으로 대부분의 영양요구량이 충족됨)
+   4점: 양호함(대부분의 식사를 섭취하며 절대 거절하는 일이 없음, 단백질을 하루에 4회 섭취량 이상을 먹음, 가끔 식사를 거부하지만 보통 영양보충식을 섭취, 영양보충식이는 필요로 되지 않음)
+
+6. 마찰력과 응전력:
+   1점: 문제 있음(움직이는 데 중등도 이상의 많은 도움 필요, 린넨으로 끌어당기지 않고 완전히 들어 올리는 것 불가능, 자주 침대나 의자에서 미끄러져 내려가 다시 제위치로 올가는데 많은 도움 필요, 관절구축이나 강직 움직임 등으로 항상 마찰이 생김)
+   2점: 잠정적으로 문제있음(자유로이 움직이나 약간의 도움을 필요, 움직이는 동안 의자덮개나 린넨 또는 다른 장비에 의해 마찰이 생길 수 있음, 의자나 침대에서 대부분 좋은 체위를 유지하고 있지만 가끔 미끄러져 내려옴)
+   3점: 문제없음(침대나 의자에서 자유로이 움직이며 움직일 때 스스로 자신을 들어 올릴 수 있을 정도로 충분한 근력 있음, 침대나 의자에 누워 있을 때 항상 좋은 체위를 유지함) ※4점 없음
+
+위험 수준: 19~23점(위험없음) / 15~18점(약간의 위험 있음) / 13~14점(중간 정도의 위험 있음) / 10~12점(위험이 높음) / 9점 이하(위험이 매우 높음)
 총점과 위험 수준을 명시하고 근거 한 단락 서술.
 
 ---
@@ -5670,10 +5757,15 @@ async function startGenerate(type) {
         totalSize += f.size || 0;
         if (totalSize > MAX_PDF_SIZE * 3) break; // 총 15MB 초과 시 중단
         const isPDF = f.type === 'application/pdf' || f.name?.endsWith('.pdf');
+        const isExcel = f.name?.toLowerCase().match(/\.xlsx?$/);
+        const isImage = f.type?.startsWith('image/') || f.name?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/);
         const b64 = await fileToBase64(f);
         if (isPDF) {
           contentParts.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } });
-        } else {
+        } else if (isExcel) {
+          // Excel은 API 전송 불가 — 건너뜀 (handleFile에서 이미 차단)
+          console.warn('Excel 파일 건너뜀:', f.name);
+        } else if (isImage) {
           const mType = f.type || 'image/jpeg';
           contentParts.push({ type: 'image', source: { type: 'base64', media_type: mType, data: b64 } });
         }
@@ -5684,10 +5776,13 @@ async function startGenerate(type) {
       console.error('파일 변환 오류:', e);
       const file = activeFile;
       const isPDF = file.type === 'application/pdf' || file.name?.endsWith('.pdf');
+      const isImage = file.type?.startsWith('image/') || file.name?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/);
       const b64 = await fileToBase64(file);
       userContent = isPDF
         ? [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }, { type: 'text', text: instructionText }]
-        : [{ type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: b64 } }, { type: 'text', text: instructionText }];
+        : isImage
+        ? [{ type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: b64 } }, { type: 'text', text: instructionText }]
+        : [{ type: 'text', text: instructionText }];
     }
 
     if (type === 'monthly') {
@@ -5960,6 +6055,14 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
 function handleFile(prefix, input) {
   if(!input.files[0]) return;
   const files = Array.from(input.files);
+
+  // xls/xlsx 감지 → PDF 안내
+  const hasExcel = files.some(f => f.name.toLowerCase().match(/\.xlsx?$/));
+  if (hasExcel) {
+    alert('⚠️ Excel 파일은 지원되지 않아요.\n\n케어포에서 PDF 형식으로 내려받아 다시 올려주세요.\n(급여제공기록지 → 인쇄/출력 → PDF 저장)');
+    input.value = '';
+    return;
+  }
   const fnameEl = document.getElementById(prefix+'-fname');
   const fnEl = document.getElementById(prefix+'-fn');
   if (files.length === 1) {
@@ -7790,7 +7893,10 @@ async function saveResident(data) {
     const list = await loadAll();
     const i = list.findIndex(r => r.id === data.id);
     if (i >= 0) list[i] = data; else list.push(data);
+    // localStorage 저장 (빠른 접근)
     localStorage.setItem(getDbKey(), JSON.stringify(list));
+    // Supabase 동기화 (기기 간 공유)
+    syncResidentToSupabase(centerCode, list);
   } catch(e) {
     console.error('저장 오류:', e);
   }
@@ -7798,11 +7904,67 @@ async function saveResident(data) {
 
 async function loadAll() {
   try {
+    // 1순위: localStorage (빠름)
     const raw = localStorage.getItem(getDbKey());
-    return raw ? JSON.parse(raw) : [];
+    if (raw) return JSON.parse(raw);
+    // 2순위: Supabase (다른 기기에서 저장된 데이터)
+    return await loadResidentsFromSupabase(centerCode);
   } catch(e) {
     return [];
   }
+}
+
+// Supabase 어르신 정보 저장 (비동기, 실패해도 무관)
+async function syncResidentToSupabase(code, list) {
+  try {
+    // residents 키로 documents 테이블에 JSON 저장
+    const existRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/documents?center_code=eq.${code}&doc_type=eq.__residents__&select=id`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const existing = await existRes.json();
+    const payload = {
+      center_code: code,
+      center_name: CENTERS[code]?.name || code,
+      resident_name: '__residents__',
+      doc_type: '__residents__',
+      doc_content: JSON.stringify(list),
+      doc_label: `__residents__`
+    };
+    if (existing?.length > 0) {
+      // 업데이트
+      await fetch(`${SUPABASE_URL}/rest/v1/documents?center_code=eq.${code}&doc_type=eq.__residents__`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ doc_content: JSON.stringify(list) })
+      });
+    } else {
+      // 신규 저장
+      await fetch(`${SUPABASE_URL}/rest/v1/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+    }
+  } catch(e) { /* 실패 무시 */ }
+}
+
+// Supabase에서 어르신 정보 로드
+async function loadResidentsFromSupabase(code) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/documents?center_code=eq.${code}&doc_type=eq.__residents__&select=doc_content&limit=1`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const data = await res.json();
+    if (data?.length > 0 && data[0].doc_content) {
+      const list = JSON.parse(data[0].doc_content);
+      // localStorage에도 캐시
+      localStorage.setItem(getDbKey(), JSON.stringify(list));
+      return list;
+    }
+    return [];
+  } catch(e) { return []; }
 }
 
 const DEMO_RESIDENTS = [
