@@ -4840,7 +4840,7 @@ async function loadDocHistory() {
             <button onclick="document.getElementById('hist-doc-modal').style.display='none'"
               style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">✕</button>
           </div>
-          <div id="hist-modal-body" style="padding:16px;max-height:80vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+          <iframe id="hist-modal-body" style="width:100%;height:80vh;border:none" frameborder="0"></iframe>
         </div>`;
       m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
       document.body.appendChild(m);
@@ -4918,7 +4918,7 @@ async function loadResultsDocs() {
             <button onclick="document.getElementById('results-doc-modal').style.display='none'"
               style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">✕</button>
           </div>
-          <div id="results-modal-body" style="padding:20px;max-height:85vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+          <iframe id="results-modal-body" style="width:100%;height:85vh;border:none" frameborder="0"></iframe>
         </div>`;
       m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
       document.body.appendChild(m);
@@ -4976,7 +4976,15 @@ function openResultDoc(idx) {
   const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
   document.getElementById('results-modal-title').textContent = `${d.resident_name} · ${d.doc_type}`;
   document.getElementById('results-modal-date').textContent = `${d.center_name || ''} · ${dateStr}`;
-  document.getElementById('results-modal-body').innerHTML = d.doc_content || '<p style="color:#aaa">내용 없음</p>';
+  const rmb = document.getElementById('results-modal-body');
+  const rcontent = d.doc_content || '';
+  if (rcontent.includes('<!DOCTYPE') || rcontent.includes('<html')) {
+    rmb.srcdoc = rcontent;
+  } else if (rcontent) {
+    rmb.srcdoc = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${rcontent}</body></html>`;
+  } else {
+    rmb.srcdoc = '<html><body><p style="color:#aaa;padding:20px">내용 없음</p></body></html>';
+  }
   modal.style.display = 'block';
   modal.scrollTop = 0;
 }
@@ -4989,7 +4997,15 @@ function openHistDoc(idx) {
   const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
   document.getElementById('hist-modal-title').textContent = `${d.resident_name} · ${d.doc_type}`;
   document.getElementById('hist-modal-date').textContent = `${d.center_name || ''} · ${dateStr} 생성`;
-  document.getElementById('hist-modal-body').innerHTML = d.doc_content || '<p style="color:#aaa">내용 없음</p>';
+  const hmb = document.getElementById('hist-modal-body');
+  const hcontent = d.doc_content || '';
+  if (hcontent.includes('<!DOCTYPE') || hcontent.includes('<html')) {
+    hmb.srcdoc = hcontent;
+  } else if (hcontent) {
+    hmb.srcdoc = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${hcontent}</body></html>`;
+  } else {
+    hmb.srcdoc = '<html><body><p style="color:#aaa;padding:20px">내용 없음</p></body></html>';
+  }
   modal.style.display = 'block';
   modal.scrollTop = 0;
 }
@@ -8879,13 +8895,15 @@ async function loadAdhocResidents() {
   const list = await loadAll();
   const wrap = document.getElementById('adhoc-resident-list');
   const noMsg = document.getElementById('adhoc-no-resident');
-  if (!list || list.length === 0) {
+  // 샘플(demo) 어르신 제외 — 실제 저장 어르신만 표시
+  const realList = (list || []).filter(r => !r.id?.startsWith('demo-'));
+  if (realList.length === 0) {
     wrap.innerHTML = '';
     noMsg.style.display = 'block';
     return;
   }
   noMsg.style.display = 'none';
-  wrap.innerHTML = list.map(r =>
+  wrap.innerHTML = realList.map(r =>
     `<button class="res-chip" onclick="selectAdhocResident('${r.id}',this)">${r.name}</button>`
   ).join('');
 }
@@ -9947,7 +9965,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.30
+  Day:음 · v2026.06.15.32
 </div>
 </body>
 </html>
