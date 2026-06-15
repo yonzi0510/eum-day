@@ -3709,8 +3709,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   </div>
 
   <!-- AI 검토 안내 모달 -->
-  <div id="ai-disclaimer-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:99999;align-items:center;justify-content:center">
-    <div style="background:#fff;border-radius:16px;padding:28px 24px 22px;max-width:340px;width:90%;margin:0 auto;box-shadow:0 8px 32px rgba(0,0,0,.22);position:relative">
+  <div id="ai-disclaimer-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:99999;">
+    <div style="background:#fff;border-radius:16px;padding:28px 24px 22px;max-width:340px;width:90%;margin:80px auto 0;box-shadow:0 8px 32px rgba(0,0,0,.22);position:relative">
       <div style="text-align:center;margin-bottom:16px">
         <div style="font-size:32px;margin-bottom:8px">📋</div>
         <div style="font-size:15px;font-weight:700;color:#1F3864;margin-bottom:10px">AI 문서 생성 전 안내</div>
@@ -6139,14 +6139,29 @@ S·O·A·P 레이블은 각 단락 맨 앞에 굵은 텍스트로 단독 한 줄
 
 ■ 분기별 상담일지 작성 기준
 
-S (관찰 및 상담 계기)
-담당자가 현장에서 어르신을 직접 관찰하거나 서비스 제공 중 발견한 내용을 계기로 상담이 시작된 것으로 서술.
-"기록을 검토한 결과", "서비스 제공 기록을 전반적으로 검토한 결과" 등 행정적 메타 서술 사용 금지.
-상담일시로 확정된 날짜 이후에 발생한 사건은 S에 포함하지 않을 것.
+[핵심 원칙] 상담일지는 어르신과 담당자가 실제로 면담한 내용을 기록하는 문서임.
+급여제공기록지는 '상담 계기'를 찾기 위한 참고자료로만 활용할 것.
+한자 사용 절대 금지 (예: 前週→지난주, 轉落→낙상). 모든 내용 한글로만 작성.
 
-O (상담 내용): 어르신의 직접 발언, 객관적 수치(혈압·체온 등), 서비스 제공 내역을 항목별 서술.
-A (상담자 판단): 관찰 및 상담 내용을 종합한 전문적 판단 서술.
-P (조치 및 계획): 결정된 구체적 조치사항과 향후 계획을 항목별 서술.
+S (상담 계기)
+어르신의 모습·발언·변화에서 상담이 시작된 구체적 계기를 서술.
+예) "어르신이 무릎이 아프다고 하셔서" / "표정이 어두워 보여 여쭤보니" / "지난주 낙상 이후 보행이 불안정하여"
+절대 금지: "기록을 검토한 결과", "서비스 제공 기록을 전반적으로 검토한 결과" 등 행정적 메타 서술.
+절대 금지: 상담일시 이후에 발생한 사건 포함.
+
+O (면담 내용)
+어르신이 면담 중 직접 하신 말씀과 담당자가 면담하며 관찰한 내용만 기재.
+예) "별로 불편한 데는 없다고 하심" / "요즘 잠을 못 잔다고 하심" / "다리가 무겁다고 표현하심"
+절대 금지: 혈압·체온 등 일상 측정 수치 (상담 이유가 된 경우에만 예외적으로 포함)
+절대 금지: 이동서비스·식사·화장실·세면 등 일상 제공 내역 (면담 중 어르신이 직접 언급한 경우에만 포함)
+절대 금지: 프로그램 참여 목록 나열
+
+A (상담자 판단)
+면담 내용을 토대로 사회복지사의 전문적 판단을 서술.
+어르신의 현재 상태·욕구·변화를 해석하고 케어 방향 판단.
+
+P (조치 및 계획)
+면담 결과 결정된 구체적 조치와 향후 계획을 항목별 서술.
 
 상담일시 확정 전 필수 검증:
 ① 해당 날짜가 기록지에 실제 이용 기록이 있는 날인지 확인
@@ -6815,8 +6830,11 @@ function renderPeriodicResult(html) {
 // ════════════════════════════════════════
 function showDisclaimerModal(callback) {
   const today = new Date().toISOString().slice(0, 10);
-  localStorage.setItem('daeum-disclaimer-seen', today);
-  callback(); // 모달 없이 바로 진행
+  const seen  = localStorage.getItem('daeum-disclaimer-seen');
+  if (seen === today) { callback(); return; }
+  const modal = document.getElementById('ai-disclaimer-modal');
+  modal.style.cssText = 'display:block;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:99999;';
+  modal._pendingCallback = callback;
 }
 function closeDisclaimerModal() {
   const today = new Date().toISOString().slice(0, 10);
@@ -9136,6 +9154,10 @@ function changeCenter() {
 
 // 헤더·타이틀 센터명 반영
 function applyCenterUI() {
+  // AI 검토 안내 팝업 — 날짜 초기화 (매 로그인마다 1회 표시)
+  const lastSeen = localStorage.getItem('daeum-disclaimer-seen');
+  const today = new Date().toISOString().slice(0,10);
+  if (lastSeen !== today) localStorage.removeItem('daeum-disclaimer-seen');
   const cfg = CENTERS[centerCode] || CENTERS['sapgyo'];
   document.title = `Day:음 — ${cfg.name}`;
   const hr = document.getElementById('header-center-name');
@@ -9649,7 +9671,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.13
+  Day:음 · v2026.06.15.16
 </div>
 </body>
 </html>
