@@ -218,6 +218,15 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .doc-result-body table td{border:1px solid #E0E0E0;padding:5px 7px;vertical-align:top}
 .doc-result-body table td:first-child{background:#EEF2FF;font-weight:500;width:76px}
 .soap-lbl{font-weight:600;color:#1F3864;font-size:12px;margin-top:8px;margin-bottom:2px;display:block}
+/* 상담일지 형식 선택 토글 */
+.counsel-style-wrap{display:none;margin-top:8px;padding:8px 10px;background:#F0F4FF;border-radius:8px;border:1px solid #C5D3F0}
+.counsel-style-wrap.visible{display:block}
+.counsel-style-label{font-size:11px;color:#666;font-weight:500;margin-bottom:6px}
+.counsel-style-btns{display:flex;gap:6px}
+.cstyle-btn{flex:1;padding:6px 0;font-size:12px;font-weight:600;border-radius:6px;border:1.5px solid #C5D3F0;background:#fff;color:#666;cursor:pointer;font-family:inherit;transition:all .18s;text-align:center}
+.cstyle-btn.active{background:#1F3864;color:#fff;border-color:#1F3864}
+.cstyle-btn:not(.active):hover{border-color:#1F3864;color:#1F3864;background:#EEF2FF}
+.cstyle-tag{font-size:10px;font-weight:400;opacity:.75;display:block;margin-top:2px}
 .alert-box{background:#FFF8E1;border-left:3px solid #FFB300;padding:6px 9px;border-radius:0 5px 5px 0;font-size:11px;margin-bottom:8px;color:#5D4037}
 
 /* ── 피드백 영역 ── */
@@ -850,12 +859,26 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
           </div>
         </div>
         <div class="doc-grid">
-          <div class="doc-item" onclick="toggleDoc(this,'m1')">
+          <div class="doc-item" onclick="toggleDoc(this,'m1');toggleCounselStyleWrap()">
             <input type="checkbox" id="m1">
             <div class="doc-item-text">
               <div class="dtitle">📝 상담일지</div>
-              <div class="ddesc">SOAP 형식 · 회차별 구성<br>보호자 상담 필요 시 자동 추가</div>
+              <div class="ddesc" id="m1-desc">SOAP 형식 · 회차별 구성<br>보호자 상담 필요 시 자동 추가</div>
               <span class="dbadge db-auto">자동 생성</span>
+            </div>
+          </div>
+          <!-- 상담일지 형식 선택 (m1 선택 시 표시) -->
+          <div class="counsel-style-wrap" id="counsel-style-wrap" onclick="event.stopPropagation()">
+            <div class="counsel-style-label">📋 상담일지 작성 형식 선택</div>
+            <div class="counsel-style-btns">
+              <button class="cstyle-btn active" id="cstyle-soap" onclick="setCounselStyle('soap')">
+                SOAP
+                <span class="cstyle-tag">S·O·A·P 구조</span>
+              </button>
+              <button class="cstyle-btn" id="cstyle-narrative" onclick="setCounselStyle('narrative')">
+                서술형
+                <span class="cstyle-tag">자유 서술 문단</span>
+              </button>
             </div>
           </div>
           <input type="checkbox" id="m2" checked style="display:none">
@@ -4644,29 +4667,56 @@ async function loadDocHistory() {
 }
 
 // ────── 문서 결과 보기 탭 ──────
+// doc_type → 카테고리 분류 매핑
+const DOC_CATEGORY_MAP = {
+  '분기별 상담일지': { cat: '월간문서', color: '#1F3864' },
+  '보호자 상담일지': { cat: '월간문서', color: '#1F3864' },
+  '사례관리 회의록': { cat: '월간문서', color: '#1F3864' },
+  '월간 현황 요약': { cat: '월간문서', color: '#1F3864' },
+  '프로그램업무수행일지': { cat: '월간문서', color: '#1F3864' },
+  '월간문서': { cat: '월간문서', color: '#1F3864' },
+  '기초평가(낙상·욕창·인지)': { cat: '정기문서', color: '#0D6E55' },
+  '욕구사정': { cat: '정기문서', color: '#0D6E55' },
+  '급여제공결과평가': { cat: '정기문서', color: '#0D6E55' },
+  '급여제공계획서': { cat: '정기문서', color: '#0D6E55' },
+  '퇴소 연계기록지': { cat: '수시문서', color: '#BA7517' },
+};
+const CAT_ORDER = ['정기문서', '월간문서', '수시문서'];
+const CAT_COLOR = { '월간문서': '#1F3864', '정기문서': '#0D6E55', '수시문서': '#BA7517' };
+
 async function loadResultsDocs() {
   const body = document.getElementById('results-doc-body');
   if (!body) return;
   body.innerHTML = '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">불러오는 중...</div>';
 
-  // 항상 내 센터만 표시
   const myCenter = centerCode || '';
   const centerName = CENTERS[myCenter]?.name || myCenter;
   const label = document.getElementById('results-center-label');
   if (label) label.textContent = centerName;
 
+  // 24시간 이내만 조회
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
   try {
-    let url = `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=200`;
+    let url = `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=300`;
     if (myCenter) url += `&center_code=eq.${myCenter}`;
     url += `&doc_type=neq.__residents__`;
+    url += `&created_at=gte.${since24h}`;
 
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const docs = (await res.json()).filter(d => d.doc_type !== '__residents__');
 
+    // 안내 배너 (항상 표시)
+    const noticeBanner = `
+      <div style="background:#FFF8E1;border:1.5px solid #FFB300;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;font-size:12px;color:#5D4037">
+        <span style="font-size:16px;flex-shrink:0">⏳</span>
+        <span>생성된 문서는 <strong>24시간 동안만</strong> 이 탭에서 확인할 수 있습니다. 필요한 문서는 생성 직후 <strong>다운로드</strong> 또는 <strong>복사</strong>해 두세요.</span>
+      </div>`;
+
     if (!docs.length) {
-      body.innerHTML = '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">아직 생성된 문서가 없어요.</div>';
+      body.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">최근 24시간 내 생성된 문서가 없어요.</div>';
       return;
     }
 
@@ -4683,7 +4733,7 @@ async function loadResultsDocs() {
             <button onclick="document.getElementById('results-doc-modal').style.display='none'"
               style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">✕</button>
           </div>
-          <div id="results-modal-body" style="padding:20px;max-height:85vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+          <div id="results-modal-body" style="padding:0;max-height:85vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
         </div>`;
       m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
       document.body.appendChild(m);
@@ -4691,42 +4741,67 @@ async function loadResultsDocs() {
 
     window._resultsDocs = docs;
 
-    // 어르신별 그룹핑
-    const groups = {};
+    // 어르신 × 카테고리 이중 그룹핑
+    const residents = {};
     docs.forEach(d => {
-      const key = d.resident_name || '이름 없음';
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(d);
+      const name = d.resident_name || '이름 없음';
+      const info = DOC_CATEGORY_MAP[d.doc_type] || { cat: d.doc_type, color: '#5C3489' };
+      if (!residents[name]) residents[name] = {};
+      if (!residents[name][info.cat]) residents[name][info.cat] = [];
+      residents[name][info.cat].push({ ...d, _color: info.color, _cat: info.cat });
     });
 
-    const typeColor = { '월간문서':'#1F3864', '정기문서':'#0D6E55', '수시문서':'#BA7517' };
+    const totalCount = docs.length;
 
-    body.innerHTML = Object.entries(groups).map(([name, list]) => `
-      <div style="border:1px solid #E8EAF0;border-radius:12px;overflow:hidden;margin-bottom:10px">
-        <div style="background:#F0F4FF;padding:10px 14px;font-size:13px;font-weight:700;color:#1F3864;display:flex;align-items:center;gap:6px">
-          👤 ${name}
-          <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 7px;border-radius:10px;font-weight:500">${list.length}건</span>
-        </div>
-        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">
-          ${list.map((d, i) => {
-            const dt = new Date(d.created_at);
-            const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-            const color = typeColor[d.doc_type] || '#5C3489';
-            const globalIdx = docs.indexOf(d);
-            return `
-              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
-                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${color}18;color:${color};border:1px solid ${color}40;font-weight:600;white-space:nowrap">${d.doc_type}</span>
-                <span style="font-size:11px;color:#888;flex:1">${dateStr}</span>
+    let html = noticeBanner;
+    html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${totalCount}건 (최근 24시간)</div>`;
+
+    Object.entries(residents).forEach(([name, catMap]) => {
+      const resTotal = Object.values(catMap).reduce((s, arr) => s + arr.length, 0);
+      html += `
+        <div style="border:1px solid #E8EAF0;border-radius:12px;overflow:hidden;margin-bottom:12px">
+          <div style="background:#F0F4FF;padding:10px 14px;font-size:13px;font-weight:700;color:#1F3864;display:flex;align-items:center;gap:6px">
+            👤 ${name}
+            <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 7px;border-radius:10px;font-weight:500">${resTotal}건</span>
+          </div>
+          <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">`;
+
+      // 카테고리 순서대로 출력
+      CAT_ORDER.forEach(cat => {
+        const list = catMap[cat];
+        if (!list || !list.length) return;
+        const catColor = CAT_COLOR[cat] || '#5C3489';
+        html += `<div style="margin-top:4px;margin-bottom:2px;font-size:10px;font-weight:700;color:${catColor};padding:2px 6px;border-left:3px solid ${catColor};letter-spacing:.5px">${cat}</div>`;
+        list.forEach(d => {
+          const dt = new Date(d.created_at);
+          const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+          // 남은 시간 계산
+          const expiresAt = new Date(dt.getTime() + 24*60*60*1000);
+          const remainMs = expiresAt - Date.now();
+          const remainH = Math.floor(remainMs / 3600000);
+          const remainM = Math.floor((remainMs % 3600000) / 60000);
+          const remainStr = remainMs > 0
+            ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#888'}">${remainH}시간 ${remainM}분 후 삭제</span>`
+            : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
+          const globalIdx = docs.indexOf(d);
+          html += `
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
+                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${d._color}18;color:${d._color};border:1px solid ${d._color}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
+                <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}<br>${remainStr}</span>
                 <button onclick="openResultDoc(${globalIdx})"
-                  style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;transition:all .15s"
+                  style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;transition:all .15s;flex-shrink:0"
                   onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
                   onmouseout="this.style.background='#fff';this.style.color='#1F3864'">
                   📄 보기
                 </button>
               </div>`;
-          }).join('')}
-        </div>
-      </div>`).join('');
+        });
+      });
+
+      html += `</div></div>`;
+    });
+
+    body.innerHTML = html;
 
   } catch(e) {
     body.innerHTML = `<div style="color:#E24B4A;font-size:12px;padding:12px">조회 오류: ${e.message}</div>`;
@@ -4736,23 +4811,49 @@ async function loadResultsDocs() {
 function openResultDoc(idx) {
   const d = window._resultsDocs?.[idx];
   if (!d) return;
+
   const modal = document.getElementById('results-doc-modal');
   const dt = new Date(d.created_at);
-  const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+  const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
   document.getElementById('results-modal-title').textContent = `${d.resident_name} · ${d.doc_type}`;
   document.getElementById('results-modal-date').textContent = `${d.center_name || ''} · ${dateStr}`;
 
   const content = d.doc_content || '';
   const modalBody = document.getElementById('results-modal-body');
 
-  // 완전한 HTML 문서면 iframe으로 표시
-  const trimmed = content.trim();
-  if (trimmed.toLowerCase().startsWith('<!doctype') || trimmed.toLowerCase().startsWith('<html')) {
-    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
-    const blobUrl = URL.createObjectURL(blob);
-    modalBody.innerHTML = `<iframe src="${blobUrl}" style="width:100%;height:75vh;border:none;border-radius:6px" onload="setTimeout(()=>URL.revokeObjectURL('${blobUrl}'),3000)"></iframe>`;
+  if (!content.trim()) {
+    modalBody.innerHTML = '<p style="color:#aaa;padding:20px">저장된 내용이 없습니다.</p>';
   } else {
-    modalBody.innerHTML = content || '<p style="color:#aaa">내용 없음</p>';
+    // 완전한 HTML 문서 → iframe (blob URL을 onload 후에 revoke)
+    const trimmed = content.trim().toLowerCase();
+    if (trimmed.startsWith('<!doctype') || trimmed.startsWith('<html')) {
+      // 기존 iframe 제거 후 새로 생성 (blob URL 재사용 방지)
+      modalBody.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:13px">문서 불러오는 중...</div>';
+      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;height:80vh;border:none;display:block';
+      iframe.onload = () => {
+        // iframe이 완전히 로드된 후 3초 뒤 revoke
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
+      };
+      iframe.src = blobUrl;
+      modalBody.innerHTML = '';
+      modalBody.appendChild(iframe);
+    } else {
+      // HTML 조각 → DOC_CSS 씌워서 표시
+      const fullHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <style>${DOC_CSS}</style></head><body>${content}</body></html>`;
+      const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;height:80vh;border:none;display:block';
+      iframe.onload = () => setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
+      iframe.src = blobUrl;
+      modalBody.innerHTML = '';
+      modalBody.appendChild(iframe);
+    }
   }
 
   modal.style.display = 'block';
@@ -5079,7 +5180,13 @@ function buildMonthlyPrompt(opinion) {
   };
 
   const docList = [];
-  if (docs.m1) docList.push('1. 분기별 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
+  if (docs.m1) {
+    if (counselStyle === 'narrative') {
+      docList.push('1. 분기별 상담일지 (최대 3회차) — 서술형 형식, 급여제공반영 포함');
+    } else {
+      docList.push('1. 분기별 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
+    }
+  }
   if (docs.m2) docList.push('2. 보호자 상담일지 — 이슈 발생 시');
   if (docs.m3) docList.push('3. 사례관리 회의록 — 반드시 초안 제시, 상단에 "※ 사례관리 회의록 초안입니다. 채택 여부는 담당자가 결정하세요." 안내 포함, 상담일지 P항목과 연계하여 작성');
   if (docs.m4) docList.push('4. 월간 현황 요약 — 이용일수·혈압·식사·프로그램 한 페이지');
@@ -5109,8 +5216,9 @@ function buildMonthlyPrompt(opinion) {
 
 ■ HTML 출력 형식
 상담일시·상담구분·상담대상·상담형태·상담자 성명 등 회차별 메타 정보는 표(table) 형태로 출력할 것.
-상담 내용(S·O·A·P)은 셀로 분리하지 않고, 단일 테두리 박스 안에 흐르는 텍스트로 작성할 것.
-S·O·A·P 레이블은 각 단락 맨 앞에 굵은 텍스트로 단독 한 줄에 표기하고, 내용은 다음 줄부터 이어서 서술할 것.
+${counselStyle === 'soap' ? `상담 내용(S·O·A·P)은 셀로 분리하지 않고, 단일 테두리 박스 안에 흐르는 텍스트로 작성할 것.
+S·O·A·P 레이블은 각 단락 맨 앞에 굵은 텍스트로 단독 한 줄에 표기하고, 내용은 다음 줄부터 이어서 서술할 것.` : `상담 내용은 단일 테두리 박스 안에 흐르는 서술형 문단으로 작성할 것.
+S·O·A·P 레이블 사용 금지. 상담 경위→상담 내용→판단→조치 순서로 자연스럽게 이어지는 문단으로 서술할 것.`}
 조치내용은 별도 박스로 분리하여 ▶ 항목 형식으로 출력할 것.
 
 ■ 작성 형식
@@ -5119,7 +5227,7 @@ S·O·A·P 레이블은 각 단락 맨 앞에 굵은 텍스트로 단독 한 줄
 2026년도 장기요양기관 평가지표(주·야간보호 부문) 기준 준수.
 
 ■ 분기별 상담일지 작성 기준
-
+${counselStyle === 'soap' ? `
 S (관찰 및 상담 계기)
 담당자가 현장에서 어르신을 직접 관찰하거나 서비스 제공 중 발견한 내용을 계기로 상담이 시작된 것으로 서술.
 "기록을 검토한 결과", "서비스 제공 기록을 전반적으로 검토한 결과" 등 행정적 메타 서술 사용 금지.
@@ -5127,7 +5235,13 @@ S (관찰 및 상담 계기)
 
 O (상담 내용): 어르신의 직접 발언, 객관적 수치(혈압·체온 등), 서비스 제공 내역을 항목별 서술.
 A (상담자 판단): 관찰 및 상담 내용을 종합한 전문적 판단 서술.
-P (조치 및 계획): 결정된 구체적 조치사항과 향후 계획을 항목별 서술.
+P (조치 및 계획): 결정된 구체적 조치사항과 향후 계획을 항목별 서술.` : `
+[서술형 상담 내용 작성 기준]
+상담 경위: 담당자가 현장에서 직접 관찰하거나 서비스 제공 중 발견한 내용을 계기로 상담이 시작된 것으로 서술. "기록을 검토한 결과" 등 행정적 메타 서술 사용 금지. 상담일시 이후 발생한 사건은 포함하지 않을 것.
+상담 내용: 어르신의 직접 발언, 객관적 수치(혈압·체온 등), 서비스 제공 내역을 자연스러운 문장으로 서술.
+판단: 관찰 및 상담 내용을 종합한 전문적 판단을 이어지는 문단으로 서술.
+조치 방향: 결정된 조치사항과 향후 계획을 서술로 마무리.
+S·O·A·P 레이블은 절대 사용 금지. 단락 구분은 빈 줄로만 처리.`}
 
 상담일시 확정 전 필수 검증:
 ① 해당 날짜가 기록지에 실제 이용 기록이 있는 날인지 확인
@@ -5175,7 +5289,10 @@ ${docList.join('\n')}
 
 ■ 분기별 상담일지 HTML 구조
 doc-title-main(제목) → info-tbl(기본정보 표) → 각 회차별:
-  session-hd("N회차 상담") → meta-tbl(상담일시·구분·대상·형태·상담자 표) → content-hd("상담 내용") → content-box(S/O/A/P 각 단락: <p class="soap-para"><span class="soap-label">S</span><br>내용</p>) → action-hd("조치내용") → action-body(▶ 항목들, 날짜는 <span class="dt">(YYYY.MM.DD)</span>) → benefit-hd("[ 급여제공반영 ]") → benefit-body(반영일·급여구분·급여내용·반영사유 각각 <div class="b-row"><span class="blabel">항목명</span> 내용</div>)
+${counselStyle === 'soap'
+  ? `  session-hd("N회차 상담") → meta-tbl(상담일시·구분·대상·형태·상담자 표) → content-hd("상담 내용") → content-box(S/O/A/P 각 단락: <p class="soap-para"><span class="soap-label">S</span><br>내용</p>) → action-hd("조치내용") → action-body(▶ 항목들, 날짜는 <span class="dt">(YYYY.MM.DD)</span>) → benefit-hd("[ 급여제공반영 ]") → benefit-body(반영일·급여구분·급여내용·반영사유 각각 <div class="b-row"><span class="blabel">항목명</span> 내용</div>)`
+  : `  session-hd("N회차 상담") → meta-tbl(상담일시·구분·대상·형태·상담자 표) → content-hd("상담 내용") → content-box(서술형 문단: S/O/A/P 레이블 없이 흐르는 서술. 단락 구분은 <p> 태그로. 첫 단락=상담 경위, 이어서 내용·판단·계획 자연스럽게 서술) → action-hd("조치내용") → action-body(▶ 항목들, 날짜는 <span class="dt">(YYYY.MM.DD)</span>) → benefit-hd("[ 급여제공반영 ]") → benefit-body(반영일·급여구분·급여내용·반영사유 각각 <div class="b-row"><span class="blabel">항목명</span> 내용</div>)`
+}
 
 ■ 보호자 상담일지 HTML 구조 (회차별 반복)
 doc-title-guardian("보호자 상담일지") → info-tbl(수급자명·생년월일·등급·인정번호·기관명 기본정보 표) → 각 회차별:
@@ -6478,6 +6595,37 @@ function toggleDoc(el, id) {
   }
   // 정기문서: 계획서(p6) 또는 결과평가(p5) 변경 시 사유 박스 업데이트
   if (id === 'p5' || id === 'p6') checkReasonBox();
+}
+
+// ── 상담일지 형식 선택 (SOAP / 서술형) ──
+let counselStyle = 'soap'; // 기본값
+
+function toggleCounselStyleWrap() {
+  const wrap = document.getElementById('counsel-style-wrap');
+  const m1 = document.getElementById('m1');
+  if (!wrap || !m1) return;
+  if (m1.checked) {
+    wrap.classList.add('visible');
+  } else {
+    wrap.classList.remove('visible');
+  }
+}
+
+function setCounselStyle(style) {
+  counselStyle = style;
+  const soapBtn = document.getElementById('cstyle-soap');
+  const narrativeBtn = document.getElementById('cstyle-narrative');
+  const desc = document.getElementById('m1-desc');
+  if (soapBtn) soapBtn.classList.toggle('active', style === 'soap');
+  if (narrativeBtn) narrativeBtn.classList.toggle('active', style === 'narrative');
+  // doc-item 설명 텍스트도 함께 업데이트
+  if (desc) {
+    if (style === 'soap') {
+      desc.innerHTML = 'SOAP 형식 · 회차별 구성<br>보호자 상담 필요 시 자동 추가';
+    } else {
+      desc.innerHTML = '서술형 형식 · 회차별 구성<br>보호자 상담 필요 시 자동 추가';
+    }
+  }
 }
 
 // ── 작성자 메모리 ──
