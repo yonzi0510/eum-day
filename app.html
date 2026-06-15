@@ -1914,13 +1914,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <div class="card">
     <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
       <span>📄 문서 결과 보기</span>
-      <div style="display:flex;gap:6px">
-        <select id="results-center-filter" onchange="loadResultsDocs()" style="font-size:11px;padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit">
-          <option value="">전체 센터</option>
-          <option value="sapgyo">삽교</option>
-          <option value="center2">덕산</option>
-          <option value="center3">내포소망</option>
-        </select>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span id="results-center-label" style="font-size:11px;color:#888"></span>
         <button onclick="loadResultsDocs()" style="font-size:11px;color:#1F3864;background:none;border:1px solid #C5CAE9;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">새로고침</button>
       </div>
     </div>
@@ -4649,13 +4644,18 @@ async function loadDocHistory() {
 // ────── 문서 결과 보기 탭 ──────
 async function loadResultsDocs() {
   const body = document.getElementById('results-doc-body');
-  const filterCode = document.getElementById('results-center-filter')?.value || centerCode || '';
   if (!body) return;
   body.innerHTML = '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">불러오는 중...</div>';
 
+  // 항상 내 센터만 표시
+  const myCenter = centerCode || '';
+  const centerName = CENTERS[myCenter]?.name || myCenter;
+  const label = document.getElementById('results-center-label');
+  if (label) label.textContent = centerName;
+
   try {
-    let url = `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=100`;
-    if (filterCode) url += `&center_code=eq.${filterCode}`;
+    let url = `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=200`;
+    if (myCenter) url += `&center_code=eq.${myCenter}`;
     url += `&doc_type=neq.__residents__`;
 
     const res = await fetch(url, {
@@ -4859,7 +4859,11 @@ function switchTab(id, btn) {
   document.getElementById(id).classList.add('active');
   if(id==='tab-overview') renderOverview();
   if(id==='tab-about') renderAboutReviews();
-  if(id==='tab-results') loadResultsDocs();
+  if(id==='tab-results') {
+    const f = document.getElementById('results-center-filter');
+    if (f && centerCode) f.value = centerCode;
+    loadResultsDocs();
+  }
   if(id==='tab-feedback') {
     initFeedbackTab();
     // 관리자 카드 항상 표시 (코드 입력은 카드 내부에서)
@@ -6128,11 +6132,47 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     // 날짜 검증 UI 자동 실행
     setTimeout(() => buildDateVerify(type), 600);
 
-    // 어르신 정보 저장 - 정기문서는 합본 HTML 사용
-    const resultForSave = type === 'monthly'
-      ? (typeof result !== 'undefined' ? result : '')
-      : ((typeof result1 !== 'undefined' ? result1 : '') + (typeof result2 !== 'undefined' ? result2 : '') + (typeof result3 !== 'undefined' ? result3 : '') + (typeof result4 !== 'undefined' ? result4 : ''));
-    await saveResidentFromResult(type, resultForSave);
+    // 어르신 정보 저장 + 문서별 Supabase 저장
+    const cfg = CENTERS[centerCode] || {};
+    if (type === 'monthly') {
+      // 월간문서 — 합본 저장
+      const r = typeof result !== 'undefined' ? result : '';
+      await saveResidentFromResult(type, r);
+      // 선택된 문서 타입별로 각각 저장
+      const docMap = {
+        m1: { checked: document.getElementById('m1')?.checked, label: '분기별 상담일지' },
+        m2: { checked: document.getElementById('m2')?.checked, label: '보호자 상담일지' },
+        m3: { checked: document.getElementById('m3')?.checked, label: '사례관리 회의록' },
+        m4: { checked: document.getElementById('m4')?.checked, label: '월간 현황 요약' },
+        m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
+      };
+      const resName = window.currentLinkedName || '수급자';
+      for (const [, v] of Object.entries(docMap)) {
+        if (v.checked) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, v.label, r);
+      }
+      // 선택 없으면 '월간문서'로 통합 저장
+      if (!Object.values(docMap).some(v => v.checked))
+        await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '월간문서', r);
+
+    } else {
+      // 정기문서 — 4단계 각각 저장
+      const resName = window.currentLinkedName || '수급자';
+      const saveMap = [
+        { result: typeof result1 !== 'undefined' ? result1 : null, label: '기초평가(낙상·욕창·인지)' },
+        { result: typeof result2 !== 'undefined' ? result2 : null, label: '욕구사정' },
+        { result: typeof result3 !== 'undefined' ? result3 : null, label: '급여제공결과평가' },
+        { result: typeof result4 !== 'undefined' ? result4 : null, label: '급여제공계획서' },
+      ];
+      for (const { result: r, label } of saveMap) {
+        if (r) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, r);
+      }
+      // 어르신 현황 업데이트용 합본
+      const resultForSave = (typeof result1 !== 'undefined' ? result1 : '') +
+                            (typeof result2 !== 'undefined' ? result2 : '') +
+                            (typeof result3 !== 'undefined' ? result3 : '') +
+                            (typeof result4 !== 'undefined' ? result4 : '');
+      await saveResidentFromResult(type, resultForSave);
+    }
 
     // 샘플 모드일 때만 샘플 어르신 저장 (실제 파일이면 저장 안 함)
 
@@ -7011,10 +7051,6 @@ async function saveResidentFromResult(type, resultHtml) {
 
     await renderOverview();
 
-    // Supabase 저장
-    const cfg = CENTERS[centerCode] || {};
-    await saveDocToSupabase(centerCode, cfg.name || centerCode, name, type === 'monthly' ? '월간문서' : '정기문서', resultHtml);
-
   } catch(e) {
     console.log('어르신 정보 저장 오류:', e);
   }
@@ -7536,6 +7572,13 @@ async function startAdhocGenerate() {
 
   // 인쇄용 HTML 저장
   window.linkageDocHTML = aiResult;
+
+  // Supabase 저장
+  try {
+    const resName = window.adhocResidentData?.name || window.currentLinkedName || '수급자';
+    const cfg = CENTERS[centerCode] || {};
+    await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '퇴소 연계기록지', aiResult);
+  } catch(e) { console.log('수시문서 저장 오류:', e); }
 }
 
 async function callLinkageAI(exitDate, exitReason, afterPlan) {
