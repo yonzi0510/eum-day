@@ -7125,14 +7125,17 @@ function closeDisclaimerModal() {
 }
 
 async function startGenerate(type) {
+  console.log('[Day:음] startGenerate 시작:', type);
   const prefix = type === 'monthly' ? 'm' : 'p';
   const upload = document.getElementById(prefix + '-upload');
   if (!upload.classList.contains('has-file')) {
     alert('먼저 파일을 업로드하거나 샘플을 선택해주세요.');
     return;
   }
+  console.log('[Day:음] 파일 확인 OK, 모달 표시');
   // AI 검토 안내 모달 (오늘 첫 생성 시 1회)
   await new Promise(resolve => showDisclaimerModal(resolve));
+  console.log('[Day:음] 모달 통과, API 호출 시작');
 
   // 월간 문서: 선택된 항목 기반으로 프로그레스 스텝 텍스트 업데이트
   if (type === 'monthly') {
@@ -7632,6 +7635,9 @@ function handleFile(prefix, input) {
   }
   fnameEl.style.display = 'block';
   document.getElementById(prefix+'-upload').classList.add('has-file');
+  // 클릭 업로드 시에도 dropFiles에 저장 (startGenerate에서 참조)
+  if (prefix === 'p') window._pDropFiles = files;
+  if (prefix === 'm') window._mDropFiles = [files[0]];
 }
 
 // ── 드래그앤드롭 공통 함수 ──
@@ -9965,7 +9971,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.33
+  Day:음 · v2026.06.15.35
 </div>
 </body>
 </html>
