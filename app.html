@@ -536,6 +536,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <button class="tab-btn" onclick="switchTab('tab-about',this)">ℹ️ 소개</button>
   <button class="tab-btn" onclick="switchTab('tab-guide',this)">📚 가이드</button>
   <button class="tab-btn active" onclick="switchTab('tab-docs',this)">📄 문서 만들기</button>
+  <button class="tab-btn" onclick="switchTab('tab-results',this)">📋 문서 결과 보기</button>
   <button class="tab-btn" onclick="switchTab('tab-overview',this)">👤 어르신 현황</button>
   <button class="tab-btn" onclick="switchTab('tab-eval',this)">📋 평가준비</button>
   <button class="tab-btn" onclick="switchTab('tab-feedback',this)">💬 피드백</button>
@@ -1903,6 +1904,33 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 
 </div><!-- /main -->
 </div><!-- /tab-docs -->
+
+<!-- ══════════════════════════════════════
+     탭: 문서 결과 보기
+══════════════════════════════════════ -->
+<div class="tab-content" id="tab-results">
+<div class="main">
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <span>📄 문서 결과 보기</span>
+      <div style="display:flex;gap:6px">
+        <select id="results-center-filter" onchange="loadResultsDocs()" style="font-size:11px;padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit">
+          <option value="">전체 센터</option>
+          <option value="sapgyo">삽교</option>
+          <option value="center2">덕산</option>
+          <option value="center3">내포소망</option>
+        </select>
+        <button onclick="loadResultsDocs()" style="font-size:11px;color:#1F3864;background:none;border:1px solid #C5CAE9;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">새로고침</button>
+      </div>
+    </div>
+    <div id="results-doc-body">
+      <div style="text-align:center;color:#bbb;padding:24px;font-size:13px">불러오는 중...</div>
+    </div>
+  </div>
+
+</div>
+</div>
 
 <!-- ══════════════════════════════════════
      탭4: 모의평가
@@ -3479,24 +3507,6 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
   </div>
 
-  <!-- 문서 이력 조회 -->
-  <div class="card" id="doc-history-card" style="margin-top:8px">
-    <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
-      <span>📁 생성 문서 이력</span>
-      <div style="display:flex;gap:6px">
-        <select id="history-center-filter" onchange="loadDocHistory()" style="font-size:11px;padding:3px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit">
-          <option value="">전체 센터</option>
-          <option value="sapgyo">삽교</option>
-          <option value="center2">덕산</option>
-          <option value="center3">내포소망</option>
-        </select>
-        <button onclick="loadDocHistory()" style="font-size:11px;color:#1F3864;background:none;border:1px solid #C5CAE9;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit">새로고침</button>
-      </div>
-    </div>
-    <div id="doc-history-body">
-      <div style="text-align:center;color:#bbb;padding:16px;font-size:13px">로드 중...</div>
-    </div>
-  </div>
 
 </div>
 </div>
@@ -4636,6 +4646,104 @@ async function loadDocHistory() {
   }
 }
 
+// ────── 문서 결과 보기 탭 ──────
+async function loadResultsDocs() {
+  const body = document.getElementById('results-doc-body');
+  const filterCode = document.getElementById('results-center-filter')?.value || centerCode || '';
+  if (!body) return;
+  body.innerHTML = '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">불러오는 중...</div>';
+
+  try {
+    let url = `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=100`;
+    if (filterCode) url += `&center_code=eq.${filterCode}`;
+    url += `&doc_type=neq.__residents__`;
+
+    const res = await fetch(url, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const docs = (await res.json()).filter(d => d.doc_type !== '__residents__');
+
+    if (!docs.length) {
+      body.innerHTML = '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">아직 생성된 문서가 없어요.</div>';
+      return;
+    }
+
+    // 모달 (없으면 생성)
+    if (!document.getElementById('results-doc-modal')) {
+      const m = document.createElement('div');
+      m.id = 'results-doc-modal';
+      m.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9999;overflow-y:auto;padding:20px';
+      m.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:900px;margin:auto;overflow:hidden">
+          <div style="background:#1F3864;color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:1">
+            <span id="results-modal-title" style="font-size:14px;font-weight:600;flex:1"></span>
+            <span id="results-modal-date" style="font-size:11px;opacity:.7"></span>
+            <button onclick="document.getElementById('results-doc-modal').style.display='none'"
+              style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">✕</button>
+          </div>
+          <div id="results-modal-body" style="padding:20px;max-height:85vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+        </div>`;
+      m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
+      document.body.appendChild(m);
+    }
+
+    window._resultsDocs = docs;
+
+    // 어르신별 그룹핑
+    const groups = {};
+    docs.forEach(d => {
+      const key = d.resident_name || '이름 없음';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(d);
+    });
+
+    const typeColor = { '월간문서':'#1F3864', '정기문서':'#0D6E55', '수시문서':'#BA7517' };
+
+    body.innerHTML = Object.entries(groups).map(([name, list]) => `
+      <div style="border:1px solid #E8EAF0;border-radius:12px;overflow:hidden;margin-bottom:10px">
+        <div style="background:#F0F4FF;padding:10px 14px;font-size:13px;font-weight:700;color:#1F3864;display:flex;align-items:center;gap:6px">
+          👤 ${name}
+          <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 7px;border-radius:10px;font-weight:500">${list.length}건</span>
+        </div>
+        <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">
+          ${list.map((d, i) => {
+            const dt = new Date(d.created_at);
+            const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+            const color = typeColor[d.doc_type] || '#5C3489';
+            const globalIdx = docs.indexOf(d);
+            return `
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
+                <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${color}18;color:${color};border:1px solid ${color}40;font-weight:600;white-space:nowrap">${d.doc_type}</span>
+                <span style="font-size:11px;color:#888;flex:1">${dateStr}</span>
+                <button onclick="openResultDoc(${globalIdx})"
+                  style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;transition:all .15s"
+                  onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
+                  onmouseout="this.style.background='#fff';this.style.color='#1F3864'">
+                  📄 보기
+                </button>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`).join('');
+
+  } catch(e) {
+    body.innerHTML = `<div style="color:#E24B4A;font-size:12px;padding:12px">조회 오류: ${e.message}</div>`;
+  }
+}
+
+function openResultDoc(idx) {
+  const d = window._resultsDocs?.[idx];
+  if (!d) return;
+  const modal = document.getElementById('results-doc-modal');
+  const dt = new Date(d.created_at);
+  const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+  document.getElementById('results-modal-title').textContent = `${d.resident_name} · ${d.doc_type}`;
+  document.getElementById('results-modal-date').textContent = `${d.center_name || ''} · ${dateStr}`;
+  document.getElementById('results-modal-body').innerHTML = d.doc_content || '<p style="color:#aaa">내용 없음</p>';
+  modal.style.display = 'block';
+  modal.scrollTop = 0;
+}
+
 function openHistDoc(idx) {
   const d = window._histDocs?.[idx];
   if (!d) return;
@@ -4751,6 +4859,7 @@ function switchTab(id, btn) {
   document.getElementById(id).classList.add('active');
   if(id==='tab-overview') renderOverview();
   if(id==='tab-about') renderAboutReviews();
+  if(id==='tab-results') loadResultsDocs();
   if(id==='tab-feedback') {
     initFeedbackTab();
     // 관리자 카드 항상 표시 (코드 입력은 카드 내부에서)
@@ -8368,7 +8477,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.14.01
+  Day:음 · v2026.06.15.01
 </div>
 </body>
 </html>
