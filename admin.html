@@ -304,13 +304,10 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
       <!-- ─── 섹션4: 센터 코드 관리 ─── -->
       <div class="sec-content" id="sec-centers">
 
-        <!-- DB 기반 안내 -->
-        <div style="background:#0D2A1A;border:1px solid #1A4A2A;border-radius:10px;padding:14px 16px;margin-bottom:14px">
-          <div style="font-size:12px;font-weight:700;color:#4ECFA0;margin-bottom:6px">🗄️ Supabase DB 연동</div>
-          <div style="font-size:11px;color:#607080;line-height:1.8">
-            센터 추가·수정 후 💾 저장하면 <strong style="color:#C8D4E0">DB에 즉시 반영</strong>됩니다.<br>
-            GitHub 업로드 불필요 — 저장 즉시 모든 페이지에서 새 센터로 로그인 가능합니다.
-          </div>
+        <!-- 안내 -->
+        <div style="background:#141E2B;border:1px solid #2A3A50;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#607080;line-height:1.8">
+          ⚠️ 센터 추가/수정 후 아래 <strong style="color:#4ECFA0">📋 centers.js 전체 복사</strong> 버튼으로 파일을 복사하고<br>
+          GitHub에서 <code style="background:#1E2E42;padding:1px 5px;border-radius:3px;color:#A8B4C0">centers.js</code> 파일 내용을 교체한 뒤 커밋하면 반영됩니다.
         </div>
 
         <div id="center-manage-body">
@@ -401,7 +398,7 @@ const SUPABASE_URL = 'https://lujzhilzhiktrlidhpxs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Vbzkn1OLZbLe-EgrvlACEA_5RjfHnS9';
 const ADMIN_CODE   = '0508';
 
-// CENTERS는 centers.js의 loadCenters()로 DB에서 로드됨
+// CENTERS는 centers.js에 하드코딩 (DB 연동 없음)
 // _centers는 admin UI 편집용 (CENTERS 그대로 참조)
 const CTR_COLORS = { '삽교':'#1F3864','덕산':'#0D6E55','내포소망':'#5C3489' };
 const CTR_BADGES = { '삽교주간보호센터':'badge-blue','덕산주간보호센터':'badge-teal','내포소망주간보호센터':'badge-purple' };
@@ -409,8 +406,6 @@ const CTR_BADGES = { '삽교주간보호센터':'badge-blue','덕산주간보호
 let _allLogs    = [];
 let _periodDays = 0;
 let _allDocs    = [];
-// _centers는 CENTERS(DB에서 로드)를 그대로 참조 — get accessor
-function get_centers() { return CENTERS; }
 
 // ─── 시계 ───
 function updateClock() {
@@ -474,7 +469,6 @@ function showSec(id, btn) {
 //  데이터 로드
 // ═══════════════════════════════════════════
 async function initDashboard() {
-  await loadCenters();
   await loadAllData();
   renderCenterManage();
 }
@@ -893,7 +887,7 @@ function renderCenterManage() {
   Object.keys(CENTERS).forEach(id => updateCodePreview(id));
 }
 
-async function saveCenter(id) {
+function saveCenter(id) {
   const key     = document.getElementById(`key-${id}`)?.value?.trim();
   const expires = document.getElementById(`exp-${id}`)?.value;
   const pilot   = document.getElementById(`pilot-${id}`)?.value === 'true';
@@ -902,38 +896,21 @@ async function saveCenter(id) {
 
   if (!key || !expires) return;
 
-  // DB upsert
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/centers`, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'resolution=merge-duplicates'
-    },
-    body: JSON.stringify({ id, key, expires, pilot, type,
-      name: CENTERS[id]?.name, short: CENTERS[id]?.short, color: CENTERS[id]?.color })
-  });
+  // 메모리에만 반영
+  CENTERS[id] = { ...CENTERS[id], key, expires, pilot, type };
 
-  if (res.ok || res.status === 201) {
-    CENTERS[id] = { ...CENTERS[id], key, expires, pilot, type };
-    if (msg) {
-      msg.textContent = '✅ DB 저장 완료 — 즉시 반영됐어요';
-      msg.style.display = 'inline';
-      setTimeout(() => { msg.style.display = 'none'; }, 4000);
-    }
-    renderCenterManage();
-  } else {
-    if (msg) {
-      msg.textContent = '❌ 저장 실패 — 다시 시도해주세요';
-      msg.style.display = 'inline';
-      msg.style.color = '#E24B4A';
-      setTimeout(() => { msg.style.display = 'none'; msg.style.color = ''; }, 4000);
-    }
+  // 코드 미리보기 업데이트
+  updateCodePreview(id);
+
+  if (msg) {
+    msg.textContent = '✅ 수정됨 — centers.js 복사 후 GitHub 업로드';
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 5000);
   }
+  renderCenterManage();
 }
 
-async function addCenter() {
+function addCenter() {
   const id      = document.getElementById('new-code')?.value?.trim();
   const name    = document.getElementById('new-name')?.value?.trim();
   const short   = document.getElementById('new-short')?.value?.trim();
@@ -953,47 +930,31 @@ async function addCenter() {
     return;
   }
 
-  // DB insert
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/centers`, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({ id, name, short: short || name, color, key, expires: expires || '2026-12-31', pilot, type })
+  // 메모리에 추가
+  CENTERS[id] = { name, short: short || name, color, key, expires: expires || '2026-12-31', pilot, type };
+
+  // 코드 스니펫 표시
+  const snippet = `  ${id}: { name: '${name}', short: '${short||name}', color: '${color}', key: '${key}', expires: '${expires||'2026-12-31'}', pilot: ${pilot}, type: '${type}' },`;
+  const previewEl = document.getElementById('new-code-preview');
+  const textEl    = document.getElementById('new-code-text');
+  if (previewEl && textEl) {
+    textEl.textContent = snippet;
+    previewEl.style.display = 'block';
+  }
+
+  if (msg) {
+    msg.textContent = '✅ 추가됨 — 아래 코드를 centers.js에 붙여넣고 GitHub 업로드';
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 8000);
+  }
+
+  // 입력 초기화
+  ['new-code','new-name','new-short','new-key','new-color'].forEach(i => {
+    const el = document.getElementById(i);
+    if (el) el.value = '';
   });
 
-  if (res.ok || res.status === 201) {
-    CENTERS[id] = { name, short: short || name, color, key, expires: expires || '2026-12-31', pilot, type };
-
-    if (msg) {
-      msg.textContent = '✅ DB에 추가 완료 — 즉시 반영됐어요';
-      msg.style.display = 'inline';
-      setTimeout(() => { msg.style.display = 'none'; }, 6000);
-    }
-
-    // 입력 초기화
-    ['new-code','new-name','new-short','new-key','new-color'].forEach(i => {
-      const el = document.getElementById(i);
-      if (el) el.value = '';
-    });
-
-    // 미리보기 숨기기
-    const previewEl = document.getElementById('new-code-preview');
-    if (previewEl) previewEl.style.display = 'none';
-
-    renderCenterManage();
-  } else {
-    const errText = await res.text();
-    if (msg) {
-      msg.textContent = `❌ 추가 실패 — ${errText.includes('unique') ? '이미 존재하는 접속코드입니다' : '다시 시도해주세요'}`;
-      msg.style.display = 'inline';
-      msg.style.color = '#E24B4A';
-      setTimeout(() => { msg.style.display = 'none'; msg.style.color = ''; }, 5000);
-    }
-  }
+  renderCenterManage();
 }
 
 // ── 유틸 ──
