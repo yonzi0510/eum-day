@@ -419,7 +419,7 @@ function doLogin() {
 
 function doLogout() {
   sessionStorage.removeItem('daeum-admin-auth');
-  location.reload();
+  location.href = 'index.html';
 }
 
 document.getElementById('login-input').addEventListener('keydown', e => {
