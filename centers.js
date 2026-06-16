@@ -4,7 +4,7 @@
 //  4개 파일의 CENTERS를 동일하게 수정 후 GitHub 업로드
 // ═══════════════════════════════════════════
 
-const CENTERS = {
+var CENTERS = {
   sapgyo:  { name: '삽교주간보호센터',    short: '삽교',    color: '#1F3864', key: '0101', expires: '2026-12-31', pilot: true, type: 'daycenter' },
   center2: { name: '덕산주간보호센터',    short: '덕산',    color: '#0D6E55', key: '0202', expires: '2026-12-31', pilot: true, type: 'daycenter' },
   center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31', pilot: true, type: 'daycenter' },
