@@ -219,6 +219,9 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .doc-result-body table td:first-child{background:#EEF2FF;font-weight:500;width:76px}
 .soap-lbl{font-weight:600;color:#1F3864;font-size:12px;margin-top:8px;margin-bottom:2px;display:block}
 /* 상담일지 형식 선택 토글 */
+.cmonth-btn{padding:6px 14px;border-radius:20px;border:1.5px solid #E0E0E0;background:#fff;font-size:12px;font-weight:600;color:#888;cursor:pointer;font-family:inherit;transition:all .18s}
+.cmonth-btn:hover{border-color:#6C47D8;color:#6C47D8}
+.cmonth-btn.active{background:#6C47D8;border-color:#6C47D8;color:#fff}
 .counsel-style-wrap{display:none;margin-top:8px;padding:8px 10px;background:#F0F4FF;border-radius:8px;border:1px solid #C5D3F0}
 .counsel-style-wrap.visible{display:block}
 .counsel-style-label{font-size:11px;color:#666;font-weight:500;margin-bottom:6px}
@@ -882,6 +885,20 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
               <span class="dbadge db-auto">자동 생성</span>
             </div>
           </div>
+          <!-- 상담일지 기간 선택 (m1 선택 시 표시) -->
+          <div class="counsel-style-wrap" id="counsel-month-wrap" onclick="event.stopPropagation()" style="display:none;margin-bottom:6px">
+            <div class="counsel-style-label">📅 기록지 기간 선택</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px">
+              <button class="cmonth-btn active" data-month="1" onclick="setCounselMonths(1,this)">1개월</button>
+              <button class="cmonth-btn" data-month="2" onclick="setCounselMonths(2,this)">2개월</button>
+              <button class="cmonth-btn" data-month="3" onclick="setCounselMonths(3,this)">3개월</button>
+              <button class="cmonth-btn" data-month="6" onclick="setCounselMonths(6,this)">6개월</button>
+            </div>
+            <div id="counsel-month-notice" style="font-size:10px;color:#6C47D8;padding:0 10px 8px;display:none">
+              💡 <span id="counsel-month-notice-text"></span>
+            </div>
+          </div>
+
           <!-- 상담일지 형식 선택 (m1 선택 시 표시) -->
           <div class="counsel-style-wrap" id="counsel-style-wrap" onclick="event.stopPropagation()">
             <div class="counsel-style-label">📋 상담일지 작성 형식 선택</div>
@@ -6584,7 +6601,23 @@ async function startGenerate(type) {
     }
 
     if (type === 'monthly') {
-      // ── 월간문서: 단일 API 호출 ──
+      // ── 월간문서: 상담일지 다중월 감지 ──
+      const m1Selected = document.getElementById('m1')?.checked;
+      const monthCount = window._counselMonthCount || 1;
+
+      // 상담일지 선택 + 2개월 이상이면 팝업 후 순차 생성
+      if (m1Selected && monthCount > 1) {
+        // 진행 표시 취소 후 팝업
+        prog.classList.remove('show');
+        document.getElementById('monthly-input').style.display = 'block';
+        setUiLock(false);
+        showSemiAnnualCounselPopup(monthCount, async () => {
+          await startSemiAnnualCounsel(monthCount, activeFile, opinion);
+        });
+        return;
+      }
+
+      // ── 단일 월 처리 (기존 로직) ──
       const systemPrompt = buildMonthlyPrompt(opinion);
       const apiPromise = callClaude(systemPrompt, userContent, '월간문서');
 
@@ -7095,12 +7128,36 @@ let counselStyle = 'soap'; // 기본값
 
 function toggleCounselStyleWrap() {
   const wrap = document.getElementById('counsel-style-wrap');
+  const monthWrap = document.getElementById('counsel-month-wrap');
   const m1 = document.getElementById('m1');
   if (!wrap || !m1) return;
   if (m1.checked) {
     wrap.classList.add('visible');
+    if (monthWrap) monthWrap.style.display = 'block';
   } else {
     wrap.classList.remove('visible');
+    if (monthWrap) monthWrap.style.display = 'none';
+    // 기간 1개월로 초기화
+    window._counselMonthCount = 1;
+    document.querySelectorAll('.cmonth-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.month === '1');
+    });
+  }
+}
+
+// 기간 선택
+window._counselMonthCount = 1;
+function setCounselMonths(n, btn) {
+  window._counselMonthCount = n;
+  document.querySelectorAll('.cmonth-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const notice = document.getElementById('counsel-month-notice');
+  const noticeText = document.getElementById('counsel-month-notice-text');
+  if (n > 1) {
+    noticeText.textContent = `${n}개월치 기록지로 상담일지 ${n}건 순차 생성 · 예상 크레딧 ${(4000*n).toLocaleString()}C`;
+    notice.style.display = 'block';
+  } else {
+    notice.style.display = 'none';
   }
 }
 
@@ -9806,6 +9863,171 @@ function clearAdminUsageLog() {
 }
 
 // ── 관리자 탭 전환 시 호출 ──
+// ═══════════════════════════════════════════
+//  반기 상담일지 — 월별 파일 감지 & 순차 생성
+// ═══════════════════════════════════════════
+
+// PDF 파일명/내용에서 월 수 추정
+// 반기 상담일지 순차 생성
+async function startSemiAnnualCounsel(monthCount, file, opinion) {
+  const input = document.getElementById('monthly-input');
+  const prog  = document.getElementById('monthly-prog');
+  const steps = ['mp1','mp2','mp3','mp4','mp5','mp6','mp7','mp8'];
+
+  input.style.display = 'none';
+  prog.classList.add('show');
+  setUiLock(true);
+
+  // 프로그레스 레이블 업데이트
+  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  for (let i = 0; i < Math.min(monthCount, steps.length); i++) {
+    const el = document.getElementById(steps[i]);
+    if (el) {
+      el.querySelector('.picon').textContent = '📝';
+      if (el.childNodes[1]) el.childNodes[1].textContent = `${months[i]} 상담일지 생성 중...`;
+      el.style.opacity = '1';
+    }
+  }
+
+  const results = [];
+
+  try {
+    for (let i = 0; i < monthCount; i++) {
+      // 현재 스텝 running
+      if (i > 0) {
+        document.getElementById(steps[i-1]).classList.remove('running');
+        document.getElementById(steps[i-1]).classList.add('complete');
+        document.getElementById(steps[i-1]).querySelector('.picon').textContent = '✓';
+      }
+      document.getElementById(steps[i])?.classList.add('running');
+
+      // 프롬프트에 월 정보 추가
+      const monthLabel = months[i];
+      const systemPrompt = buildMonthlyPrompt(opinion);
+      const b64 = await fileToBase64(file);
+      const isPDF = file.type === 'application/pdf' || file.name?.endsWith('.pdf');
+      const userContent = [
+        isPDF
+          ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }
+          : { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: b64 } },
+        { type: 'text', text: `[대상 월: ${monthLabel}]\n이 파일에서 ${monthLabel}에 해당하는 기록만 추출하여 상담일지를 작성해주세요.\n${opinion ? '[작성자 의견]\n' + opinion : ''}` }
+      ];
+
+      const result = await callClaude(systemPrompt, userContent, `상담일지(${monthLabel})`);
+      results.push({ month: monthLabel, html: result });
+    }
+
+    // 마지막 스텝 완료
+    const lastIdx = Math.min(monthCount - 1, steps.length - 1);
+    document.getElementById(steps[lastIdx])?.classList.remove('running');
+    document.getElementById(steps[lastIdx])?.classList.add('complete');
+    document.getElementById(steps[lastIdx])?.querySelector('.picon') && (document.getElementById(steps[lastIdx]).querySelector('.picon').textContent = '✓');
+
+    await new Promise(r => setTimeout(r, 400));
+    prog.classList.remove('show');
+    document.getElementById('monthly-result').classList.add('show');
+
+    // 결과 합산 렌더링
+    const combinedHtml = results.map(r =>
+      `<div style="margin-bottom:28px">
+        <div style="font-size:13px;font-weight:700;color:#1F3864;border-bottom:2px solid #1F3864;padding-bottom:6px;margin-bottom:12px">
+          📋 ${r.month} 상담일지
+        </div>
+        ${r.html}
+      </div>`
+    ).join('<hr style="border:none;border-top:1px dashed #E0E6F0;margin:20px 0">');
+
+    window._monthlyHtml = combinedHtml;
+    renderMonthlyResult(combinedHtml);
+
+  } catch(e) {
+    prog.classList.remove('show');
+    input.style.display = 'block';
+    setUiLock(false);
+    document.getElementById('monthly-err').textContent = '오류: ' + (e.message || e);
+    document.getElementById('monthly-err').style.display = 'block';
+  } finally {
+    setUiLock(false);
+  }
+}
+
+function detectMonthCount(files) {
+  if (!files || files.length === 0) return 1;
+  // 파일이 여러 개면 파일 수 = 월 수
+  if (files.length > 1) return files.length;
+  // 파일명에서 월 패턴 감지: "1월~6월", "202601~202606", "상반기", "하반기" 등
+  const name = files[0].name || '';
+  if (/상반기|하반기|반기/.test(name)) return 6;
+  // "1월-6월" 또는 "01-06" 패턴
+  const rangeMatch = name.match(/(\d{1,2})월[~\-～](\d{1,2})월/);
+  if (rangeMatch) {
+    return Math.abs(parseInt(rangeMatch[2]) - parseInt(rangeMatch[1])) + 1;
+  }
+  return 1;
+}
+
+// 반기 상담일지 확인 팝업 표시
+function showSemiAnnualCounselPopup(monthCount, onConfirm) {
+  // 기존 팝업 제거
+  const existing = document.getElementById('semi-counsel-popup');
+  if (existing) existing.remove();
+
+  const totalCredits = (4000 * monthCount).toLocaleString();
+  const overlay = document.createElement('div');
+  overlay.id = 'semi-counsel-popup';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:10px">📋</div>
+        <div style="font-size:15px;font-weight:800;color:#1F3864;margin-bottom:6px">반기 상담일지 생성 안내</div>
+        <div style="font-size:12px;color:#888;line-height:1.7">
+          <strong style="color:#1F3864">${monthCount}개월치</strong> 기록지가 감지됐습니다.<br>
+          월별로 나눠 총 <strong style="color:#1F3864">${monthCount}회</strong> 순차 생성합니다.
+        </div>
+      </div>
+
+      <div style="background:#F5F8FF;border-radius:10px;padding:14px;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+          <span style="color:#666">회당 크레딧</span>
+          <span style="font-weight:600">4,000C</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+          <span style="color:#666">생성 횟수</span>
+          <span style="font-weight:600">${monthCount}회</span>
+        </div>
+        <div style="border-top:1px solid #E0E6F0;margin:8px 0"></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700">
+          <span>예상 크레딧 소모</span>
+          <span style="color:#1F3864">${totalCredits}C</span>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:#888;background:#FFF8E7;border:1px solid #F5D87A;border-radius:8px;padding:10px;margin-bottom:18px;line-height:1.6">
+        💡 월별로 각각 완성된 상담일지가 생성됩니다.<br>
+        생성 중 취소는 불가하니 크레딧을 확인 후 시작하세요.
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('semi-counsel-popup').remove()"
+          style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E0E0E0;background:#fff;color:#666;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+          취소
+        </button>
+        <button id="semi-counsel-confirm-btn"
+          style="flex:2;padding:12px;border-radius:10px;border:none;background:#1F3864;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          생성 시작 (${monthCount}회)
+        </button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  document.getElementById('semi-counsel-confirm-btn').onclick = () => {
+    overlay.remove();
+    onConfirm();
+  };
+}
+
 function initAdminTab() {
   const isAdmin = sessionStorage.getItem('ium-admin') === '0508';
   if (isAdmin) {
@@ -9818,7 +10040,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.10
+  Day:음 · v2026.06.16.12
 </div>
 </body>
 </html>
