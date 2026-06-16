@@ -2691,6 +2691,11 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   .loop-grid { grid-template-columns: 1fr; }
   .flow-card { padding: 14px 16px; }
   .header h1 { font-size: 20px; }
+  #adm-kpi-grid { grid-template-columns: repeat(2,1fr) !important; }
+  .adm-period-btns { flex-wrap: wrap; gap: 6px; }
+  .doc-grid { grid-template-columns: 1fr 1fr !important; }
+  .eval-grid { grid-template-columns: 1fr 1fr !important; }
+  .tab-bar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 
 .gw { box-sizing: border-box; font-family: 'Noto Sans KR','Malgun Gothic',sans-serif; }
@@ -3930,7 +3935,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
 
     <!-- KPI 요약 카드 4개 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px" id="adm-kpi-grid">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px" id="adm-kpi-grid">
       <div class="card" style="padding:14px;text-align:center;margin-bottom:0">
         <div style="font-size:10px;color:#888;margin-bottom:4px">총 API 호출</div>
         <div style="font-size:22px;font-weight:800;color:#1F3864" id="adm-kpi-calls">-</div>
@@ -9567,7 +9572,7 @@ async function saveUsageToSupabase(log) {
         'Prefer': 'return=minimal'
       },
       body: JSON.stringify({
-        created_at:   log.ts,
+        logged_at:   log.ts,
         center_code:  log.center_code  || '',
         center_name:  log.center_name  || log.center || '',
         center_short: log.center       || '',
@@ -9583,15 +9588,15 @@ async function saveUsageToSupabase(log) {
 // ── Supabase: 사용량 로그 조회 ──
 async function loadUsageFromSupabase(days) {
   try {
-    let url = `${SUPABASE_URL}/rest/v1/usage_logs?order=created_at.desc&limit=1000`;
+    let url = `${SUPABASE_URL}/rest/v1/usage_logs?order=logged_at.desc&limit=1000`;
     if (days === 0) {
       // 오늘
       const today = new Date();
       today.setHours(0,0,0,0);
-      url += `&created_at=gte.${today.toISOString()}`;
+      url += `&logged_at=gte.${today.toISOString()}`;
     } else if (days < 9999) {
       const from = new Date(Date.now() - days * 86400000);
-      url += `&created_at=gte.${from.toISOString()}`;
+      url += `&logged_at=gte.${from.toISOString()}`;
     }
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
@@ -9848,7 +9853,7 @@ async function loadAdminData() {
   // 2) localStorage 병합 (Supabase 실패 또는 구버전 로그 보완)
   const localRaw = JSON.parse(localStorage.getItem('daeum-usage-log') || '[]');
   const localLogs = localRaw.map(l => ({
-    created_at:   l.ts,
+    logged_at:   l.ts,
     center_short: l.center || '',
     center_name:  l.center_name || l.center || '',
     center_code:  l.center_code || '',
@@ -9860,12 +9865,12 @@ async function loadAdminData() {
 
   if (sbLogs && Array.isArray(sbLogs) && sbLogs.length > 0) {
     // Supabase 성공 — 로컬과 타임스탬프 기준 중복 제거 후 병합
-    const sbSet = new Set(sbLogs.map(l => l.created_at));
-    const onlyLocal = localLogs.filter(l => !sbSet.has(l.created_at));
-    _adminAllLogs = [...sbLogs, ...onlyLocal].sort((a,b) => b.created_at.localeCompare(a.created_at));
+    const sbSet = new Set(sbLogs.map(l => l.logged_at));
+    const onlyLocal = localLogs.filter(l => !sbSet.has(l.logged_at));
+    _adminAllLogs = [...sbLogs, ...onlyLocal].sort((a,b) => b.logged_at.localeCompare(a.logged_at));
   } else {
     // Supabase 실패 또는 비어있음 — 로컬만 사용
-    _adminAllLogs = localLogs.sort((a,b) => b.created_at.localeCompare(a.created_at));
+    _adminAllLogs = localLogs.sort((a,b) => b.logged_at.localeCompare(a.logged_at));
   }
 
   if (updated) {
@@ -9883,7 +9888,7 @@ function filterByPeriod(logs, days) {
   const cutoff = days === 0
     ? new Date(new Date().setHours(0,0,0,0)).toISOString()
     : new Date(Date.now() - days * 86400000).toISOString();
-  return logs.filter(l => (l.created_at || '') >= cutoff);
+  return logs.filter(l => (l.logged_at || '') >= cutoff);
 }
 
 // ── 캐시에서 렌더링 ──
@@ -10012,7 +10017,7 @@ function renderAdminDailyChart(logs) {
 
   const byDay = {};
   logs.forEach(l => {
-    const day = (l.created_at || '').slice(0, 10);
+    const day = (l.logged_at || '').slice(0, 10);
     if (!day) return;
     if (!byDay[day]) byDay[day] = { calls:0, cost:0 };
     byDay[day].calls++;
@@ -10348,7 +10353,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.20.F
+  Day:음 · v2026.06.16.20.ff
 </div>
 </body>
 </html>
