@@ -8841,26 +8841,22 @@ const POINT_MULTIPLIER_PILOT = 3;
 const urlParams = new URLSearchParams(window.location.search);
 let centerCode = urlParams.get('center') || sessionStorage.getItem('ium-center') || '';
 
-// ────── app.html 인증 체크 ──────
+// ────── 인증 체크 ──────
 function findValidAuth() {
   const today = new Date().toISOString().slice(0,10);
   const paramCode = urlParams.get('center');
   if (paramCode && CENTERS[paramCode]) {
     const cfg = CENTERS[paramCode];
-    if (sessionStorage.getItem('ium-auth-' + paramCode) === cfg.key && today <= cfg.expires) {
-      return paramCode;
-    }
+    if (sessionStorage.getItem('ium-auth-' + paramCode) === cfg.key && today <= cfg.expires) return paramCode;
   }
   for (const code of Object.keys(CENTERS)) {
     const cfg = CENTERS[code];
-    if (sessionStorage.getItem('ium-auth-' + code) === cfg.key && today <= cfg.expires) {
-      return code;
-    }
+    if (sessionStorage.getItem('ium-auth-' + code) === cfg.key && today <= cfg.expires) return code;
   }
   return null;
 }
 
-// 세션에 저장된 코드로 임시 인증 (DB 로드 전 렌더링 허용)
+// 세션 기반 빠른 체크 (DB 없이)
 function findAuthBySession() {
   const paramCode = urlParams.get('center');
   if (paramCode && sessionStorage.getItem('ium-auth-' + paramCode)) return paramCode;
@@ -8872,26 +8868,37 @@ function findAuthBySession() {
   return null;
 }
 
-// 세션 기반으로 먼저 빠르게 체크 (DB 로드 전)
+// ① 세션 기반으로 즉시 체크 → 인증 없으면 바로 index로
 const quickCode = findAuthBySession();
 if (!quickCode) {
   location.replace('index.html');
 } else {
+  // ② 세션 있으면 즉시 페이지 표시 (DB 기다리지 않음)
   centerCode = quickCode;
-  // DOM 준비 후 DB 로드 + 정식 인증 체크
-  document.addEventListener('DOMContentLoaded', async () => {
-    await loadCenters();
-    const validCode = findValidAuth();
-    if (validCode) {
-      centerCode = validCode;
-      applyCenterUI();
-      if (sessionStorage.getItem('ium-admin') === '0508') {
-        const adminBtn = document.getElementById('admin-tab-btn');
-        if (adminBtn) adminBtn.style.display = 'block';
-      }
-    } else {
-      location.replace('index.html');
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // UI 즉시 적용 (DB 로드 전)
+    applyCenterUI();
+    if (sessionStorage.getItem('ium-admin') === '0508') {
+      const adminBtn = document.getElementById('admin-tab-btn');
+      if (adminBtn) adminBtn.style.display = 'block';
     }
+
+    // ③ DB 로드는 백그라운드에서 조용히 (3초 타임아웃, 실패해도 페이지 영향 없음)
+    const centersTimeout = new Promise(resolve => setTimeout(resolve, 3000));
+    Promise.race([loadCenters(), centersTimeout]).then(() => {
+      // DB 로드 성공하면 만료일 등 정식 검증
+      const validCode = findValidAuth();
+      if (!validCode) {
+        // DB 로드됐는데 유효하지 않으면 index로
+        location.replace('index.html');
+      } else if (validCode !== centerCode) {
+        centerCode = validCode;
+        applyCenterUI();
+      }
+    }).catch(() => {
+      // DB 로드 실패해도 무시 — 세션 기반으로 계속 사용
+    });
   });
 }
 
@@ -10373,7 +10380,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.13
+  Day:음 · v2026.06.16.14
 </div>
 </body>
 </html>
