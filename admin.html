@@ -209,7 +209,12 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             <div class="kpi-sub" id="kpi-calls-sub"></div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">API 비용 (원화)</div>
+            <div class="kpi-label">원가 (실지불)</div>
+            <div class="kpi-val" style="color:#E8A040" id="kpi-raw">-</div>
+            <div class="kpi-sub" id="kpi-raw-sub">Anthropic 청구액</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">청구금액 (기관)</div>
             <div class="kpi-val" style="color:#4ECFA0" id="kpi-cost">-</div>
             <div class="kpi-sub" id="kpi-cost-sub"></div>
           </div>
@@ -576,6 +581,7 @@ function renderOverview() {
 function renderKPI(logs) {
   const calls  = logs.length;
   const cost   = logs.reduce((s,l) => s + (l.cost_krw || 0), 0);
+  const raw    = logs.reduce((s,l) => s + (l.cost_raw_krw || Math.round((l.cost_krw||0) / 3)), 0);
   const input  = logs.reduce((s,l) => s + (l.input_tokens || 0), 0);
   const output = logs.reduce((s,l) => s + (l.output_tokens || 0), 0);
   const allCost = _allLogs.reduce((s,l) => s + (l.cost_krw || 0), 0);
@@ -583,6 +589,8 @@ function renderKPI(logs) {
 
   set('kpi-calls',  calls.toLocaleString() + '건');
   set('kpi-calls-sub', `전체 ${_allLogs.length}건`);
+  set('kpi-raw',    '₩' + raw.toLocaleString());
+  set('kpi-raw-sub', 'Anthropic 청구액');
   set('kpi-cost',   '₩' + cost.toLocaleString());
   set('kpi-cost-sub', `전체 대비 ${pct}%`);
   set('kpi-input',  input >= 1000 ? (input/1000).toFixed(1)+'K' : input+'');
@@ -641,7 +649,7 @@ function renderCenterTable(logs) {
         }).join('')}
         <tr style="border-top:1.5px solid #2A3A50">
           <td colspan="3" style="font-weight:700;color:#C8D4E0">합계</td>
-          <td class="right" style="color:#4ECFA0;font-weight:800">'₩' + ${totalCost.toLocaleString()}</td>
+          <td class="right" style="color:#4ECFA0;font-weight:800">₩${totalCost.toLocaleString()}</td>
           <td class="right">${(_allLogs.reduce((s,l)=>s+(l.input_tokens||0),0)/1000).toFixed(1)}K</td>
           <td class="right">${(_allLogs.reduce((s,l)=>s+(l.output_tokens||0),0)/1000).toFixed(1)}K</td>
         </tr>
