@@ -8860,21 +8860,40 @@ function findValidAuth() {
   return null;
 }
 
-// DB에서 CENTERS 로드 후 인증 체크 (DOM 준비 후 실행)
-document.addEventListener('DOMContentLoaded', async () => {
-  await loadCenters();
-  const validCode = findValidAuth();
-  if (validCode) {
-    centerCode = validCode;
-    applyCenterUI();
-    if (sessionStorage.getItem('ium-admin') === '0508') {
-      const adminBtn = document.getElementById('admin-tab-btn');
-      if (adminBtn) adminBtn.style.display = 'block';
+// 세션에 저장된 코드로 임시 인증 (DB 로드 전 렌더링 허용)
+function findAuthBySession() {
+  const paramCode = urlParams.get('center');
+  if (paramCode && sessionStorage.getItem('ium-auth-' + paramCode)) return paramCode;
+  for (const code of Object.keys(sessionStorage)) {
+    if (code.startsWith('ium-auth-') && sessionStorage.getItem(code)) {
+      return code.replace('ium-auth-', '');
     }
-  } else {
-    location.replace('index.html');
   }
-});
+  return null;
+}
+
+// 세션 기반으로 먼저 빠르게 체크 (DB 로드 전)
+const quickCode = findAuthBySession();
+if (!quickCode) {
+  location.replace('index.html');
+} else {
+  centerCode = quickCode;
+  // DOM 준비 후 DB 로드 + 정식 인증 체크
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadCenters();
+    const validCode = findValidAuth();
+    if (validCode) {
+      centerCode = validCode;
+      applyCenterUI();
+      if (sessionStorage.getItem('ium-admin') === '0508') {
+        const adminBtn = document.getElementById('admin-tab-btn');
+        if (adminBtn) adminBtn.style.display = 'block';
+      }
+    } else {
+      location.replace('index.html');
+    }
+  });
+}
 
 function showLockScreen(msg) {
   document.body.style.overflow = 'hidden';
@@ -10354,7 +10373,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.12
+  Day:음 · v2026.06.16.13
 </div>
 </body>
 </html>
