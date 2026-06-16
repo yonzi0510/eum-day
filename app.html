@@ -8723,6 +8723,26 @@ function checkKey() {
   const input = document.getElementById('lock-input')?.value?.trim();
   if (!input) return;
 
+  // 관리자 코드: 0508 → 관리자 탭으로 바로 입장
+  if (input === '0508') {
+    sessionStorage.setItem('ium-admin', '0508');
+    // 센터가 미확정이면 기본 센터(sapgyo)로 설정
+    if (!centerCode) {
+      centerCode = 'sapgyo';
+      sessionStorage.setItem('ium-center', 'sapgyo');
+    }
+    document.getElementById('lock-overlay')?.remove();
+    document.body.style.overflow = '';
+    applyCenterUI();
+    // 관리자 탭 버튼 표시 후 탭 전환
+    const adminBtn = document.getElementById('admin-tab-btn');
+    if (adminBtn) {
+      adminBtn.style.display = 'block';
+      switchTab('tab-admin', adminBtn);
+    }
+    return;
+  }
+
   // 접속코드로 센터 자동 판별
   const matched = Object.entries(CENTERS).find(([code, cfg]) => input === cfg.key);
   if (matched) {
@@ -9784,7 +9804,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.06
+  Day:음 · v2026.06.16.07
 </div>
 </body>
 </html>
