@@ -240,8 +240,9 @@ function doLogin() {
   const errEl = document.getElementById('lo-err');
   if (!input) return;
 
-  // 관리자 코드 → admin.html 이동
+  // 관리자 코드 → sessionStorage 저장 후 admin.html 이동 (자동 로그인)
   if (input === '0508') {
+    sessionStorage.setItem('daeum-admin-auth', '0508');
     location.href = 'admin.html';
     return;
   }
