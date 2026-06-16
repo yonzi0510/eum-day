@@ -4691,10 +4691,10 @@ async function loadResultsDocs() {
 
   const myCenter = centerCode || '';
   const centerName = CENTERS[myCenter]?.name || myCenter;
-  const label = document.getElementById('results-center-label');
-  if (label) label.textContent = centerName;
+  const lbl = document.getElementById('results-center-label');
+  if (lbl) lbl.textContent = centerName;
 
-  // ── 모달 먼저 생성 (보기 버튼보다 반드시 앞에) ──
+  // 모달 미리 생성
   if (!document.getElementById('results-doc-modal')) {
     const m = document.createElement('div');
     m.id = 'results-doc-modal';
@@ -4707,126 +4707,163 @@ async function loadResultsDocs() {
           <button onclick="document.getElementById('results-doc-modal').style.display='none'"
             style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">✕</button>
         </div>
-        <div id="results-modal-body" style="padding:0;max-height:85vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+        <div id="results-modal-body" style="padding:0;max-height:85vh;overflow-y:auto"></div>
       </div>`;
     m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; });
     document.body.appendChild(m);
   }
 
-  // 안내 배너 (항상 표시)
   const noticeBanner = `
     <div style="background:#FFF8E1;border:1.5px solid #FFB300;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;font-size:12px;color:#5D4037">
       <span style="font-size:16px;flex-shrink:0">⏳</span>
-      <span>생성된 문서는 <strong>24시간 동안만</strong> 이 탭에서 확인할 수 있습니다. 필요한 문서는 생성 직후 <strong>다운로드</strong> 또는 <strong>복사</strong>해 두세요.</span>
+      <span>생성된 문서는 <strong>24시간 동안만</strong> 확인 가능합니다. 필요한 문서는 생성 직후 <strong>다운로드</strong>·<strong>복사</strong>해 두세요.</span>
     </div>`;
 
+  // ── 진단 패널 (화면에 직접 표시) ──
+  function showDiag(lines) {
+    body.innerHTML = noticeBanner + `
+      <div style="background:#1a1a2e;color:#7FFF7F;font-family:monospace;font-size:11px;border-radius:8px;padding:12px 14px;margin-bottom:12px;line-height:1.9;white-space:pre-wrap">${lines.join('\n')}</div>`;
+  }
+
+  const diag = [];
+  diag.push(`▶ centerCode = "${myCenter}"`);
+  showDiag(diag);
+
   try {
-    // ── 쿼리: center 조건만 URL에 포함, 나머지는 JS 필터 ──
-    // URLSearchParams의 ISO 날짜 인코딩 문제를 피하기 위해 raw URL 사용
-    let url = `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=500`;
-    if (myCenter) url += `&center_code=eq.${encodeURIComponent(myCenter)}`;
+    // 쿼리 — 조건 최소화, JS에서 모두 필터
+    const url = myCenter
+      ? `${SUPABASE_URL}/rest/v1/documents?center_code=eq.${myCenter}&order=created_at.desc&limit=500`
+      : `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=500`;
+
+    diag.push(`▶ URL = ${url}`);
+    showDiag(diag);
 
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    diag.push(`▶ HTTP 응답 = ${res.status} ${res.statusText}`);
+    showDiag(diag);
 
-    const all = await res.json();
-    console.log('[결과보기] Supabase 전체 응답:', all.length, '건');
-    if (all.length > 0) {
-      console.log('[결과보기] doc_type 목록:', [...new Set(all.map(d => d.doc_type))]);
-    }
-
-    // JS에서 필터링: __residents__ 제외 + 24시간 이내
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    const docs = Array.isArray(all)
-      ? all.filter(d =>
-          d.doc_type &&
-          d.doc_type !== '__residents__' &&
-          new Date(d.created_at).getTime() >= cutoff
-        )
-      : [];
-
-    console.log('[결과보기] 24h 필터 후:', docs.length, '건');
-    if (docs.length > 0) {
-      console.log('[결과보기] 필터된 doc_type 목록:', docs.map(d => d.doc_type));
-    }
-
-    if (!docs.length) {
-      body.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">최근 24시간 내 생성된 문서가 없어요.</div>';
+    if (!res.ok) {
+      const errText = await res.text();
+      diag.push(`✗ 오류 본문: ${errText.slice(0, 300)}`);
+      showDiag(diag);
       return;
     }
 
-    // ── 핵심 수정: 원본 배열을 그대로 window._resultsDocs에 저장하고
-    //   버튼에는 배열 인덱스(0, 1, 2…)를 enumerate로 직접 부여 ──
-    window._resultsDocs = docs;
+    const all = await res.json();
+    diag.push(`▶ 전체 레코드 수 = ${all.length}건`);
 
-    // 어르신 × 카테고리 이중 그룹핑
-    // 각 항목에 globalIdx(원본 배열 인덱스)를 먼저 붙임
-    const indexed = docs.map((d, i) => ({ ...d, _globalIdx: i }));
+    if (!Array.isArray(all) || all.length === 0) {
+      diag.push('✗ 데이터 없음 (배열 비어있음)');
+      showDiag(diag);
+      return;
+    }
 
-    const residents = {};
-    indexed.forEach(d => {
-      const name = d.resident_name || '이름 없음';
-      const info = DOC_CATEGORY_MAP[d.doc_type] || { cat: '기타', color: '#5C3489' };
-      if (!residents[name]) residents[name] = {};
-      if (!residents[name][info.cat]) residents[name][info.cat] = [];
-      residents[name][info.cat].push({ ...d, _color: info.color });
-    });
+    // doc_type 전체 목록
+    const allTypes = [...new Set(all.map(d => d.doc_type))];
+    diag.push(`▶ DB의 doc_type 종류: ${JSON.stringify(allTypes)}`);
 
-    let html = noticeBanner;
-    html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건 (최근 24시간)</div>`;
+    // created_at 범위
+    const dates = all.map(d => d.created_at).filter(Boolean).sort();
+    if (dates.length) {
+      diag.push(`▶ 최신: ${dates[dates.length-1].slice(0,19)}  최오래된: ${dates[0].slice(0,19)}`);
+    }
 
-    Object.entries(residents).forEach(([name, catMap]) => {
-      const resTotal = Object.values(catMap).reduce((s, arr) => s + arr.length, 0);
-      html += `
-        <div style="border:1px solid #E8EAF0;border-radius:12px;overflow:hidden;margin-bottom:12px">
-          <div style="background:#F0F4FF;padding:10px 14px;font-size:13px;font-weight:700;color:#1F3864;display:flex;align-items:center;gap:6px">
-            👤 ${name}
-            <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 7px;border-radius:10px;font-weight:500">${resTotal}건</span>
-          </div>
-          <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">`;
+    showDiag(diag);
 
-      const allCats = [...CAT_ORDER, ...Object.keys(catMap).filter(c => !CAT_ORDER.includes(c))];
-      allCats.forEach(cat => {
-        const list = catMap[cat];
-        if (!list || !list.length) return;
-        const catColor = CAT_COLOR[cat] || '#5C3489';
-        html += `<div style="margin-top:6px;margin-bottom:2px;font-size:10px;font-weight:700;color:${catColor};padding:2px 6px;border-left:3px solid ${catColor};letter-spacing:.5px">${cat}</div>`;
-        list.forEach(d => {
-          const dt = new Date(d.created_at);
-          const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-          const remainMs = dt.getTime() + 24*60*60*1000 - Date.now();
-          const remainH = Math.floor(remainMs / 3600000);
-          const remainM = Math.floor((remainMs % 3600000) / 60000);
-          const remainStr = remainMs > 0
-            ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#aaa'}">${remainH}시간 ${remainM}분 후 삭제</span>`
-            : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
-          // _globalIdx 사용 — spread 복사이므로 indexOf 대신 직접 인덱스
-          const gi = d._globalIdx;
-          html += `
-            <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
-              <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${d._color}18;color:${d._color};border:1px solid ${d._color}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
-              <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}<br>${remainStr}</span>
-              <button onclick="openResultDoc(${gi})"
-                style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;transition:all .15s;flex-shrink:0"
-                onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
-                onmouseout="this.style.background='#fff';this.style.color='#1F3864'">
-                📄 보기
-              </button>
-            </div>`;
-        });
+    // __residents__ 제외
+    const nonRes = all.filter(d => d.doc_type !== '__residents__');
+    diag.push(`▶ __residents__ 제외 후 = ${nonRes.length}건`);
+
+    // 24시간 필터
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const docs = nonRes.filter(d => new Date(d.created_at).getTime() >= cutoff);
+    diag.push(`▶ 24시간 필터 후 = ${docs.length}건`);
+
+    if (docs.length === 0) {
+      diag.push('');
+      diag.push('ℹ 24시간 이내 문서 없음 — 전체 최신 10건 표시:');
+      nonRes.slice(0, 10).forEach((d, i) => {
+        diag.push(`  [${i}] type="${d.doc_type}"  resident="${d.resident_name}"  ${(d.created_at||'').slice(0,19)}`);
       });
+      showDiag(diag);
+      // 24시간 필터 없이 전체 표시
+      renderDocList(nonRes, noticeBanner, body, diag, true);
+      return;
+    }
 
-      html += `</div></div>`;
-    });
+    diag.push('✓ 렌더링 시작...');
+    showDiag(diag);
 
-    body.innerHTML = html;
+    renderDocList(docs, noticeBanner, body, diag, false);
 
   } catch(e) {
-    body.innerHTML = noticeBanner + `<div style="color:#E24B4A;font-size:12px;padding:12px">조회 오류: ${e.message}</div>`;
+    diag.push(`✗ 예외: ${e.message}`);
+    body.innerHTML = noticeBanner + `
+      <div style="background:#1a1a2e;color:#FF7F7F;font-family:monospace;font-size:11px;border-radius:8px;padding:12px 14px;line-height:1.9;white-space:pre-wrap">${diag.join('\n')}</div>`;
   }
+}
+
+function renderDocList(docs, noticeBanner, body, diag, showAll) {
+  window._resultsDocs = docs;
+
+  const residents = {};
+  docs.forEach((d, i) => {
+    const name = d.resident_name || '이름 없음';
+    const info = DOC_CATEGORY_MAP[d.doc_type] || { cat: '기타', color: '#5C3489' };
+    if (!residents[name]) residents[name] = {};
+    if (!residents[name][info.cat]) residents[name][info.cat] = [];
+    residents[name][info.cat].push({ ...d, _gi: i, _color: info.color });
+  });
+
+  let html = noticeBanner;
+  if (showAll) {
+    html += `<div style="background:#E3F2FD;border:1px solid #90CAF9;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#1565C0">📋 24시간 이내 문서가 없어 전체 목록을 표시합니다.</div>`;
+  }
+  html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건${showAll ? ' (전체)' : ' (최근 24시간)'}</div>`;
+
+  Object.entries(residents).forEach(([name, catMap]) => {
+    const resTotal = Object.values(catMap).reduce((s, a) => s + a.length, 0);
+    html += `
+      <div style="border:1px solid #E8EAF0;border-radius:12px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#F0F4FF;padding:10px 14px;font-size:13px;font-weight:700;color:#1F3864;display:flex;align-items:center;gap:6px">
+          👤 ${name}
+          <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 7px;border-radius:10px;font-weight:500">${resTotal}건</span>
+        </div>
+        <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">`;
+
+    const allCats = [...CAT_ORDER, ...Object.keys(catMap).filter(c => !CAT_ORDER.includes(c))];
+    allCats.forEach(cat => {
+      const list = catMap[cat];
+      if (!list || !list.length) return;
+      const catColor = CAT_COLOR[cat] || '#5C3489';
+      html += `<div style="margin-top:6px;margin-bottom:2px;font-size:10px;font-weight:700;color:${catColor};padding:2px 6px;border-left:3px solid ${catColor};letter-spacing:.5px">${cat}</div>`;
+      list.forEach(d => {
+        const dt = new Date(d.created_at);
+        const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+        const remainMs = dt.getTime() + 24*60*60*1000 - Date.now();
+        const remainH = Math.floor(remainMs / 3600000);
+        const remainM = Math.floor((remainMs % 3600000) / 60000);
+        const remainStr = remainMs > 0
+          ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#aaa'}">${remainH}시간 ${remainM}분 후 삭제</span>`
+          : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
+        html += `
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
+            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${d._color}18;color:${d._color};border:1px solid ${d._color}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
+            <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}<br>${remainStr}</span>
+            <button onclick="openResultDoc(${d._gi})"
+              style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;flex-shrink:0"
+              onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
+              onmouseout="this.style.background='#fff';this.style.color='#1F3864'">📄 보기</button>
+          </div>`;
+      });
+    });
+    html += `</div></div>`;
+  });
+
+  body.innerHTML = html;
 }
 
 function openResultDoc(idx) {
@@ -8791,7 +8828,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.27
+  Day:음 · v2026.06.15.26
 </div>
 </body>
 </html>
