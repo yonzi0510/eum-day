@@ -395,7 +395,14 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
 // ═══════════════════════════════════════════
 const SUPABASE_URL = 'https://lujzhilzhiktrlidhpxs.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Vbzkn1OLZbLe-EgrvlACEA_5RjfHnS9';
-const ADMIN_CODE   = '0508'; // centers.js와 독립적으로 하드코딩
+const ADMIN_CODE   = '0508';
+
+// 센터 정의 (centers.js와 동일하게 유지)
+var CENTERS = {
+  sapgyo:  { name: '삽교주간보호센터',    short: '삽교',    color: '#1F3864', key: '0101', expires: '2026-12-31', pilot: true, type: 'daycenter' },
+  center2: { name: '덕산주간보호센터',    short: '덕산',    color: '#0D6E55', key: '0202', expires: '2026-12-31', pilot: true, type: 'daycenter' },
+  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31', pilot: true, type: 'daycenter' },
+};
 
 // CENTERS는 centers.js에 하드코딩 (DB 연동 없음)
 // _centers는 admin UI 편집용 (CENTERS 그대로 참조)
@@ -426,6 +433,7 @@ function doLogin() {
     document.getElementById('dashboard').style.display = 'block';
     updateClock();
     initDashboard();
+    renderCenterManage();
   } else {
     err.textContent = '코드가 올바르지 않습니다';
     document.getElementById('login-input').value = '';
@@ -450,6 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dashboard').style.display = 'block';
     updateClock();
     initDashboard();
+    // 센터 관리 탭 바로 렌더링
+    renderCenterManage();
   }
 });
 
