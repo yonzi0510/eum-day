@@ -492,12 +492,12 @@ async function refreshAll() {
 
 async function loadAllData() {
   // Supabase usage_logs
-  const sbLogs = await fetchSupabase(`/rest/v1/usage_logs?order=created_at.desc&limit=2000`);
+  const sbLogs = await fetchSupabase(`/rest/v1/usage_logs?order=logged_at.desc&limit=2000`);
 
   // localStorage 병합
   const localRaw = JSON.parse(localStorage.getItem('daeum-usage-log') || '[]');
   const localLogs = localRaw.map(l => ({
-    created_at:   l.ts   || '',
+    logged_at:   l.ts   || '',
     center_short: l.center || '',
     center_name:  l.center_name || l.center || '',
     center_code:  l.center_code || '',
@@ -508,11 +508,11 @@ async function loadAllData() {
   }));
 
   if (sbLogs && sbLogs.length > 0) {
-    const sbSet = new Set(sbLogs.map(l => l.created_at));
-    const onlyLocal = localLogs.filter(l => !sbSet.has(l.created_at));
-    _allLogs = [...sbLogs, ...onlyLocal].sort((a,b) => b.created_at.localeCompare(a.created_at));
+    const sbSet = new Set(sbLogs.map(l => l.logged_at));
+    const onlyLocal = localLogs.filter(l => !sbSet.has(l.logged_at));
+    _allLogs = [...sbLogs, ...onlyLocal].sort((a,b) => b.logged_at.localeCompare(a.logged_at));
   } else {
-    _allLogs = [...localLogs].sort((a,b) => b.created_at.localeCompare(a.created_at));
+    _allLogs = [...localLogs].sort((a,b) => b.logged_at.localeCompare(a.logged_at));
   }
 
   // 문서 유형 필터 옵션 채우기
@@ -555,7 +555,7 @@ function filterByPeriod(logs) {
   const cutoff = _periodDays === 0
     ? new Date(new Date().setHours(0,0,0,0)).toISOString()
     : new Date(Date.now() - _periodDays * 86400000).toISOString();
-  return logs.filter(l => (l.created_at || '') >= cutoff);
+  return logs.filter(l => (l.logged_at || '') >= cutoff);
 }
 
 // ═══════════════════════════════════════════
@@ -691,7 +691,7 @@ function renderDailyChart(logs) {
 
   const byDay = {};
   logs.forEach(l => {
-    const day = (l.created_at || '').slice(0, 10);
+    const day = (l.logged_at || '').slice(0, 10);
     if (!day) return;
     if (!byDay[day]) byDay[day] = { cost:0, calls:0 };
     byDay[day].cost  += l.cost_krw || 0;
@@ -750,8 +750,8 @@ function renderLogs() {
   }
 
   el.innerHTML = filtered.map(l => {
-    const dt = new Date(l.created_at);
-    const dateStr = isNaN(dt) ? l.created_at :
+    const dt = new Date(l.logged_at);
+    const dateStr = isNaN(dt) ? l.logged_at :
       `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
     const ctr = l.center_short || '';
     const clr = CTR_COLORS[ctr] || '#405060';
