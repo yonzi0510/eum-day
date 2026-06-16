@@ -494,7 +494,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
 
 
 <script>
-// CENTERS는 centers.js의 loadCenters()로 로드됨
+// CENTERS는 centers.js에 하드코딩
 
 const urlParams = new URLSearchParams(window.location.search);
 let centerCode = urlParams.get('center') || sessionStorage.getItem('ium-center') || '';
@@ -513,40 +513,12 @@ function findValidAuth() {
   return null;
 }
 
-// 세션 기반 빠른 체크 (DB 로드 전)
-function findAuthBySession() {
-  const paramCode = urlParams.get('center');
-  if (paramCode && sessionStorage.getItem('ium-auth-' + paramCode)) return paramCode;
-  for (const code of Object.keys(sessionStorage)) {
-    if (code.startsWith('ium-auth-') && sessionStorage.getItem(code)) {
-      return code.replace('ium-auth-', '');
-    }
-  }
-  return null;
-}
-
-const quickCode = findAuthBySession();
-if (!quickCode) {
-  location.replace('index.html');
+const validCode = findValidAuth();
+if (validCode) {
+  centerCode = validCode;
+  document.addEventListener('DOMContentLoaded', () => applyCenterUI());
 } else {
-  centerCode = quickCode;
-
-  document.addEventListener('DOMContentLoaded', () => {
-    // UI 즉시 적용
-    applyCenterUI();
-
-    // DB 로드 백그라운드 (3초 타임아웃)
-    const centersTimeout = new Promise(resolve => setTimeout(resolve, 3000));
-    Promise.race([loadCenters(), centersTimeout]).then(() => {
-      const validCode = findValidAuth();
-      if (!validCode) {
-        location.replace('index.html');
-      } else if (validCode !== centerCode) {
-        centerCode = validCode;
-        applyCenterUI();
-      }
-    }).catch(() => {});
-  });
+  location.replace('index.html');
 }
 
 function changeCenter() {
