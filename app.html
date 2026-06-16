@@ -4867,47 +4867,88 @@ function renderDocList(docs, noticeBanner, body, diag, showAll) {
 }
 
 function openResultDoc(idx) {
-  // window._resultsDocs 원본 배열에서 정수 인덱스로 직접 접근
   const docs = window._resultsDocs;
-  if (!docs || idx < 0 || idx >= docs.length) return;
-  const d = docs[idx];
-  if (!d) return;
-
   const modal = document.getElementById('results-doc-modal');
-  if (!modal) return;
+  const modalTitle = document.getElementById('results-modal-title');
+  const modalDate = document.getElementById('results-modal-date');
+  const modalBody = document.getElementById('results-modal-body');
+
+  // ── 진단: 기본 상태 확인 ──
+  if (!modal || !modalBody) {
+    alert('모달 DOM 없음 — 새로고침 후 다시 시도해주세요.');
+    return;
+  }
+  if (!docs) {
+    modalTitle.textContent = '⚠ 오류';
+    modalBody.innerHTML = '<div style="padding:20px;font-size:12px;color:#E24B4A">window._resultsDocs 없음 — 목록을 먼저 새로고침하세요.</div>';
+    modal.style.display = 'block';
+    return;
+  }
+  if (idx < 0 || idx >= docs.length) {
+    modalTitle.textContent = '⚠ 오류';
+    modalBody.innerHTML = `<div style="padding:20px;font-size:12px;color:#E24B4A">인덱스 오류: idx=${idx}, 배열길이=${docs.length}</div>`;
+    modal.style.display = 'block';
+    return;
+  }
+
+  const d = docs[idx];
+  if (!d) {
+    modalTitle.textContent = '⚠ 오류';
+    modalBody.innerHTML = `<div style="padding:20px;font-size:12px;color:#E24B4A">docs[${idx}] = undefined</div>`;
+    modal.style.display = 'block';
+    return;
+  }
 
   const dt = new Date(d.created_at);
   const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-  document.getElementById('results-modal-title').textContent = `${d.resident_name || ''} · ${d.doc_type || ''}`;
-  document.getElementById('results-modal-date').textContent = `${d.center_name || ''} · ${dateStr}`;
+  modalTitle.textContent = `${d.resident_name || '(이름없음)'} · ${d.doc_type || '(타입없음)'}`;
+  modalDate.textContent = `${d.center_name || ''} · ${dateStr}`;
 
   const content = d.doc_content || '';
-  const modalBody = document.getElementById('results-modal-body');
+  const contentLen = content.length;
+  const contentPreview = content.trim().slice(0, 80);
+  const t = content.trim().toLowerCase();
 
-  // iframe 렌더 함수 (공통)
-  function renderIframe(htmlStr) {
-    modalBody.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:13px">문서 불러오는 중...</div>';
-    const blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
-    const blobUrl = URL.createObjectURL(blob);
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'width:100%;height:80vh;border:none;display:block';
-    iframe.addEventListener('load', () => setTimeout(() => URL.revokeObjectURL(blobUrl), 5000));
-    iframe.src = blobUrl;
-    modalBody.innerHTML = '';
-    modalBody.appendChild(iframe);
-  }
+  // ── 진단 정보를 모달 상단에 표시 ──
+  const diagHtml = `
+    <div style="background:#1a1a2e;color:#7FFF7F;font-family:monospace;font-size:11px;padding:10px 14px;line-height:1.9;white-space:pre-wrap">▶ idx=${idx}  doc_type="${d.doc_type}"  resident="${d.resident_name}"
+▶ doc_content 길이 = ${contentLen}자
+▶ 앞 80자 = ${contentPreview || '(비어있음)'}
+▶ 감지: ${!content.trim() ? '내용없음' : t.startsWith('<!doctype') ? '완전한HTML(doctype)' : t.startsWith('<html') ? '완전한HTML(html)' : 'HTML조각'}</div>`;
 
   if (!content.trim()) {
-    modalBody.innerHTML = '<p style="color:#aaa;padding:20px">저장된 내용이 없습니다.</p>';
-  } else {
-    const t = content.trim().toLowerCase();
-    if (t.startsWith('<!doctype') || t.startsWith('<html')) {
-      // 완전한 HTML 문서
-      renderIframe(content);
-    } else {
-      // HTML 조각 → DOC_CSS 씌워서 완전한 문서로
-      renderIframe(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${content}</body></html>`);
+    modalBody.innerHTML = diagHtml + '<p style="color:#aaa;padding:20px;font-size:13px">⚠ 저장된 doc_content가 비어있습니다.<br>문서 생성 후 저장이 제대로 안 된 것 같습니다.</p>';
+    modal.style.display = 'block';
+    return;
+  }
+
+  function renderIframe(htmlStr) {
+    modalBody.innerHTML = diagHtml + '<div style="text-align:center;padding:20px;color:#aaa;font-size:12px">iframe 로딩 중...</div>';
+    try {
+      const blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;height:78vh;border:none;display:block';
+      iframe.addEventListener('load', () => setTimeout(() => URL.revokeObjectURL(blobUrl), 5000));
+      iframe.addEventListener('error', () => {
+        modalBody.innerHTML = diagHtml + '<p style="color:#E24B4A;padding:20px;font-size:12px">iframe 로드 실패</p>';
+      });
+      iframe.src = blobUrl;
+      // diagHtml은 위에 유지하고 그 아래 iframe 추가
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = diagHtml;
+      wrapper.appendChild(iframe);
+      modalBody.innerHTML = '';
+      modalBody.appendChild(wrapper);
+    } catch(e) {
+      modalBody.innerHTML = diagHtml + `<p style="color:#E24B4A;padding:20px;font-size:12px">renderIframe 오류: ${e.message}</p>`;
     }
+  }
+
+  if (t.startsWith('<!doctype') || t.startsWith('<html')) {
+    renderIframe(content);
+  } else {
+    renderIframe(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${content}</body></html>`);
   }
 
   modal.style.display = 'block';
