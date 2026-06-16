@@ -150,8 +150,16 @@ function doLogin() {
 
   if (!input) return;
 
+  // 관리자 코드
+  if (input === '0508') {
+    sessionStorage.setItem('daeum-admin-auth', '0508');
+    location.replace('admin.html');
+    return;
+  }
+
   const matched = Object.entries(CENTERS).find(([code, cfg]) => input === cfg.key);
   if (!matched) {
+    errEl.textContent = '❌ 접속코드가 올바르지 않습니다';
     errEl.style.display = 'block';
     document.getElementById('code-input').value = '';
     document.getElementById('code-input').focus();
