@@ -2,270 +2,195 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Day:음 — 하루의 기록이 문서를 만듭니다</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day:음 — 로그인</title>
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'Noto Sans KR','맑은 고딕',sans-serif; background:#F0F4FA; color:#1a1a2e; }
-  .lo-hero { background:linear-gradient(155deg,#1F3864 0%,#2d5a9e 60%,#1a4a7a 100%); padding:80px 24px 72px; text-align:center; }
-  .lo-hero .badge { display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:20px; padding:5px 16px; font-size:12px; letter-spacing:1px; margin-bottom:24px; color:#fff; }
-  .lo-hero h1 { font-size:38px; font-weight:800; line-height:1.3; margin-bottom:16px; color:#fff; }
-  .lo-hero h1 span { color:#93c5fd; }
-  .lo-hero .slogan { font-size:15px; color:rgba(255,255,255,0.8); line-height:2.0; }
-  .lo-logo { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:28px; }
-  .lo-logo-text { font-size:22px; font-weight:800; letter-spacing:-0.5px; color:#fff; }
-  .lo-section { max-width:720px; margin:0 auto; padding:60px 24px; }
-  .lo-section h2 { font-size:22px; font-weight:700; margin-bottom:12px; color:#1F3864; }
-  .lo-section .lead { font-size:15px; color:#555; line-height:1.85; margin-bottom:28px; }
-  .lo-story { background:#fff; border-radius:16px; padding:28px; box-shadow:0 2px 12px rgba(0,0,0,0.07); margin-bottom:20px; }
-  .lo-story p { font-size:14px; color:#444; line-height:2; margin-bottom:12px; }
-  .lo-story p:last-child { margin-bottom:0; }
-  .lo-story strong { color:#1F3864; }
-  .lo-hope { background:linear-gradient(135deg,#EEF4FF,#F5F0FF); border-radius:16px; padding:24px 28px; border-left:4px solid #1F3864; margin-top:20px; }
-  .lo-hope p { font-size:14px; color:#333; line-height:2; }
-  .lo-divider { border:none; border-top:1px solid #E0E6F0; margin:0; }
-  .lo-steps { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
-  .lo-step { background:#fff; border:1px solid #E0E6F0; border-radius:12px; padding:20px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-  .lo-step .num { font-size:24px; font-weight:800; color:#1F3864; margin-bottom:8px; }
-  .lo-step .title { font-size:13px; font-weight:600; margin-bottom:5px; color:#222; }
-  .lo-step .desc { font-size:12px; color:#777; line-height:1.7; }
-  .lo-login-section { max-width:420px; margin:0 auto; padding:60px 24px 90px; text-align:center; }
-  .lo-login-section h2 { font-size:22px; font-weight:700; margin-bottom:8px; color:#1F3864; }
-  .lo-login-section .sub { font-size:13px; color:#888; margin-bottom:28px; }
-  .lo-login-box { background:#fff; border:1px solid #E0E6F0; border-radius:16px; padding:30px 26px; box-shadow:0 4px 20px rgba(0,0,0,0.08); }
-  .lo-login-box input { width:100%; padding:14px 16px; border:1.5px solid #C5CAE9; border-radius:10px; background:#F8F9FF; color:#1F3864; font-size:18px; font-family:inherit; text-align:center; letter-spacing:6px; box-sizing:border-box; margin-bottom:10px; outline:none; transition:border .2s; }
-  .lo-login-box input::placeholder { color:#aaa; letter-spacing:1px; font-size:13px; }
-  .lo-login-box input:focus { border-color:#1F3864; background:#fff; }
-  .lo-login-btn { width:100%; padding:15px; background:#1F3864; color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .2s; }
-  .lo-login-btn:hover { background:#2d5a9e; }
-  .lo-err { font-size:12px; color:#E24B4A; margin-bottom:10px; display:none; min-height:18px; }
-  .lo-footer { text-align:center; padding:24px; font-size:11px; color:#aaa; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-size:13px;
+  background:linear-gradient(135deg,#1F3864 0%,#16305a 50%,#0D6E55 100%);
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.login-card{
+  background:#fff;
+  border-radius:20px;
+  padding:40px 36px 36px;
+  max-width:380px;
+  width:100%;
+  box-shadow:0 16px 48px rgba(0,0,0,0.25);
+  text-align:center;
+}
+.logo-wrap{margin-bottom:8px}
+.tagline{font-size:12px;color:#aaa;margin-bottom:28px}
+.login-title{font-size:15px;font-weight:600;color:#1F3864;margin-bottom:6px}
+.login-desc{font-size:12px;color:#888;margin-bottom:20px;line-height:1.6}
+.code-input{
+  width:100%;
+  padding:13px 16px;
+  border:1.5px solid #C5CAE9;
+  border-radius:10px;
+  font-size:16px;
+  font-family:inherit;
+  text-align:center;
+  letter-spacing:4px;
+  margin-bottom:10px;
+  outline:none;
+  transition:border-color .2s;
+  color:#1F3864;
+  font-weight:600;
+}
+.code-input:focus{border-color:#1F3864}
+.err-msg{
+  font-size:12px;
+  color:#E24B4A;
+  margin-bottom:10px;
+  display:none;
+  text-align:center;
+}
+.login-btn{
+  width:100%;
+  padding:13px;
+  background:#1F3864;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:inherit;
+  transition:all .2s;
+  letter-spacing:.5px;
+}
+.login-btn:hover{background:#16305a}
+.login-btn:active{transform:scale(.98)}
+.hint{margin-top:16px;font-size:11px;color:#bbb;line-height:1.7}
+.divider{height:1px;background:#F0F2F7;margin:24px 0}
+.copy{font-size:11px;color:#ccc}
 </style>
 </head>
 <body>
 
-<!-- 히어로 -->
-<div class="lo-hero">
-  <div class="lo-logo">
-    <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+<div class="login-card">
+
+  <!-- 로고 -->
+  <div class="logo-wrap">
+    <svg width="120" height="36" viewBox="0 0 140 36" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style="stop-color:#ffffff"/>
-          <stop offset="100%" style="stop-color:#a8c4e8"/>
+        <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#1F3864"/>
+          <stop offset="100%" style="stop-color:#3a5f9e"/>
         </linearGradient>
-        <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style="stop-color:#5de8c0"/>
           <stop offset="100%" style="stop-color:#1D9E75"/>
         </linearGradient>
       </defs>
-      <path d="M4 16 A8 8 0 0 1 12 8 A8 8 0 0 0 20 16" stroke="url(#g1)" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M20 16 A8 8 0 0 1 12 24 A8 8 0 0 0 4 16" stroke="url(#g2)" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <circle cx="4" cy="16" r="3.5" fill="rgba(255,255,255,0.9)"/>
-      <circle cx="20" cy="16" r="3.5" fill="#5de8c0"/>
+      <path d="M5 18 A8 8 0 0 1 13 10 A8 8 0 0 0 21 18" stroke="url(#lg1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M21 18 A8 8 0 0 1 13 26 A8 8 0 0 0 5 18" stroke="url(#lg2)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="5" cy="18" r="3.5" fill="#1F3864"/>
+      <circle cx="21" cy="18" r="3.5" fill="#1D9E75"/>
+      <text x="30" y="25" font-family="Apple SD Gothic Neo, Malgun Gothic, sans-serif" font-size="22" font-weight="800" fill="#1F3864" letter-spacing="-1">Day:음</text>
     </svg>
-    <span class="lo-logo-text">Day:음</span>
   </div>
-  <div class="badge">주야간보호센터 AI 문서 자동화</div>
-  <h1>하루의 기록이<br><span>문서를 만듭니다</span></h1>
-  <p class="slogan">급여제공기록지 한 장으로<br>욕구사정 · 결과평가 · 급여제공계획서까지<br>AI가 자동으로 완성해 드립니다</p>
+  <div class="tagline">하루의 기록이 문서를 만듭니다</div>
+
+  <div class="login-title">접속코드를 입력해주세요</div>
+  <div class="login-desc">센터별 접속코드를 입력하면<br>자동으로 연결됩니다</div>
+
+  <input
+    id="code-input"
+    class="code-input"
+    type="password"
+    placeholder="접속코드"
+    autocomplete="off"
+    onkeydown="if(event.key==='Enter') doLogin()"
+  >
+  <div class="err-msg" id="err-msg">❌ 접속코드가 올바르지 않습니다</div>
+  <button class="login-btn" onclick="doLogin()">입장하기</button>
+
+  <div class="hint">접속코드는 담당자에게 문의해주세요</div>
+
+  <div class="divider"></div>
+  <div class="copy">© 2026 Day:음 · 저작권 등록 완료</div>
 </div>
-
-<hr class="lo-divider">
-
-<!-- 만든 이유 -->
-<div class="lo-section">
-  <h2>📖 Day:음을 만들게 된 이유</h2>
-  <p class="lead">주야간보호센터에서 직접 일하며 느꼈던 불편함에서 시작했습니다.</p>
-  <div class="lo-story">
-    <p>주야간보호센터의 사회복지사는 매일 어르신들을 직접 돌보면서도, <strong>퇴근 후 혹은 주말에 문서 작성에 수 시간을 쏟아야 하는 현실</strong>이 있습니다. 욕구사정, 결과평가, 급여제공계획서… 한 분 한 분의 상태를 정성껏 기록해야 하지만, 반복되는 서식과 형식에 지쳐가는 것도 사실이었습니다.</p>
-    <p>어르신들과의 하루 속에서 상담과 사례회의는 이미 자연스럽게 이루어지고 있습니다. 하지만 <strong>이를 문서로 남기기엔 업무량도 많고, 작성 방법 또한 명확히 제시되지 않아</strong> 막막한 경우가 많습니다.</p>
-    <p><strong>이미 급여제공기록지에는 어르신의 하루가 모두 담겨 있습니다.</strong> 그 기록을 다시 정리해서 문서로 옮기는 작업이 자동화된다면 어떨까, 라는 질문에서 Day:음이 시작됐습니다.</p>
-    <p>AI가 초안을 만들고, 사람이 검토·완성하는 구조. <strong>돌봄의 본질에 더 집중할 수 있도록</strong> 돕고 싶었습니다.</p>
-    <div class="lo-hope">
-      <p>💬 Day:음이 단순한 도구가 아닌, 기록의 가치를 높여 <strong style="color:#1F3864">어르신 한 분 한 분에게 더 나은 케어가 이어지는 연결고리</strong>가 되었으면 합니다. 사용하시면서 불편한 점, 아쉬운 점을 언제든 말씀해 주세요.</p>
-    </div>
-  </div>
-</div>
-
-<hr class="lo-divider">
-
-<!-- 사용방법 -->
-<div class="lo-section">
-  <h2>🚀 이렇게 사용하세요</h2>
-  <p class="lead">4단계로 간단하게 문서를 완성할 수 있습니다.</p>
-  <div class="lo-steps">
-    <div class="lo-step">
-      <div class="num">01</div>
-      <div class="title">기록지 업로드</div>
-      <div class="desc">케어포에서 내보낸 급여제공기록지 PDF를 업로드하세요</div>
-    </div>
-    <div class="lo-step">
-      <div class="num">02</div>
-      <div class="title">문서 선택</div>
-      <div class="desc">생성할 문서를 선택하세요. 월간·정기·수시 문서 모두 지원합니다</div>
-    </div>
-    <div class="lo-step">
-      <div class="num">03</div>
-      <div class="title">AI 자동 생성</div>
-      <div class="desc">버튼 하나로 AI가 기록지를 분석해 문서 초안을 완성합니다</div>
-    </div>
-    <div class="lo-step">
-      <div class="num">04</div>
-      <div class="title">검토 후 완성</div>
-      <div class="desc">내용을 확인하고 Word 다운로드 또는 케어포에 붙여넣어 완성하세요</div>
-    </div>
-  </div>
-</div>
-
-<hr class="lo-divider">
-
-<!-- 평가지표 대응 -->
-<div class="lo-section">
-  <h2 style="color:#1F3864">📊 평가 준비, Day:음이 함께합니다</h2>
-  <p class="lead" style="color:#555">2026년 주야간보호 평가지표 중 핵심 서비스 제공 영역을 직접 커버합니다.</p>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
-    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:12px;padding:18px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-      <div style="font-size:32px;font-weight:900;color:#1F3864;line-height:1">12개</div>
-      <div style="font-size:11px;color:#888;margin-top:6px">직접 충족 지표</div>
-    </div>
-    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:12px;padding:18px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-      <div style="font-size:32px;font-weight:900;color:#1F3864;line-height:1">5단계</div>
-      <div style="font-size:11px;color:#888;margin-top:6px">입소→퇴소 전 과정</div>
-    </div>
-    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:12px;padding:18px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-      <div style="font-size:32px;font-weight:900;color:#1F3864;line-height:1">~80%</div>
-      <div style="font-size:11px;color:#888;margin-top:6px">핵심문서 자동화율</div>
-    </div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:8px">
-    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
-      <div style="font-size:11px;font-weight:700;color:#0D6E55;margin-bottom:8px">🔍 초기평가 · 급여계획 수립</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 20 ★</strong> <span style="color:#666">욕구사정 (구강상태·기피식품 2026 신설)</span></span><span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">자동 생성</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 21</strong> <span style="color:#666">위험도 평가 (낙상·욕창·인지 3종)</span></span><span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">자동 생성</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 22</strong> <span style="color:#666">급여제공계획서 수립·통보</span></span><span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">엑셀 자동 출력</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 27 ★</strong> <span style="color:#666">개인 맞춤형 기능회복훈련 계획 (2026 신설)</span></span><span style="background:#E1F5EE;color:#085041;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">계획서 내 자동 반영</span></div>
-      </div>
-    </div>
-    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
-      <div style="font-size:11px;font-weight:700;color:#6D28D9;margin-bottom:8px">🎯 일상 서비스 · 기록 관리</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 17</strong> <span style="color:#666">보호자 상담 (분기 1회·결과 급여 반영)</span></span><span style="background:#EDE9FE;color:#5B21B6;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">상담일지 자동 작성</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 24</strong> <span style="color:#666">신체기능 프로그램 (주 3회 이상)</span></span><span style="background:#EDE9FE;color:#5B21B6;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">프로그램일지 지원</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 25</strong> <span style="color:#666">인지기능 프로그램 (주 3회 이상)</span></span><span style="background:#EDE9FE;color:#5B21B6;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">프로그램일지 지원</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 26</strong> <span style="color:#666">사회적응 프로그램 (월 1회 이상)</span></span><span style="background:#EDE9FE;color:#5B21B6;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">프로그램일지 지원</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 33</strong> <span style="color:#666">기피식품 파악·식단 반영·만족도 조사</span></span><span style="background:#EDE9FE;color:#5B21B6;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">욕구사정 내 자동 반영</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 34 ★</strong> <span style="color:#666">급여제공기록지 충실 작성·보호자 제공</span></span><span style="background:#EDE9FE;color:#5B21B6;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">결과평가 자동 생성</span></div>
-      </div>
-    </div>
-    <div style="background:#fff;border:1px solid #E0E6F0;border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
-      <div style="font-size:11px;font-weight:700;color:#B45309;margin-bottom:8px">⭐ 반기 재사정 · 사례관리</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 29 ★</strong> <span style="color:#666">사례관리 (대상자 선정→회의→반영→평가 4단계)</span></span><span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">회의록 자동 작성</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 34②</strong> <span style="color:#666">급여제공결과평가 → 30일 이내 계획서 재작성</span></span><span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">결과평가+계획서 자동</span></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span><strong style="color:#1F3864">지표 30</strong> <span style="color:#666">퇴소 연계기록지 제공</span></span><span style="background:#FEF3C7;color:#92400E;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600">연계기록지 자동 작성</span></div>
-      </div>
-    </div>
-    <div style="font-size:11px;color:#aaa;text-align:center;padding:4px 0">★ 2026년 고배점 신설·변경 지표</div>
-  </div>
-</div>
-
-<hr class="lo-divider">
-
-<!-- 로그인 -->
-<div class="lo-login-section">
-  <h2>🔑 접속하기</h2>
-  <p class="sub">담당자에게 받은 접속코드를 입력해주세요</p>
-  <div class="lo-login-box">
-    <input id="lo-input" type="password" placeholder="접속코드 입력"
-      onkeydown="if(event.key==='Enter')doLogin()">
-    <div id="lo-err" class="lo-err">❌ 접속코드가 올바르지 않습니다</div>
-    <button class="lo-login-btn" onclick="doLogin()">입장하기</button>
-  </div>
-  <div id="lo-intro-link" style="display:none;margin-top:16px">
-    <a href="#" onclick="showIntro();return false;"
-      style="font-size:12px;color:#aaa;text-decoration:none;border-bottom:1px dashed #ccc">
-      Day:음이 처음이세요? 소개 보기 ↓
-    </a>
-  </div>
-</div>
-
-<div class="lo-footer">Day:음 (Day:음) · 하루의 기록이 문서를 만듭니다</div>
 
 <script>
+// ────── 센터 정의 (app.html / app-homecare.html과 동일하게 유지) ──────
 const CENTERS = {
-  sapgyo:  { name: '삽교주간보호센터',    key: '0101', expires: '2026-12-31' },
-  center2: { name: '덕산주간보호센터',    key: '0202', expires: '2026-12-31' },
-  center3: { name: '내포소망주간보호센터', key: '0303', expires: '2026-12-31' },
+  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '0101', expires: '2026-12-31', pilot: true, type: 'daycenter' },
+  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '0202', expires: '2026-12-31', pilot: true, type: 'daycenter' },
+  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31', pilot: true, type: 'daycenter' },
+  // 방문요양 테스트 센터 추가 시 아래에 입력
+  // homecare1: { name: '○○방문요양센터', short: '○○', color: '#1F3864', key: '1101', expires: '2026-12-31', pilot: true, type: 'homecare' },
 };
 
+// 이미 인증된 세션이면 바로 이동
 (function() {
-  // 이미 인증된 경우 바로 app.html로
+  const today = new Date().toISOString().slice(0,10);
   for (const [code, cfg] of Object.entries(CENTERS)) {
-    const saved = sessionStorage.getItem(`ium-auth-${code}`);
-    if (saved === cfg.key) {
-      location.href = `app.html?center=${code}`;
+    if (sessionStorage.getItem('ium-auth-' + code) === cfg.key && today <= cfg.expires) {
+      redirectByType(code, cfg.type);
       return;
     }
-  }
-  // 첫 방문이 아니면 랜딩 섹션 숨기고 로그인만 표시
-  if (localStorage.getItem('daeum-visited')) {
-    document.querySelectorAll('.lo-hero, .lo-divider, .lo-section').forEach(el => {
-      el.style.display = 'none';
-    });
-    document.body.style.minHeight = '100vh';
-    document.body.style.display = 'flex';
-    document.body.style.flexDirection = 'column';
-    document.body.style.justifyContent = 'center';
-    const link = document.getElementById('lo-intro-link');
-    if (link) link.style.display = 'block';
   }
 })();
 
-function showIntro() {
-  document.querySelectorAll('.lo-hero, .lo-divider, .lo-section').forEach(el => {
-    el.style.display = '';
-  });
-  document.body.style.display = '';
-  document.body.style.justifyContent = '';
-  document.getElementById('lo-intro-link').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
 function doLogin() {
-  const input = document.getElementById('lo-input')?.value?.trim();
-  const errEl = document.getElementById('lo-err');
+  const input = document.getElementById('code-input').value.trim();
+  const errEl = document.getElementById('err-msg');
+  errEl.style.display = 'none';
+
   if (!input) return;
 
-  // 관리자 코드 → sessionStorage 저장 후 admin.html 이동 (자동 로그인)
-  if (input === '0508') {
-    sessionStorage.setItem('daeum-admin-auth', '0508');
-    location.href = 'admin.html';
+  const matched = Object.entries(CENTERS).find(([code, cfg]) => input === cfg.key);
+  if (!matched) {
+    errEl.style.display = 'block';
+    document.getElementById('code-input').value = '';
+    document.getElementById('code-input').focus();
     return;
   }
 
-  const matched = Object.entries(CENTERS).find(([code, cfg]) => input === cfg.key);
-  if (matched) {
-    const [code, cfg] = matched;
-    const today = new Date().toISOString().slice(0,10);
-    if (today > cfg.expires) {
-      errEl.textContent = `테스트 기간이 종료됐어요. (${cfg.expires})`;
-      errEl.style.display = 'block';
-      return;
-    }
-    sessionStorage.setItem(`ium-auth-${code}`, input);
-    sessionStorage.setItem('ium-center', code);
-    localStorage.setItem('daeum-visited', '1');
-    location.href = `app.html?center=${code}`;
-  } else {
+  const [code, cfg] = matched;
+  const today = new Date().toISOString().slice(0,10);
+
+  if (today > cfg.expires) {
+    errEl.textContent = `테스트 기간이 종료되었습니다. (${cfg.expires}) 담당자에게 문의해주세요.`;
     errEl.style.display = 'block';
-    document.getElementById('lo-input').value = '';
-    document.getElementById('lo-input').focus();
+    return;
+  }
+
+  // 인증 저장
+  sessionStorage.setItem(`ium-auth-${code}`, input);
+  sessionStorage.setItem('ium-center', code);
+
+  // 타입에 따라 분기
+  redirectByType(code, cfg.type);
+}
+
+function redirectByType(code, type) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const centerParam = `?center=${code}`;
+
+  if (type === 'homecare') {
+    location.replace('app-homecare.html' + centerParam);
+  } else {
+    // daycenter (기본)
+    location.replace('app.html' + centerParam);
   }
 }
+
+// 포커스
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('code-input')?.focus();
+});
 </script>
 </body>
 </html>
