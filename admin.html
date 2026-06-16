@@ -335,8 +335,15 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             <input class="field-input" id="new-expires" type="date" style="max-width:160px" value="2026-12-31">
           </div>
           <div class="field-row">
+            <span class="field-label">센터 종류</span>
+            <select class="field-select" id="new-type" style="max-width:220px">
+              <option value="daycenter">🏠 주야간보호 → app.html</option>
+              <option value="homecare">🚗 방문요양 → app-homecare.html</option>
+            </select>
+          </div>
+          <div class="field-row">
             <span class="field-label">시범 운영</span>
-            <select class="field-select" id="new-pilot" style="max-width:120px">
+            <select class="field-select" id="new-pilot" style="max-width:160px">
               <option value="true">예 (×3 할인)</option>
               <option value="false">아니오 (×5 정가)</option>
             </select>
@@ -346,7 +353,19 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             <input class="field-input" id="new-color" placeholder="#1F3864" style="max-width:120px">
           </div>
           <button class="save-btn" onclick="addCenter()" style="margin-top:4px">➕ 센터 추가</button>
-          <span class="save-msg" id="add-msg">✅ 추가됐습니다! app.html의 CENTERS 상수를 수동으로 업데이트해주세요.</span>
+          <span class="save-msg" id="add-msg"></span>
+
+          <!-- 추가 후 코드 미리보기 -->
+          <div id="new-code-preview" style="display:none;background:#0F1923;border:1px solid #2A3A50;border-radius:8px;padding:10px 12px;margin-top:10px">
+            <div style="font-size:9px;font-weight:700;color:#405060;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — 3개 파일에 동일 반영</div>
+            <pre id="new-code-text" style="font-size:11px;color:#4ECFA0;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
+            <button onclick="copyPreview('new-code-text')"
+              style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #2A3A50;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#607080;transition:all .15s"
+              onmouseover="this.style.color='#4ECFA0';this.style.borderColor='#4ECFA0'"
+              onmouseout="this.style.color='#607080';this.style.borderColor='#2A3A50'">
+              📋 복사
+            </button>
+          </div>
         </div>
       </div>
 
@@ -376,9 +395,9 @@ const ADMIN_CODE   = '0508';
 
 // 현재 app.html의 CENTERS 복사 (관리 기준값)
 const CENTERS_DEF = {
-  sapgyo:  { name:'삽교주간보호센터',    short:'삽교',    color:'#1F3864', key:'0101', expires:'2026-12-31', pilot:true },
-  center2: { name:'덕산주간보호센터',    short:'덕산',    color:'#0D6E55', key:'0202', expires:'2026-12-31', pilot:true },
-  center3: { name:'내포소망주간보호센터', short:'내포소망', color:'#5C3489', key:'0303', expires:'2026-12-31', pilot:true },
+  sapgyo:  { name:'삽교주간보호센터',    short:'삽교',    color:'#1F3864', key:'0101', expires:'2026-12-31', pilot:true, type:'daycenter' },
+  center2: { name:'덕산주간보호센터',    short:'덕산',    color:'#0D6E55', key:'0202', expires:'2026-12-31', pilot:true, type:'daycenter' },
+  center3: { name:'내포소망주간보호센터', short:'내포소망', color:'#5C3489', key:'0303', expires:'2026-12-31', pilot:true, type:'daycenter' },
 };
 
 const CTR_COLORS = { '삽교':'#1F3864','덕산':'#0D6E55','내포소망':'#5C3489' };
@@ -419,7 +438,7 @@ function doLogin() {
 
 function doLogout() {
   sessionStorage.removeItem('daeum-admin-auth');
-  location.href = 'index.html';
+  location.reload();
 }
 
 document.getElementById('login-input').addEventListener('keydown', e => {
@@ -832,11 +851,30 @@ function renderCenterManage() {
         <input class="field-input" id="exp-${id}" type="date" value="${c.expires}" style="max-width:160px">
       </div>
       <div class="field-row">
+        <span class="field-label">센터 종류</span>
+        <select class="field-select" id="type-${id}" style="max-width:200px" onchange="updateCodePreview('${id}')">
+          <option value="daycenter" ${(c.type||'daycenter')==='daycenter' ? 'selected' : ''}>🏠 주야간보호 → app.html</option>
+          <option value="homecare"  ${c.type==='homecare' ? 'selected' : ''}>🚗 방문요양 → app-homecare.html</option>
+        </select>
+      </div>
+      <div class="field-row">
         <span class="field-label">포인트 배수</span>
-        <select class="field-select" id="pilot-${id}" style="max-width:160px">
+        <select class="field-select" id="pilot-${id}" style="max-width:160px" onchange="updateCodePreview('${id}')">
           <option value="true" ${c.pilot ? 'selected' : ''}>시범 운영 (×3 할인)</option>
           <option value="false" ${!c.pilot ? 'selected' : ''}>정식 (×5 기본가)</option>
         </select>
+      </div>
+
+      <!-- 코드 미리보기 -->
+      <div style="background:#0F1923;border:1px solid #2A3A50;border-radius:8px;padding:10px 12px;margin:8px 0 4px">
+        <div style="font-size:9px;font-weight:700;color:#405060;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — 3개 파일에 동일 반영</div>
+        <pre id="preview-${id}" style="font-size:11px;color:#4ECFA0;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
+        <button onclick="copyPreview('preview-${id}')"
+          style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #2A3A50;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#607080;transition:all .15s"
+          onmouseover="this.style.color='#4ECFA0';this.style.borderColor='#4ECFA0'"
+          onmouseout="this.style.color='#607080';this.style.borderColor='#2A3A50'">
+          📋 복사
+        </button>
       </div>
 
       <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
@@ -845,23 +883,27 @@ function renderCenterManage() {
       </div>
     </div>
   `).join('');
+
+  // 렌더링 후 미리보기 초기화
+  Object.keys(_centers).forEach(id => updateCodePreview(id));
 }
 
 function saveCenter(id) {
   const key     = document.getElementById(`key-${id}`)?.value?.trim();
   const expires = document.getElementById(`exp-${id}`)?.value;
   const pilot   = document.getElementById(`pilot-${id}`)?.value === 'true';
+  const type    = document.getElementById(`type-${id}`)?.value || 'daycenter';
 
   if (!key || !expires) return;
 
-  _centers[id] = { ..._centers[id], key, expires, pilot };
+  _centers[id] = { ..._centers[id], key, expires, pilot, type };
   localStorage.setItem('daeum-admin-centers', JSON.stringify(_centers));
 
   const msg = document.getElementById(`msg-${id}`);
   if (msg) {
-    msg.textContent = '✅ 저장됨 (app.html CENTERS도 함께 수정 필요)';
+    msg.textContent = '✅ 저장됨 — 아래 코드를 3개 파일에 반영해주세요';
     msg.style.display = 'inline';
-    setTimeout(() => { msg.style.display = 'none'; }, 4000);
+    setTimeout(() => { msg.style.display = 'none'; }, 5000);
   }
   renderCenterManage();
 }
@@ -872,6 +914,7 @@ function addCenter() {
   const short   = document.getElementById('new-short')?.value?.trim();
   const key     = document.getElementById('new-key')?.value?.trim();
   const expires = document.getElementById('new-expires')?.value;
+  const type    = document.getElementById('new-type')?.value || 'daycenter';
   const pilot   = document.getElementById('new-pilot')?.value === 'true';
   const color   = document.getElementById('new-color')?.value?.trim() || '#1F3864';
 
@@ -884,11 +927,24 @@ function addCenter() {
     return;
   }
 
-  _centers[id] = { name, short: short || name, color, key, expires: expires || '2026-12-31', pilot };
+  _centers[id] = { name, short: short || name, color, key, expires: expires || '2026-12-31', pilot, type };
   localStorage.setItem('daeum-admin-centers', JSON.stringify(_centers));
 
+  // 코드 미리보기 표시
+  const snippet = `${id}: { name: '${name}', short: '${short||name}', color: '${color}', key: '${key}', expires: '${expires||'2026-12-31'}', pilot: ${pilot}, type: '${type}' },`;
+  const previewEl = document.getElementById('new-code-preview');
+  const textEl    = document.getElementById('new-code-text');
+  if (previewEl && textEl) {
+    textEl.textContent = snippet;
+    previewEl.style.display = 'block';
+  }
+
   const msg = document.getElementById('add-msg');
-  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 6000); }
+  if (msg) {
+    msg.textContent = '✅ 추가됨 — 아래 코드를 app.html · app-homecare.html · index.html 3개 파일 CENTERS에 반영해주세요';
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 8000);
+  }
 
   // 입력 초기화
   ['new-code','new-name','new-short','new-key','new-color'].forEach(i => {
@@ -901,6 +957,27 @@ function addCenter() {
 
 // ── 유틸 ──
 function set(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+// ── 코드 미리보기 ──
+function updateCodePreview(id) {
+  const c       = _centers[id];
+  if (!c) return;
+  const key     = document.getElementById(`key-${id}`)?.value?.trim()   || c.key;
+  const expires = document.getElementById(`exp-${id}`)?.value            || c.expires;
+  const type    = document.getElementById(`type-${id}`)?.value           || c.type || 'daycenter';
+  const pilot   = document.getElementById(`pilot-${id}`)?.value === 'true';
+  const snippet = `${id}: { name: '${c.name}', short: '${c.short}', color: '${c.color}', key: '${key}', expires: '${expires}', pilot: ${pilot}, type: '${type}' },`;
+  const el = document.getElementById(`preview-${id}`);
+  if (el) el.textContent = snippet;
+}
+
+function copyPreview(preId) {
+  const el = document.getElementById(preId);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent)
+    .then(() => alert('복사됐어요!\napp.html · app-homecare.html · index.html\n3개 파일의 CENTERS 객체에 동일하게 붙여넣어 주세요.'))
+    .catch(() => alert('복사 실패 — 직접 선택 후 복사해주세요'));
+}
 </script>
 </body>
 </html>
