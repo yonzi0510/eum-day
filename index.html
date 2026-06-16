@@ -124,19 +124,7 @@ body{
 
 <script src="centers.js"></script>
 <script>
-// DB에서 CENTERS 로드 후 세션 체크
-document.addEventListener('DOMContentLoaded', async () => {
-  // 로딩 표시
-  const btn = document.querySelector('.login-btn');
-  if (btn) btn.textContent = '연결 중...';
-
-  await loadCenters();
-
-  if (btn) btn.textContent = '입장하기';
-
-  // 포커스
-  document.getElementById('code-input')?.focus();
-
+document.addEventListener('DOMContentLoaded', () => {
   // 이미 인증된 세션이면 바로 이동
   const today = new Date().toISOString().slice(0,10);
   for (const [code, cfg] of Object.entries(CENTERS)) {
@@ -145,6 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
   }
+  document.getElementById('code-input')?.focus();
 });
 
 function doLogin() {
