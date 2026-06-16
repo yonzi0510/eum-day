@@ -8836,7 +8836,7 @@ async function loadDocsFromSupabase(centerCode) {
 const POINT_MULTIPLIER_BASE  = 5;
 const POINT_MULTIPLIER_PILOT = 3;
 
-// CENTERS는 centers.js의 loadCenters()로 로드됨
+// CENTERS는 centers.js에 하드코딩
 
 const urlParams = new URLSearchParams(window.location.search);
 let centerCode = urlParams.get('center') || sessionStorage.getItem('ium-center') || '';
@@ -8856,50 +8856,18 @@ function findValidAuth() {
   return null;
 }
 
-// 세션 기반 빠른 체크 (DB 없이)
-function findAuthBySession() {
-  const paramCode = urlParams.get('center');
-  if (paramCode && sessionStorage.getItem('ium-auth-' + paramCode)) return paramCode;
-  for (const code of Object.keys(sessionStorage)) {
-    if (code.startsWith('ium-auth-') && sessionStorage.getItem(code)) {
-      return code.replace('ium-auth-', '');
-    }
-  }
-  return null;
-}
-
-// ① 세션 기반으로 즉시 체크 → 인증 없으면 바로 index로
-const quickCode = findAuthBySession();
-if (!quickCode) {
-  location.replace('index.html');
-} else {
-  // ② 세션 있으면 즉시 페이지 표시 (DB 기다리지 않음)
-  centerCode = quickCode;
-
+const validCode = findValidAuth();
+if (validCode) {
+  centerCode = validCode;
   document.addEventListener('DOMContentLoaded', () => {
-    // UI 즉시 적용 (DB 로드 전)
     applyCenterUI();
     if (sessionStorage.getItem('ium-admin') === '0508') {
       const adminBtn = document.getElementById('admin-tab-btn');
       if (adminBtn) adminBtn.style.display = 'block';
     }
-
-    // ③ DB 로드는 백그라운드에서 조용히 (3초 타임아웃, 실패해도 페이지 영향 없음)
-    const centersTimeout = new Promise(resolve => setTimeout(resolve, 3000));
-    Promise.race([loadCenters(), centersTimeout]).then(() => {
-      // DB 로드 성공하면 만료일 등 정식 검증
-      const validCode = findValidAuth();
-      if (!validCode) {
-        // DB 로드됐는데 유효하지 않으면 index로
-        location.replace('index.html');
-      } else if (validCode !== centerCode) {
-        centerCode = validCode;
-        applyCenterUI();
-      }
-    }).catch(() => {
-      // DB 로드 실패해도 무시 — 세션 기반으로 계속 사용
-    });
   });
+} else {
+  location.replace('index.html');
 }
 
 function showLockScreen(msg) {
@@ -10380,7 +10348,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.14
+  Day:음 · v2026.06.16.12
 </div>
 </body>
 </html>
