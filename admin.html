@@ -845,20 +845,31 @@ function renderCenterManage() {
   el.innerHTML = Object.entries(CENTERS).map(([id, c]) => `
     <div class="center-card" id="ccard-${id}">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div style="width:12px;height:12px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:${c.color};flex-shrink:0" id="colorDot-${id}"></div>
         <div class="center-name">${c.name}</div>
         <span class="badge ${c.pilot ? 'badge-amber' : 'badge-gray'}" style="margin-left:auto">${c.pilot ? '🎁 시범 ×3' : '정식 ×5'}</span>
       </div>
-      <div class="center-meta">센터 ID: <strong style="color:#A8B4C0">${id}</strong> · 약칭: <strong style="color:#A8B4C0">${c.short}</strong></div>
+      <div class="center-meta">센터 ID: <strong style="color:#A8B4C0">${id}</strong></div>
 
       <div class="field-row">
+        <span class="field-label">센터명</span>
+        <input class="field-input" id="name-${id}" value="${c.name}" oninput="updateCodePreview('${id}')">
+      </div>
+      <div class="field-row">
+        <span class="field-label">약칭</span>
+        <input class="field-input" id="short-${id}" value="${c.short}" style="max-width:120px" oninput="updateCodePreview('${id}')">
+      </div>
+      <div class="field-row">
         <span class="field-label">접속 코드</span>
-        <input class="field-input" id="key-${id}" value="${c.key}" style="max-width:140px;font-family:monospace;letter-spacing:2px">
-        <span style="font-size:11px;color:#405060">센터 로그인 시 입력하는 코드</span>
+        <input class="field-input" id="key-${id}" value="${c.key}" style="max-width:140px;font-family:monospace;letter-spacing:2px" oninput="updateCodePreview('${id}')">
       </div>
       <div class="field-row">
         <span class="field-label">만료일</span>
-        <input class="field-input" id="exp-${id}" type="date" value="${c.expires}" style="max-width:160px">
+        <input class="field-input" id="exp-${id}" type="date" value="${c.expires}" style="max-width:160px" oninput="updateCodePreview('${id}')">
+      </div>
+      <div class="field-row">
+        <span class="field-label">색상</span>
+        <input class="field-input" id="color-${id}" value="${c.color}" placeholder="#1F3864" style="max-width:120px" oninput="updateCodePreview('${id}');document.getElementById('colorDot-${id}').style.background=this.value">
       </div>
       <div class="field-row">
         <span class="field-label">센터 종류</span>
@@ -877,10 +888,10 @@ function renderCenterManage() {
 
       <!-- 코드 미리보기 -->
       <div style="background:#0F1923;border:1px solid #2A3A50;border-radius:8px;padding:10px 12px;margin:8px 0 4px">
-        <div style="font-size:9px;font-weight:700;color:#405060;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — 3개 파일에 동일 반영</div>
+        <div style="font-size:9px;font-weight:700;color:#405060;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — centers.js + admin.html 동일 반영</div>
         <pre id="preview-${id}" style="font-size:11px;color:#4ECFA0;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
         <button onclick="copyPreview('preview-${id}')"
-          style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #2A3A50;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#607080;transition:all .15s"
+          style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #2A3A50;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#607080"
           onmouseover="this.style.color='#4ECFA0';this.style.borderColor='#4ECFA0'"
           onmouseout="this.style.color='#607080';this.style.borderColor='#2A3A50'">
           📋 복사
@@ -889,6 +900,12 @@ function renderCenterManage() {
 
       <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
         <button class="save-btn" onclick="saveCenter('${id}')">💾 저장</button>
+        <button onclick="deleteCenter('${id}')"
+          style="padding:6px 14px;border-radius:7px;border:1px solid #3A1420;background:#3A1420;color:#E24B4A;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s"
+          onmouseover="this.style.background='#E24B4A';this.style.color='#fff'"
+          onmouseout="this.style.background='#3A1420';this.style.color='#E24B4A'">
+          🗑 삭제
+        </button>
         <span class="save-msg" id="msg-${id}"></span>
       </div>
     </div>
@@ -899,25 +916,30 @@ function renderCenterManage() {
 }
 
 function saveCenter(id) {
+  const name    = document.getElementById(`name-${id}`)?.value?.trim();
+  const short   = document.getElementById(`short-${id}`)?.value?.trim();
   const key     = document.getElementById(`key-${id}`)?.value?.trim();
   const expires = document.getElementById(`exp-${id}`)?.value;
+  const color   = document.getElementById(`color-${id}`)?.value?.trim() || CENTERS[id]?.color;
   const pilot   = document.getElementById(`pilot-${id}`)?.value === 'true';
   const type    = document.getElementById(`type-${id}`)?.value || 'daycenter';
   const msg     = document.getElementById(`msg-${id}`);
 
   if (!key || !expires) return;
 
-  // 메모리에만 반영
-  CENTERS[id] = { ...CENTERS[id], key, expires, pilot, type };
-
-  // 코드 미리보기 업데이트
+  CENTERS[id] = { ...CENTERS[id], name: name||CENTERS[id].name, short: short||CENTERS[id].short, color, key, expires, pilot, type };
   updateCodePreview(id);
 
   if (msg) {
-    msg.textContent = '✅ 수정됨 — centers.js 복사 후 GitHub 업로드';
+    msg.textContent = '✅ 수정됨 — 📋 복사 후 centers.js + admin.html에 반영';
     msg.style.display = 'inline';
     setTimeout(() => { msg.style.display = 'none'; }, 5000);
   }
+}
+
+function deleteCenter(id) {
+  if (!confirm(`"${CENTERS[id]?.name}" 센터를 삭제할까요?\ncenters.js + admin.html에서도 해당 줄을 제거해야 합니다.`)) return;
+  delete CENTERS[id];
   renderCenterManage();
 }
 
@@ -990,11 +1012,14 @@ ${lines}
 function updateCodePreview(id) {
   const c       = CENTERS[id];
   if (!c) return;
-  const key     = document.getElementById(`key-${id}`)?.value?.trim()   || c.key;
-  const expires = document.getElementById(`exp-${id}`)?.value            || c.expires;
-  const type    = document.getElementById(`type-${id}`)?.value           || c.type || 'daycenter';
+  const name    = document.getElementById(`name-${id}`)?.value?.trim()    || c.name;
+  const short   = document.getElementById(`short-${id}`)?.value?.trim()   || c.short;
+  const key     = document.getElementById(`key-${id}`)?.value?.trim()     || c.key;
+  const expires = document.getElementById(`exp-${id}`)?.value              || c.expires;
+  const color   = document.getElementById(`color-${id}`)?.value?.trim()   || c.color;
+  const type    = document.getElementById(`type-${id}`)?.value             || c.type || 'daycenter';
   const pilot   = document.getElementById(`pilot-${id}`)?.value === 'true';
-  const snippet = `${id}: { name: '${c.name}', short: '${c.short}', color: '${c.color}', key: '${key}', expires: '${expires}', pilot: ${pilot}, type: '${type}' },`;
+  const snippet = `  ${id}: { name: '${name}', short: '${short}', color: '${color}', key: '${key}', expires: '${expires}', pilot: ${pilot}, type: '${type}' },`;
   const el = document.getElementById(`preview-${id}`);
   if (el) el.textContent = snippet;
 }
