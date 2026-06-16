@@ -133,6 +133,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
 .rbox-head.h3{background:#5C3489}
 .rbox-head.h4{background:#C65A0A}
 </style>
+<script src="centers.js"></script>
 </head>
 <body>
 
@@ -493,16 +494,8 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
 
 
 <script>
-// ────── CENTERS 정의 (app.html과 동일하게 유지) ──────
-const CENTERS = {
-  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '0101', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '0202', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  // 방문요양 테스트 센터 (추후 추가)
-  // homecare1: { name: '○○방문요양센터', short: '○○', color: '#1F3864', key: '1101', expires: '2026-12-31', pilot: true, type: 'homecare' },
-};
+// CENTERS는 centers.js의 loadCenters()로 로드됨
 
-// ────── 인증 체크 ──────
 const urlParams = new URLSearchParams(window.location.search);
 let centerCode = urlParams.get('center') || sessionStorage.getItem('ium-center') || '';
 
@@ -520,13 +513,16 @@ function findValidAuth() {
   return null;
 }
 
-const validCode = findValidAuth();
-if (validCode) {
-  centerCode = validCode;
-  document.addEventListener('DOMContentLoaded', () => applyCenterUI());
-} else {
-  location.replace('index.html');
-}
+// DB에서 CENTERS 로드 후 인증 체크
+loadCenters().then(() => {
+  const validCode = findValidAuth();
+  if (validCode) {
+    centerCode = validCode;
+    applyCenterUI();
+  } else {
+    location.replace('index.html');
+  }
+});
 
 function changeCenter() {
   Object.keys(CENTERS).forEach(code => sessionStorage.removeItem(`ium-auth-${code}`));
