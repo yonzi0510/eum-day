@@ -440,17 +440,19 @@ function doLogout() {
   location.href = 'index.html';
 }
 
-document.getElementById('login-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
 
-// 이미 인증된 세션이면 바로 입장
-if (sessionStorage.getItem('daeum-admin-auth') === ADMIN_CODE) {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  updateClock();
-  document.addEventListener('DOMContentLoaded', initDashboard);
-}
+  // 이미 인증된 세션이면 바로 입장
+  if (sessionStorage.getItem('daeum-admin-auth') === ADMIN_CODE) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    updateClock();
+    initDashboard();
+  }
+});
 
 // ═══════════════════════════════════════════
 //  섹션 전환
