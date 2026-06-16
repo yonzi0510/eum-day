@@ -382,6 +382,15 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .fb-cat-btn{padding:6px 13px;border-radius:20px;border:1.5px solid #E0E0E0;font-size:12px;cursor:pointer;background:#fff;font-family:inherit;color:#555;transition:all .2s}
 .fb-cat-btn:hover{border-color:#1F3864;color:#1F3864}
 .fb-cat-btn.on{background:#1F3864;color:#fff;border-color:#1F3864}
+/* ══════════ 관리자 탭 ══════════ */
+.adm-period-btn{padding:5px 12px;border-radius:20px;border:1.5px solid #E0E0E0;font-size:11px;cursor:pointer;background:#fff;font-family:inherit;color:#555;transition:all .2s;font-weight:500}
+.adm-period-btn:hover{border-color:#1F3864;color:#1F3864}
+.adm-period-btn.active{background:#1F3864;color:#fff;border-color:#1F3864}
+.adm-ctr-row{display:flex;align-items:center;gap:0;padding:10px 14px;border-bottom:0.5px solid #F0F0F0;font-size:12px}
+.adm-ctr-row:last-child{border-bottom:none}
+.adm-bar-wrap{flex:1;height:8px;background:#E8EAF0;border-radius:4px;overflow:hidden;margin:0 12px}
+.adm-bar{height:100%;border-radius:4px;transition:width .4s ease}
+
 /* ══════════ 탭: 조사 ══════════ */
 .survey-sub-tabs{display:flex;gap:6px;margin-bottom:16px;background:#fff;border:1px solid #E0E6F0;border-radius:10px;padding:8px}
 .survey-sub-btn{flex:1;padding:9px 8px;border-radius:7px;border:none;background:none;font-size:12px;font-weight:500;color:#888;cursor:pointer;font-family:inherit;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:4px}
@@ -549,6 +558,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <button class="tab-btn" onclick="switchTab('tab-overview',this)">👤 어르신 현황</button>
   <button class="tab-btn" onclick="switchTab('tab-eval',this)">📋 평가준비</button>
   <button class="tab-btn" onclick="switchTab('tab-feedback',this)">💬 피드백</button>
+  <button class="tab-btn" onclick="switchTab('tab-pricing',this)">💳 요금제</button>
+  <button class="tab-btn" onclick="switchTab('tab-admin',this)" id="admin-tab-btn" style="display:none">🔐 관리자</button>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -561,6 +572,10 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <span style="font-size:11px;color:#888;white-space:nowrap">수급자 선택</span>
     <div id="resident-list" style="display:flex;gap:6px;flex:1;flex-wrap:wrap"></div>
     <button class="sample-btn" id="demo-toggle-btn" onclick="toggleDemoResident()" style="white-space:nowrap">👀 샘플 보기</button>
+    <button id="delete-resident-btn" onclick="deleteCurrentResident()"
+      style="display:none;padding:5px 11px;border-radius:6px;border:1.5px solid #E24B4A;background:#fff;color:#E24B4A;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s"
+      onmouseover="this.style.background='#E24B4A';this.style.color='#fff'"
+      onmouseout="this.style.background='#fff';this.style.color='#E24B4A'">🗑 어르신 삭제</button>
   </div>
 
   <div id="no-data-msg" class="no-data">
@@ -3531,6 +3546,440 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     탭: 요금제 안내 / 요금결제
+══════════════════════════════════════ -->
+<div class="tab-content" id="tab-pricing">
+<div class="main">
+
+  <!-- 히어로 -->
+  <div style="background:linear-gradient(135deg,#1F3864 0%,#0D6E55 100%);border-radius:16px;padding:26px 24px 22px;margin-bottom:18px;color:#fff;position:relative;overflow:hidden">
+    <div style="position:absolute;top:-30px;right:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06)"></div>
+    <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px">💳 Day:음 요금제</div>
+    <div style="font-size:12px;opacity:.8;line-height:1.7">충전한 포인트로 문서를 생성하세요.<br>충전 금액이 높을수록 포인트를 더 적립해 드려요.</div>
+    <!-- 현재 포인트 -->
+    <div style="margin-top:16px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:24px">🪙</span>
+      <div>
+        <div style="font-size:11px;opacity:.7;margin-bottom:2px">내 보유 포인트</div>
+        <div style="font-size:22px;font-weight:800" id="pricing-my-points">0 P</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:10px;opacity:.65;margin-bottom:2px">이번 달 사용</div>
+        <div style="font-size:14px;font-weight:600" id="pricing-used-this-month">0 P</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 포인트 안내 -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px">🎯 포인트 사용 안내</div>
+    <div style="background:#EEF2FF;border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-size:12px;color:#1F3864;line-height:1.9">
+        <strong>1 포인트 = 1원</strong> 상당의 AI 문서 생성 크레딧입니다.<br>
+        문서 종류에 따라 소모 포인트가 다릅니다.
+      </div>
+    </div>
+    <!-- 시범 운영 배수 배지 -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="background:#FFF8E1;border:1px solid #FFB300;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:#5D4037">🎁 시범 운영 할인 적용 중 — 포인트 소모 ×3 (정식 ×5)</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div style="background:#F8F9FB;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px">
+        <div style="font-size:10px;color:#888;margin-bottom:3px">📄 월간 문서 (상담일지 등)</div>
+        <div style="font-size:13px;font-weight:700;color:#1F3864">약 <span style="color:#E24B4A">450P</span> <span style="font-size:10px;color:#bbb;text-decoration:line-through">750P</span></div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">문서 선택 수에 따라 변동</div>
+      </div>
+      <div style="background:#F8F9FB;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px">
+        <div style="font-size:10px;color:#888;margin-bottom:3px">📋 정기 문서 (욕구사정 등)</div>
+        <div style="font-size:13px;font-weight:700;color:#1F3864">약 <span style="color:#E24B4A">1,000P</span> <span style="font-size:10px;color:#bbb;text-decoration:line-through">1,650P</span></div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">4단계 순차 생성 기준</div>
+      </div>
+      <div style="background:#F8F9FB;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px">
+        <div style="font-size:10px;color:#888;margin-bottom:3px">🔔 수시 문서 (상담일지·연계)</div>
+        <div style="font-size:13px;font-weight:700;color:#1F3864">약 <span style="color:#E24B4A">200P</span> <span style="font-size:10px;color:#bbb;text-decoration:line-through">375P</span></div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">건당 단일 생성</div>
+      </div>
+      <div style="background:#F8F9FB;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px">
+        <div style="font-size:10px;color:#888;margin-bottom:3px">📊 조사 문서 (설문 결과 등)</div>
+        <div style="font-size:13px;font-weight:700;color:#1F3864">약 <span style="color:#E24B4A">300P</span> <span style="font-size:10px;color:#bbb;text-decoration:line-through">500P</span></div>
+        <div style="font-size:10px;color:#aaa;margin-top:2px">AI 생성 문서 기준</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 요금제 플랜 선택 -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:4px">💰 충전 플랜 선택</div>
+
+    <!-- 시범 운영 할인 배너 -->
+    <div style="background:#FFF8E1;border:1.5px solid #FFB300;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:9px">
+      <span style="font-size:18px;flex-shrink:0">🎁</span>
+      <div style="font-size:12px;color:#5D4037;line-height:1.7">
+        <strong>시범 운영 특별 할인가 적용 중</strong><br>
+        AI API 실사용 비용 기준으로 책정한 최소 요금입니다. 정식 출시 이후 요금이 인상될 수 있으며, 사전 공지 후 전환됩니다.
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:#888;margin-bottom:14px">충전 금액이 높을수록 보너스 포인트가 더 많이 적립됩니다.</div>
+
+    <div style="display:flex;flex-direction:column;gap:10px" id="pricing-plan-list">
+
+      <!-- 플랜 1: 소규모 체험 -->
+      <div class="pricing-plan-card" data-plan="1" data-price="5000" data-points="5000" data-bonus="0" onclick="selectPlan(this)"
+        style="border:2px solid #E0E6F0;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;background:#fff;position:relative">
+        <div style="position:absolute;top:-1px;left:12px;background:#888;color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:0 0 7px 7px">체험</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:22px">💸</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e">5,000원</div>
+              <div style="font-size:10px;text-decoration:line-through;color:#bbb">정가 15,000원</div>
+            </div>
+            <div style="font-size:12px;color:#888;margin-top:2px">소규모 체험 · 정기문서 위주</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:800;color:#1F3864">5,000 P</div>
+            <div style="font-size:10px;color:#aaa">≈ 정기문서 약 5건</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 플랜 2 -->
+      <div class="pricing-plan-card" data-plan="2" data-price="10000" data-points="11000" data-bonus="1000" onclick="selectPlan(this)"
+        style="border:2px solid #E0E6F0;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;background:#fff;position:relative">
+        <div style="position:absolute;top:-1px;right:12px;background:#1D9E75;color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:0 0 7px 7px">+보너스 1,000P</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:22px">💰</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e">10,000원</div>
+              <div style="font-size:10px;text-decoration:line-through;color:#bbb">정가 30,000원</div>
+            </div>
+            <div style="font-size:12px;color:#888;margin-top:2px">기본 충전 · 10% 보너스</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:800;color:#1F3864">11,000 P</div>
+            <div style="font-size:10px;color:#aaa">≈ 정기문서 약 11건</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 플랜 3 (추천) -->
+      <div class="pricing-plan-card" data-plan="3" data-price="20000" data-points="24000" data-bonus="4000" onclick="selectPlan(this)"
+        style="border:2px solid #1F3864;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;background:#EEF2FF;position:relative">
+        <div style="position:absolute;top:-1px;left:12px;background:#1F3864;color:#fff;font-size:10px;font-weight:700;padding:2px 10px;border-radius:0 0 7px 7px">⭐ 추천</div>
+        <div style="position:absolute;top:-1px;right:12px;background:#E24B4A;color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:0 0 7px 7px">+보너스 4,000P</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:22px">🏆</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="font-size:14px;font-weight:700;color:#1F3864">20,000원</div>
+              <div style="font-size:10px;text-decoration:line-through;color:#aaa">정가 60,000원</div>
+            </div>
+            <div style="font-size:12px;color:#1F3864;margin-top:2px;font-weight:500">센터 추천 플랜 · 20% 보너스</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:18px;font-weight:800;color:#1F3864">24,000 P</div>
+            <div style="font-size:10px;color:#555">≈ 정기문서 약 24건</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 플랜 4 -->
+      <div class="pricing-plan-card" data-plan="4" data-price="30000" data-points="39000" data-bonus="9000" onclick="selectPlan(this)"
+        style="border:2px solid #E0E6F0;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;background:#fff;position:relative">
+        <div style="position:absolute;top:-1px;right:12px;background:#5C3489;color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:0 0 7px 7px">+보너스 9,000P</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="font-size:22px">🚀</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:7px">
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e">30,000원</div>
+              <div style="font-size:10px;text-decoration:line-through;color:#bbb">정가 100,000원</div>
+            </div>
+            <div style="font-size:12px;color:#888;margin-top:2px">대용량 · 30% 보너스</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:18px;font-weight:800;color:#5C3489">39,000 P</div>
+            <div style="font-size:10px;color:#aaa">≈ 정기문서 약 39건</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 선택된 플랜 요약 -->
+    <div id="pricing-selected-summary" style="display:none;margin-top:14px;background:#F0F4FF;border:1.5px solid #C5D3F0;border-radius:10px;padding:13px 15px">
+      <div style="font-size:12px;font-weight:600;color:#1F3864;margin-bottom:8px">📋 선택하신 플랜</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#333;margin-bottom:4px">
+        <span>결제 금액</span>
+        <strong id="pricing-sum-price">-</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#333;margin-bottom:4px">
+        <span>기본 포인트</span>
+        <span id="pricing-sum-base">-</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#1D9E75;margin-bottom:6px">
+        <span>보너스 포인트</span>
+        <span id="pricing-sum-bonus">-</span>
+      </div>
+      <div style="border-top:1px solid #C5D3F0;padding-top:8px;display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#1F3864">
+        <span>총 충전 포인트</span>
+        <span id="pricing-sum-total">-</span>
+      </div>
+    </div>
+
+    <!-- 결제 버튼 -->
+    <button id="pricing-pay-btn" onclick="openPaymentGuide()" style="display:none;width:100%;margin-top:14px;padding:13px;border-radius:10px;border:none;background:#1F3864;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s"
+      onmouseover="this.style.background='#162a4e'"
+      onmouseout="this.style.background='#1F3864'">💳 결제 안내 받기</button>
+  </div>
+
+  <!-- 결제 안내 (인라인) -->
+  <div id="pricing-guide-box" style="display:none">
+    <div class="card" style="border:2px solid #1F3864;background:#F0F4FF">
+      <div class="card-title" style="margin-bottom:10px;color:#1F3864">📬 결제 안내</div>
+      <div style="font-size:12px;color:#333;line-height:1.9;margin-bottom:14px">
+        현재 Day:음은 <strong>계좌이체 방식</strong>으로 충전을 지원합니다.<br>
+        아래 절차에 따라 결제하시면 담당자가 포인트를 충전해 드립니다.
+      </div>
+      <div style="background:#fff;border-radius:10px;border:1px solid #C5D3F0;padding:14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#1F3864;margin-bottom:10px">📌 충전 절차</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#333">
+            <span style="min-width:22px;height:22px;background:#1F3864;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">1</span>
+            <div>아래 계좌로 선택하신 금액을 이체합니다.<br><strong style="color:#1F3864">국민은행 000000-00-000000 · 예금주: Day:음(데이음)</strong></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#333">
+            <span style="min-width:22px;height:22px;background:#1F3864;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">2</span>
+            <div>카카오톡 오픈채팅 또는 이메일로 <strong>이체 내역 + 센터명</strong>을 보내주세요.<br><span style="color:#888">📧 contact@daeum.kr</span></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#333">
+            <span style="min-width:22px;height:22px;background:#1F3864;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">3</span>
+            <div>확인 후 영업일 기준 <strong>1일 이내</strong>에 포인트가 충전됩니다.</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:8px;padding:10px 13px;font-size:11px;color:#5D4037;line-height:1.7;margin-bottom:12px">
+        ⚠️ 충전된 포인트는 환불이 어렵습니다. 충전 전 플랜을 꼼꼼히 확인해주세요.<br>
+        서비스 문의: contact@daeum.kr · 카카오톡 오픈채팅
+      </div>
+      <div style="display:flex;gap:8px">
+        <a href="https://open.kakao.com" target="_blank"
+          style="flex:1;padding:10px;background:#FEE500;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;color:#3A1D1D;display:flex;align-items:center;justify-content:center;gap:5px">💬 카카오톡 문의</a>
+        <a href="mailto:contact@daeum.kr"
+          style="flex:1;padding:10px;background:#fff;border:1.5px solid #1F3864;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;color:#1F3864;display:flex;align-items:center;justify-content:center;gap:5px">📧 이메일 문의</a>
+      </div>
+      <button onclick="document.getElementById('pricing-guide-box').style.display='none'"
+        style="width:100%;margin-top:8px;padding:9px;background:#fff;border:1px solid #ddd;border-radius:8px;font-size:12px;color:#888;cursor:pointer;font-family:inherit">닫기</button>
+    </div>
+  </div>
+
+  <!-- 자주 묻는 질문 -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:12px">❓ 자주 묻는 질문</div>
+    <div style="display:flex;flex-direction:column;gap:1px">
+
+      <div style="border:1px solid #E0E6F0;border-radius:10px;overflow:hidden;margin-bottom:6px">
+        <button onclick="togglePricingFaq(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#F8F9FB;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#333;text-align:left">
+          포인트는 언제까지 사용할 수 있나요?
+          <span style="font-size:11px;color:#aaa;flex-shrink:0;transition:transform .2s">▾</span>
+        </button>
+        <div class="pricing-faq-body" style="display:none;padding:11px 14px;font-size:12px;color:#555;line-height:1.8;border-top:1px solid #E0E6F0;background:#fff">
+          충전일로부터 <strong>12개월</strong> 내에 사용하시면 됩니다. 유효기간 만료 30일 전에 알림을 드립니다.
+        </div>
+      </div>
+
+      <div style="border:1px solid #E0E6F0;border-radius:10px;overflow:hidden;margin-bottom:6px">
+        <button onclick="togglePricingFaq(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#F8F9FB;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#333;text-align:left">
+          포인트는 환불되나요?
+          <span style="font-size:11px;color:#aaa;flex-shrink:0">▾</span>
+        </button>
+        <div class="pricing-faq-body" style="display:none;padding:11px 14px;font-size:12px;color:#555;line-height:1.8;border-top:1px solid #E0E6F0;background:#fff">
+          미사용 포인트에 한해 충전일 기준 <strong>7일 이내</strong> 전액 환불이 가능합니다. 이후에는 부분 환불이 어렵습니다. 문의: contact@daeum.kr
+        </div>
+      </div>
+
+      <div style="border:1px solid #E0E6F0;border-radius:10px;overflow:hidden;margin-bottom:6px">
+        <button onclick="togglePricingFaq(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#F8F9FB;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#333;text-align:left">
+          여러 센터가 포인트를 공유할 수 있나요?
+          <span style="font-size:11px;color:#aaa;flex-shrink:0">▾</span>
+        </button>
+        <div class="pricing-faq-body" style="display:none;padding:11px 14px;font-size:12px;color:#555;line-height:1.8;border-top:1px solid #E0E6F0;background:#fff">
+          포인트는 <strong>센터별로 독립 관리</strong>됩니다. 센터 간 공유는 현재 지원하지 않습니다.
+        </div>
+      </div>
+
+      <div style="border:1px solid #E0E6F0;border-radius:10px;overflow:hidden;margin-bottom:6px">
+        <button onclick="togglePricingFaq(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#F8F9FB;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#333;text-align:left">
+          시범 운영 센터는 요금 혜택이 있나요?
+          <span style="font-size:11px;color:#aaa;flex-shrink:0">▾</span>
+        </button>
+        <div class="pricing-faq-body" style="display:none;padding:11px 14px;font-size:12px;color:#555;line-height:1.8;border-top:1px solid #E0E6F0;background:#fff">
+          시범 운영 중인 3개 센터(삽교·덕산·내포소망)는 <strong>시범 운영 특별 할인가</strong>가 적용됩니다.<br>
+          AI API 실제 사용 비용을 기반으로 책정한 최소 요금으로 운영되며, 정식 출시 이후에는 일반 요금제로 전환됩니다. 전환 시 사전 안내드립니다.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     탭: 관리자 (0508 인증 전용)
+══════════════════════════════════════ -->
+<div class="tab-content" id="tab-admin">
+<div class="main">
+
+  <!-- 로그인 카드 -->
+  <div class="card" id="admin-gate-card">
+    <div style="text-align:center;padding:20px 0 10px">
+      <div style="font-size:36px;margin-bottom:8px">🔐</div>
+      <div style="font-size:15px;font-weight:700;color:#1F3864;margin-bottom:4px">관리자 전용</div>
+      <div style="font-size:12px;color:#888;margin-bottom:20px">관리자 코드를 입력하세요</div>
+      <input id="adm-code-input" type="password" placeholder="관리자 코드 입력"
+        style="width:200px;padding:10px 14px;border:2px solid #C5CAE9;border-radius:10px;font-size:14px;font-family:inherit;text-align:center;letter-spacing:4px;box-sizing:border-box;margin-bottom:8px"
+        onkeydown="if(event.key==='Enter')adminTabLogin()">
+      <div id="adm-code-error" style="font-size:11px;color:#E24B4A;margin-bottom:8px;display:none">코드가 올바르지 않습니다</div>
+      <button onclick="adminTabLogin()"
+        style="display:block;width:200px;margin:0 auto;padding:10px;background:#1F3864;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">확인</button>
+    </div>
+  </div>
+
+  <!-- 관리자 대시보드 (인증 후) -->
+  <div id="admin-dashboard" style="display:none">
+
+    <!-- 헤더 -->
+    <div style="background:linear-gradient(135deg,#1F3864 0%,#162a4e 100%);border-radius:14px;padding:18px 20px;margin-bottom:16px;color:#fff;display:flex;align-items:center;gap:12px">
+      <div style="font-size:28px">📊</div>
+      <div>
+        <div style="font-size:16px;font-weight:800;letter-spacing:-0.3px">Day:음 관리자 대시보드</div>
+        <div style="font-size:11px;opacity:.7;margin-top:2px">전체 센터 AI 사용량 · 요금 · 문서 이력 통합 조회</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button onclick="adminRefresh()"
+          style="padding:6px 13px;border-radius:7px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">
+          🔄 새로고침
+        </button>
+        <button onclick="adminLogout()"
+          style="padding:6px 13px;border-radius:7px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font-size:11px;cursor:pointer;font-family:inherit">
+          로그아웃
+        </button>
+      </div>
+    </div>
+
+    <!-- 기간 필터 -->
+    <div class="card" style="padding:12px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:600;color:#555">조회 기간</span>
+        <div style="display:flex;gap:6px">
+          <button class="adm-period-btn active" data-days="0" onclick="setAdminPeriod(0,this)">오늘</button>
+          <button class="adm-period-btn" data-days="7" onclick="setAdminPeriod(7,this)">7일</button>
+          <button class="adm-period-btn" data-days="30" onclick="setAdminPeriod(30,this)">30일</button>
+          <button class="adm-period-btn" data-days="90" onclick="setAdminPeriod(90,this)">90일</button>
+          <button class="adm-period-btn" data-days="9999" onclick="setAdminPeriod(9999,this)">전체</button>
+        </div>
+        <div style="margin-left:auto;font-size:11px;color:#aaa" id="adm-last-updated"></div>
+      </div>
+    </div>
+
+    <!-- KPI 요약 카드 4개 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px" id="adm-kpi-grid">
+      <div class="card" style="padding:14px;text-align:center;margin-bottom:0">
+        <div style="font-size:10px;color:#888;margin-bottom:4px">총 API 호출</div>
+        <div style="font-size:22px;font-weight:800;color:#1F3864" id="adm-kpi-calls">-</div>
+        <div style="font-size:10px;color:#aaa" id="adm-kpi-calls-sub"></div>
+      </div>
+      <div class="card" style="padding:14px;text-align:center;margin-bottom:0">
+        <div style="font-size:10px;color:#888;margin-bottom:4px">총 비용 (추정)</div>
+        <div style="font-size:20px;font-weight:800;color:#E24B4A" id="adm-kpi-cost">-</div>
+        <div style="font-size:10px;color:#aaa" id="adm-kpi-cost-sub"></div>
+      </div>
+      <div class="card" style="padding:14px;text-align:center;margin-bottom:0">
+        <div style="font-size:10px;color:#888;margin-bottom:4px">총 입력 토큰</div>
+        <div style="font-size:18px;font-weight:800;color:#0D6E55" id="adm-kpi-input">-</div>
+        <div style="font-size:10px;color:#aaa">토큰</div>
+      </div>
+      <div class="card" style="padding:14px;text-align:center;margin-bottom:0">
+        <div style="font-size:10px;color:#888;margin-bottom:4px">총 출력 토큰</div>
+        <div style="font-size:18px;font-weight:800;color:#5C3489" id="adm-kpi-output">-</div>
+        <div style="font-size:10px;color:#aaa">토큰</div>
+      </div>
+    </div>
+
+    <!-- 센터별 요약 -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+        <span>🏥 센터별 사용량</span>
+        <span style="font-size:10px;color:#aaa" id="adm-center-period-label"></span>
+      </div>
+      <div id="adm-center-table">
+        <div style="text-align:center;color:#bbb;padding:20px;font-size:13px">불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 문서 유형별 사용량 -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:12px">📄 문서 유형별 API 호출</div>
+      <div id="adm-doctype-table">
+        <div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 일별 추이 -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:12px">📈 일별 비용 추이</div>
+      <div id="adm-daily-chart" style="overflow-x:auto">
+        <div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 최근 API 로그 -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <span>📋 최근 API 호출 로그</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="adm-log-center-filter"
+            style="padding:4px 8px;border:1px solid #C5CAE9;border-radius:6px;font-size:11px;font-family:inherit;color:#333"
+            onchange="renderAdminLogs()">
+            <option value="">전체 센터</option>
+            <option value="삽교">삽교</option>
+            <option value="덕산">덕산</option>
+            <option value="내포소망">내포소망</option>
+          </select>
+          <button onclick="clearAdminUsageLog()"
+            style="font-size:11px;color:#aaa;background:none;border:1px solid #ddd;border-radius:5px;padding:3px 9px;cursor:pointer;font-family:inherit">초기화</button>
+        </div>
+      </div>
+      <div id="adm-log-body">
+        <div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- Supabase 문서 이력 -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+        <span>🗂 생성 문서 이력 (Supabase)</span>
+        <select id="adm-doc-center-filter"
+          style="padding:4px 8px;border:1px solid #C5CAE9;border-radius:6px;font-size:11px;font-family:inherit;color:#333"
+          onchange="loadAdminDocHistory()">
+          <option value="">전체 센터</option>
+          <option value="sapgyo">삽교주간보호센터</option>
+          <option value="center2">덕산주간보호센터</option>
+          <option value="center3">내포소망주간보호센터</option>
+        </select>
+      </div>
+      <div id="adm-doc-history-body">
+        <div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>
+      </div>
+    </div>
+
+  </div><!-- /admin-dashboard -->
+</div>
+</div>
+
 <script>
 // ════════════════════════════════════════
 //  기록지 분리 기능
@@ -4687,6 +5136,7 @@ const CAT_COLOR = { '월간문서': '#1F3864', '정기문서': '#0D6E55', '수�
 async function loadResultsDocs() {
   const body = document.getElementById('results-doc-body');
   if (!body) return;
+  body.innerHTML = '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">불러오는 중...</div>';
 
   const myCenter = centerCode || '';
   const centerName = CENTERS[myCenter]?.name || myCenter;
@@ -4718,83 +5168,33 @@ async function loadResultsDocs() {
       <span>생성된 문서는 <strong>24시간 동안만</strong> 확인 가능합니다. 필요한 문서는 생성 직후 <strong>다운로드</strong>·<strong>복사</strong>해 두세요.</span>
     </div>`;
 
-  // 진단 패널 — body 맨 위에 항상 고정, 목록 렌더링 후에도 유지
-  const diagBox = document.createElement('div');
-  diagBox.id = 'results-diag-box';
-  diagBox.style.cssText = 'background:#1a1a2e;color:#7FFF7F;font-family:monospace;font-size:11px;border-radius:8px;padding:10px 14px;margin-bottom:12px;line-height:1.9;white-space:pre-wrap';
-
-  const listBox = document.createElement('div');
-  listBox.id = 'results-list-box';
-
-  body.innerHTML = '';
-  body.appendChild(diagBox);
-  body.appendChild(listBox);
-
-  const diag = [];
-  const log = (...args) => {
-    diag.push(args.join(' '));
-    diagBox.textContent = diag.join('\n');
-  };
-
-  log(`▶ centerCode = "${myCenter}"`);
-
   try {
     const url = myCenter
       ? `${SUPABASE_URL}/rest/v1/documents?center_code=eq.${myCenter}&order=created_at.desc&limit=500`
       : `${SUPABASE_URL}/rest/v1/documents?order=created_at.desc&limit=500`;
 
-    log(`▶ 요청 URL: ${url.replace(SUPABASE_URL, '[SB]')}`);
-
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
 
-    log(`▶ HTTP = ${res.status} ${res.statusText}`);
-
-    if (!res.ok) {
-      const errText = await res.text();
-      log(`✗ 오류: ${errText.slice(0, 200)}`);
-      listBox.innerHTML = `<div style="color:#E24B4A;font-size:12px;padding:8px">HTTP 오류 ${res.status}</div>`;
-      return;
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const all = await res.json();
-    log(`▶ 전체 레코드 = ${all.length}건`);
-
-    if (!Array.isArray(all) || all.length === 0) {
-      log('✗ DB에 데이터 없음');
-      listBox.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:20px;font-size:13px">DB에 저장된 문서가 없습니다.</div>';
-      return;
-    }
-
-    const allTypes = [...new Set(all.map(d => d.doc_type))];
-    log(`▶ doc_type 목록: ${JSON.stringify(allTypes)}`);
-
-    const dates = all.map(d => d.created_at).filter(Boolean).sort();
-    log(`▶ 최신: ${dates[dates.length-1]?.slice(0,19)}  가장 오래된: ${dates[0]?.slice(0,19)}`);
-
-    const nonRes = all.filter(d => d.doc_type !== '__residents__');
-    log(`▶ __residents__ 제외 후 = ${nonRes.length}건`);
-
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    const docs = nonRes.filter(d => new Date(d.created_at).getTime() >= cutoff);
-    log(`▶ 24h 필터 후 = ${docs.length}건`);
+    const docs = Array.isArray(all)
+      ? all.filter(d => d.doc_type && d.doc_type !== '__residents__' && new Date(d.created_at).getTime() >= cutoff)
+      : [];
 
-    if (docs.length === 0) {
-      log('ℹ 24h 내 문서 없음 → 전체 표시');
-      nonRes.slice(0, 5).forEach((d, i) =>
-        log(`  [${i}] "${d.doc_type}" / "${d.resident_name}" / ${(d.created_at||'').slice(0,19)} / content=${d.doc_content?.length||0}자`)
-      );
-      renderDocList(nonRes, noticeBanner, listBox, true);
+    if (!docs.length) {
+      body.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">최근 24시간 내 생성된 문서가 없어요.</div>';
       return;
     }
 
-    log(`✓ 렌더링 → ${docs.length}건`);
-    renderDocList(docs, noticeBanner, listBox, false);
+    window._resultsDocs = docs;
+    renderDocList(docs, noticeBanner, body, false);
 
   } catch(e) {
-    log(`✗ 예외: ${e.message}`);
-    listBox.innerHTML = `<div style="color:#E24B4A;font-size:12px;padding:8px">오류: ${e.message}</div>`;
+    body.innerHTML = noticeBanner + `<div style="color:#E24B4A;font-size:12px;padding:12px">조회 오류: ${e.message}</div>`;
   }
 }
 
@@ -4811,10 +5211,7 @@ function renderDocList(docs, noticeBanner, container, showAll) {
   });
 
   let html = noticeBanner;
-  if (showAll) {
-    html += `<div style="background:#E3F2FD;border:1px solid #90CAF9;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#1565C0">📋 24시간 이내 문서가 없어 전체 목록을 표시합니다.</div>`;
-  }
-  html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건${showAll ? ' (전체)' : ' (최근 24시간)'}</div>`;
+  html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건 (최근 24시간)</div>`;
 
   Object.entries(residents).forEach(([name, catMap]) => {
     const resTotal = Object.values(catMap).reduce((s, a) => s + a.length, 0);
@@ -4861,87 +5258,40 @@ function renderDocList(docs, noticeBanner, container, showAll) {
 function openResultDoc(idx) {
   const docs = window._resultsDocs;
   const modal = document.getElementById('results-doc-modal');
-  const modalTitle = document.getElementById('results-modal-title');
-  const modalDate = document.getElementById('results-modal-date');
   const modalBody = document.getElementById('results-modal-body');
 
-  // ── 진단: 기본 상태 확인 ──
-  if (!modal || !modalBody) {
-    alert('모달 DOM 없음 — 새로고침 후 다시 시도해주세요.');
-    return;
-  }
-  if (!docs) {
-    modalTitle.textContent = '⚠ 오류';
-    modalBody.innerHTML = '<div style="padding:20px;font-size:12px;color:#E24B4A">window._resultsDocs 없음 — 목록을 먼저 새로고침하세요.</div>';
-    modal.style.display = 'block';
-    return;
-  }
-  if (idx < 0 || idx >= docs.length) {
-    modalTitle.textContent = '⚠ 오류';
-    modalBody.innerHTML = `<div style="padding:20px;font-size:12px;color:#E24B4A">인덱스 오류: idx=${idx}, 배열길이=${docs.length}</div>`;
-    modal.style.display = 'block';
-    return;
-  }
-
+  if (!modal || !modalBody || !docs || idx < 0 || idx >= docs.length) return;
   const d = docs[idx];
-  if (!d) {
-    modalTitle.textContent = '⚠ 오류';
-    modalBody.innerHTML = `<div style="padding:20px;font-size:12px;color:#E24B4A">docs[${idx}] = undefined</div>`;
-    modal.style.display = 'block';
-    return;
-  }
+  if (!d) return;
 
   const dt = new Date(d.created_at);
   const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-  modalTitle.textContent = `${d.resident_name || '(이름없음)'} · ${d.doc_type || '(타입없음)'}`;
-  modalDate.textContent = `${d.center_name || ''} · ${dateStr}`;
+  document.getElementById('results-modal-title').textContent = `${d.resident_name || ''} · ${d.doc_type || ''}`;
+  document.getElementById('results-modal-date').textContent = `${d.center_name || ''} · ${dateStr}`;
 
   const content = d.doc_content || '';
-  const contentLen = content.length;
-  const contentPreview = content.trim().slice(0, 80);
-  const t = content.trim().toLowerCase();
-
-  // ── 진단 정보를 모달 상단에 표시 ──
-  const diagHtml = `
-    <div style="background:#1a1a2e;color:#7FFF7F;font-family:monospace;font-size:11px;padding:10px 14px;line-height:1.9;white-space:pre-wrap">▶ idx=${idx}  doc_type="${d.doc_type}"  resident="${d.resident_name}"
-▶ doc_content 길이 = ${contentLen}자
-▶ 앞 80자 = ${contentPreview || '(비어있음)'}
-▶ 감지: ${!content.trim() ? '내용없음' : t.startsWith('<!doctype') ? '완전한HTML(doctype)' : t.startsWith('<html') ? '완전한HTML(html)' : 'HTML조각'}</div>`;
 
   if (!content.trim()) {
-    modalBody.innerHTML = diagHtml + '<p style="color:#aaa;padding:20px;font-size:13px">⚠ 저장된 doc_content가 비어있습니다.<br>문서 생성 후 저장이 제대로 안 된 것 같습니다.</p>';
+    modalBody.innerHTML = '<p style="color:#aaa;padding:20px;font-size:13px;text-align:center">저장된 내용이 없습니다.<br><span style="font-size:11px">문서를 다시 생성해주세요.</span></p>';
     modal.style.display = 'block';
     return;
   }
 
-  function renderIframe(htmlStr) {
-    modalBody.innerHTML = diagHtml + '<div style="text-align:center;padding:20px;color:#aaa;font-size:12px">iframe 로딩 중...</div>';
-    try {
-      const blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
-      const blobUrl = URL.createObjectURL(blob);
-      const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'width:100%;height:78vh;border:none;display:block';
-      iframe.addEventListener('load', () => setTimeout(() => URL.revokeObjectURL(blobUrl), 5000));
-      iframe.addEventListener('error', () => {
-        modalBody.innerHTML = diagHtml + '<p style="color:#E24B4A;padding:20px;font-size:12px">iframe 로드 실패</p>';
-      });
-      iframe.src = blobUrl;
-      // diagHtml은 위에 유지하고 그 아래 iframe 추가
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = diagHtml;
-      wrapper.appendChild(iframe);
-      modalBody.innerHTML = '';
-      modalBody.appendChild(wrapper);
-    } catch(e) {
-      modalBody.innerHTML = diagHtml + `<p style="color:#E24B4A;padding:20px;font-size:12px">renderIframe 오류: ${e.message}</p>`;
-    }
-  }
+  // body 조각 → DOC_CSS 씌워서 완전한 문서로 렌더링
+  const t = content.trim().toLowerCase();
+  const fullHtml = (t.startsWith('<!doctype') || t.startsWith('<html'))
+    ? content
+    : `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${content}</body></html>`;
 
-  if (t.startsWith('<!doctype') || t.startsWith('<html')) {
-    renderIframe(content);
-  } else {
-    renderIframe(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${content}</body></html>`);
-  }
+  modalBody.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:12px">불러오는 중...</div>';
+  const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+  const blobUrl = URL.createObjectURL(blob);
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'width:100%;height:80vh;border:none;display:block';
+  iframe.addEventListener('load', () => setTimeout(() => URL.revokeObjectURL(blobUrl), 5000));
+  iframe.src = blobUrl;
+  modalBody.innerHTML = '';
+  modalBody.appendChild(iframe);
 
   modal.style.display = 'block';
   modal.scrollTop = 0;
@@ -5093,6 +5443,12 @@ function switchTab(id, btn) {
       loadDocHistory();
     }
   }
+  if(id==='tab-pricing') {
+    initPricingTab();
+  }
+  if(id==='tab-admin') {
+    initAdminTab();
+  }
 }
 function switchSub(id, btn) {
   // 같은 부모 .sub-tabs 안의 버튼만 active 초기화
@@ -5229,21 +5585,29 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
       const outputTokens = usage.output_tokens || 0;
       // claude-sonnet-4-6 기준: input $3/1M, output $15/1M
       const costUSD = (inputTokens * 3 + outputTokens * 15) / 1_000_000;
-      const costKRW = Math.round(costUSD * 1380);
+      const isPilot = !!(CENTERS[centerCode]?.pilot);
+      const pointMult = isPilot ? POINT_MULTIPLIER_PILOT : POINT_MULTIPLIER_BASE;
+      const costKRW = Math.round(costUSD * 1380 * pointMult);
       const cfg = CENTERS[centerCode] || {};
+      const nowIso = new Date().toISOString();
       const log = {
-        ts: new Date().toISOString(),
+        ts: nowIso,
         center: cfg.short || centerCode,
+        center_code: centerCode,
+        center_name: cfg.name || centerCode,
         doc: docLabel || '문서',
         input: inputTokens,
         output: outputTokens,
         costKRW
       };
+      // localStorage (로컬 빠른 조회용)
       const USAGE_KEY = 'daeum-usage-log';
       const prev = JSON.parse(localStorage.getItem(USAGE_KEY) || '[]');
       prev.push(log);
       if (prev.length > 500) prev.splice(0, prev.length - 500);
       localStorage.setItem(USAGE_KEY, JSON.stringify(prev));
+      // Supabase (관리자 통합 조회용, 비동기·실패 무시)
+      saveUsageToSupabase(log);
     } catch(e) {}
 
     return data.content[0].text;
@@ -8255,10 +8619,16 @@ async function loadDocsFromSupabase(centerCode) {
   }
 }
 
+// ── 포인트 소모 배수 ──
+// POINT_MULTIPLIER_BASE  : 정식 요금 (API 원가 × 5)
+// POINT_MULTIPLIER_PILOT : 시범 운영 할인 (API 원가 × 3)
+const POINT_MULTIPLIER_BASE  = 5;
+const POINT_MULTIPLIER_PILOT = 3;
+
 const CENTERS = {
-  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '0101', expires: '2026-12-31' },
-  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '0202', expires: '2026-12-31' },
-  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31' },
+  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '0101', expires: '2026-12-31', pilot: true },
+  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '0202', expires: '2026-12-31', pilot: true },
+  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31', pilot: true },
 };
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -8290,7 +8660,14 @@ const validCode = findValidAuth();
 if (validCode) {
   centerCode = validCode;
   // 센터 UI 즉시 적용 (DOM 로드 후)
-  document.addEventListener('DOMContentLoaded', applyCenterUI);
+  document.addEventListener('DOMContentLoaded', () => {
+  applyCenterUI();
+  // 관리자 탭 버튼: 이미 인증된 세션이면 표시
+  if (sessionStorage.getItem('ium-admin') === '0508') {
+    const adminBtn = document.getElementById('admin-tab-btn');
+    if (adminBtn) adminBtn.style.display = 'block';
+  }
+});
 } else {
   location.replace('index.html');
 }
@@ -8587,15 +8964,41 @@ async function renderOverview() {
   const resList = document.getElementById('resident-list');
   const noData = document.getElementById('no-data-msg');
   const content = document.getElementById('overview-content');
-  if(list.length===0){ resList.innerHTML=''; noData.style.display='block'; content.style.display='none'; return; }
+  const delBtn = document.getElementById('delete-resident-btn');
+  if(list.length===0){ resList.innerHTML=''; noData.style.display='block'; content.style.display='none'; if(delBtn) delBtn.style.display='none'; return; }
   resList.innerHTML = list.map((r,i)=>`<button class="res-chip ${i===0?'active':''}" onclick="selectRes('${r.id}',this)">${r.name}</button>`).join('');
   noData.style.display='none'; content.style.display='block';
+  // 삭제 버튼 표시 (데모 어르신이 아닐 때만)
+  if (delBtn) delBtn.style.display = (list[0] && !list[0].id.startsWith('demo-')) ? 'block' : 'none';
+  window._currentResId = list[0]?.id || null;
   renderResDetail(list[0]);
 }
 function selectRes(id,btn) {
   document.querySelectorAll('.res-chip').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
+  window._currentResId = id;
+  const delBtn = document.getElementById('delete-resident-btn');
+  if (delBtn) delBtn.style.display = id.startsWith('demo-') ? 'none' : 'block';
   loadAll().then(list=>{ const r=list.find(x=>x.id===id); if(r) renderResDetail(r); });
+}
+
+// ── 어르신 삭제 ──
+async function deleteCurrentResident() {
+  const id = window._currentResId;
+  if (!id) return;
+  if (id.startsWith('demo-')) { alert('샘플 어르신은 삭제할 수 없습니다.'); return; }
+  // 이름 찾기
+  const list = await loadAll();
+  const target = list.find(r => r.id === id);
+  if (!target) return;
+  if (!confirm(`'${target.name}' 어르신의 모든 데이터를 삭제할까요?\n\n이 작업은 되돌릴 수 없습니다.`)) return;
+  const newList = list.filter(r => r.id !== id);
+  localStorage.setItem(getDbKey(), JSON.stringify(newList));
+  syncResidentToSupabase(centerCode, newList);
+  window._currentResId = null;
+  const delBtn = document.getElementById('delete-resident-btn');
+  if (delBtn) delBtn.style.display = 'none';
+  renderOverview();
 }
 function renderResDetail(r) {
   document.getElementById('ov-avatar').textContent = r.avatar || r.name?.slice(0,1) + '○○';
@@ -8873,9 +9276,515 @@ function togCI(el) {
     document.getElementById('nd-ov').textContent=`D-${diff}`;
   }
 }
+
+// ═══════════════════════════════════════════
+//  요금제 탭 JS
+// ═══════════════════════════════════════════
+let _selectedPlan = null;
+
+function selectPlan(el) {
+  // 모든 카드 초기화
+  document.querySelectorAll('.pricing-plan-card').forEach(c => {
+    c.style.boxShadow = 'none';
+    c.style.transform = 'none';
+    // 추천 카드(plan 3)은 파란 테두리 유지
+    if (c.dataset.plan !== '3') {
+      c.style.borderColor = '#E0E6F0';
+      c.style.background = '#fff';
+    }
+  });
+  // 선택된 카드 하이라이트
+  el.style.borderColor = '#1F3864';
+  el.style.boxShadow = '0 4px 16px rgba(31,56,100,.15)';
+  el.style.transform = 'translateY(-2px)';
+  if (el.dataset.plan !== '3') el.style.background = '#F5F8FF';
+
+  _selectedPlan = {
+    price: parseInt(el.dataset.price),
+    points: parseInt(el.dataset.points),
+    bonus: parseInt(el.dataset.bonus)
+  };
+
+  // 요약 표시
+  const sum = document.getElementById('pricing-selected-summary');
+  const base = _selectedPlan.points - _selectedPlan.bonus;
+  document.getElementById('pricing-sum-price').textContent = _selectedPlan.price.toLocaleString() + '원';
+  document.getElementById('pricing-sum-base').textContent = base.toLocaleString() + ' P';
+  document.getElementById('pricing-sum-bonus').textContent = _selectedPlan.bonus > 0 ? '+' + _selectedPlan.bonus.toLocaleString() + ' P 🎁' : '0 P';
+  document.getElementById('pricing-sum-total').textContent = _selectedPlan.points.toLocaleString() + ' P';
+  if (sum) sum.style.display = 'block';
+
+  const payBtn = document.getElementById('pricing-pay-btn');
+  if (payBtn) payBtn.style.display = 'block';
+}
+
+function openPaymentGuide() {
+  const box = document.getElementById('pricing-guide-box');
+  if (!box) return;
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function togglePricingFaq(btn) {
+  const body = btn.nextElementSibling;
+  const arrow = btn.querySelector('span');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+function initPricingTab() {
+  // 사용량 로그에서 이번 달 포인트 소모 계산 (1원 = 1P 기준)
+  try {
+    const USAGE_KEY = 'daeum-usage-log';
+    const logs = JSON.parse(localStorage.getItem(USAGE_KEY) || '[]');
+    const ym = new Date().toISOString().slice(0, 7); // '2026-06'
+    const thisMonth = logs.filter(l => l.ts?.startsWith(ym));
+    const usedKRW = thisMonth.reduce((s, l) => s + (l.costKRW || 0), 0);
+
+    // 충전 포인트 (localStorage에서, 향후 서버 연동)
+    const saved = parseInt(localStorage.getItem('daeum-points-' + centerCode) || '0');
+    document.getElementById('pricing-my-points').textContent = saved.toLocaleString() + ' P';
+    document.getElementById('pricing-used-this-month').textContent = usedKRW.toLocaleString() + ' P';
+  } catch(e) {}
+}
+
+
+// ═══════════════════════════════════════════
+//  관리자 탭 JS
+// ═══════════════════════════════════════════
+
+let _adminPeriodDays = 0;  // 0 = 오늘
+let _adminAllLogs = [];    // 전체 로컬 사용량 로그 캐시
+
+// ── Supabase: 사용량 로그 저장 ──
+async function saveUsageToSupabase(log) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/usage_logs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        created_at:   log.ts,
+        center_code:  log.center_code  || '',
+        center_name:  log.center_name  || log.center || '',
+        center_short: log.center       || '',
+        doc_label:    log.doc          || '',
+        input_tokens: log.input        || 0,
+        output_tokens:log.output       || 0,
+        cost_krw:     log.costKRW      || 0
+      })
+    });
+  } catch(e) { /* 실패 무시 */ }
+}
+
+// ── Supabase: 사용량 로그 조회 ──
+async function loadUsageFromSupabase(days) {
+  try {
+    let url = `${SUPABASE_URL}/rest/v1/usage_logs?order=created_at.desc&limit=1000`;
+    if (days === 0) {
+      // 오늘
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      url += `&created_at=gte.${today.toISOString()}`;
+    } else if (days < 9999) {
+      const from = new Date(Date.now() - days * 86400000);
+      url += `&created_at=gte.${from.toISOString()}`;
+    }
+    const res = await fetch(url, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    if (!res.ok) return null;  // 테이블 없으면 null
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+// ── 관리자 탭 로그인 ──
+function adminTabLogin() {
+  const input = document.getElementById('adm-code-input')?.value?.trim();
+  if (input === '0508') {
+    sessionStorage.setItem('ium-admin', '0508');
+    // 탭 버튼 표시 (이미 tab-admin에 있으므로 대시보드만 전환)
+    document.getElementById('admin-gate-card').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    const adminTabBtn = document.getElementById('admin-tab-btn');
+    if (adminTabBtn) adminTabBtn.style.display = 'block';
+    loadAdminData();
+  } else {
+    document.getElementById('adm-code-error').style.display = 'block';
+    document.getElementById('adm-code-input').value = '';
+    document.getElementById('adm-code-input').focus();
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('ium-admin');
+  document.getElementById('admin-gate-card').style.display = 'block';
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('adm-code-input').value = '';
+  document.getElementById('adm-code-error').style.display = 'none';
+}
+
+function adminRefresh() { loadAdminData(); }
+
+function setAdminPeriod(days, btn) {
+  _adminPeriodDays = days;
+  document.querySelectorAll('.adm-period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAdminFromCache();
+}
+
+// ── 데이터 로드 ──
+async function loadAdminData() {
+  const updated = document.getElementById('adm-last-updated');
+  if (updated) updated.textContent = '로드 중...';
+
+  // 1) Supabase usage_logs 시도
+  const sbLogs = await loadUsageFromSupabase(9999);
+
+  // 2) localStorage 병합 (Supabase 실패 또는 구버전 로그 보완)
+  const localRaw = JSON.parse(localStorage.getItem('daeum-usage-log') || '[]');
+  const localLogs = localRaw.map(l => ({
+    created_at:   l.ts,
+    center_short: l.center || '',
+    center_name:  l.center_name || l.center || '',
+    center_code:  l.center_code || '',
+    doc_label:    l.doc || '',
+    input_tokens: l.input || 0,
+    output_tokens:l.output || 0,
+    cost_krw:     l.costKRW || 0
+  }));
+
+  if (sbLogs && Array.isArray(sbLogs) && sbLogs.length > 0) {
+    // Supabase 성공 — 로컬과 타임스탬프 기준 중복 제거 후 병합
+    const sbSet = new Set(sbLogs.map(l => l.created_at));
+    const onlyLocal = localLogs.filter(l => !sbSet.has(l.created_at));
+    _adminAllLogs = [...sbLogs, ...onlyLocal].sort((a,b) => b.created_at.localeCompare(a.created_at));
+  } else {
+    // Supabase 실패 또는 비어있음 — 로컬만 사용
+    _adminAllLogs = localLogs.sort((a,b) => b.created_at.localeCompare(a.created_at));
+  }
+
+  if (updated) {
+    const now = new Date();
+    updated.textContent = `마지막 갱신: ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  }
+
+  renderAdminFromCache();
+  loadAdminDocHistory();
+}
+
+// ── 기간 필터 ──
+function filterByPeriod(logs, days) {
+  if (days >= 9999) return logs;
+  const cutoff = days === 0
+    ? new Date(new Date().setHours(0,0,0,0)).toISOString()
+    : new Date(Date.now() - days * 86400000).toISOString();
+  return logs.filter(l => (l.created_at || '') >= cutoff);
+}
+
+// ── 캐시에서 렌더링 ──
+function renderAdminFromCache() {
+  const logs = filterByPeriod(_adminAllLogs, _adminPeriodDays);
+  const periodLabel = _adminPeriodDays === 0 ? '오늘' : _adminPeriodDays >= 9999 ? '전체' : `최근 ${_adminPeriodDays}일`;
+  const el = document.getElementById('adm-center-period-label');
+  if (el) el.textContent = periodLabel;
+
+  renderAdminKPI(logs);
+  renderAdminCenterTable(logs);
+  renderAdminDocTypeTable(logs);
+  renderAdminDailyChart(logs);
+  renderAdminLogs();
+}
+
+// ── KPI 카드 ──
+function renderAdminKPI(logs) {
+  const totalCalls  = logs.length;
+  const totalCost   = logs.reduce((s,l)=>s+(l.cost_krw||0),0);
+  const totalInput  = logs.reduce((s,l)=>s+(l.input_tokens||0),0);
+  const totalOutput = logs.reduce((s,l)=>s+(l.output_tokens||0),0);
+
+  // 전체 대비 이 기간 비율
+  const allCost = _adminAllLogs.reduce((s,l)=>s+(l.cost_krw||0),0);
+  const pct = allCost > 0 ? Math.round(totalCost/allCost*100) : 100;
+
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('adm-kpi-calls', totalCalls.toLocaleString() + '건');
+  set('adm-kpi-calls-sub', `전체 ${_adminAllLogs.length}건`);
+  set('adm-kpi-cost', totalCost.toLocaleString() + '원');
+  set('adm-kpi-cost-sub', `전체 대비 ${pct}%`);
+  set('adm-kpi-input', (totalInput/1000).toFixed(1) + 'K');
+  set('adm-kpi-output', (totalOutput/1000).toFixed(1) + 'K');
+}
+
+// ── 센터별 테이블 ──
+function renderAdminCenterTable(logs) {
+  const el = document.getElementById('adm-center-table');
+  if (!el) return;
+
+  const CTR_COLORS = { '삽교': '#1F3864', '덕산': '#0D6E55', '내포소망': '#5C3489' };
+  const CTR_NAMES  = { sapgyo: '삽교', center2: '덕산', center3: '내포소망' };
+
+  const byCtr = {};
+  logs.forEach(l => {
+    // short name 우선, 없으면 center_code로 변환
+    const k = l.center_short || CTR_NAMES[l.center_code] || l.center_name || '기타';
+    if (!byCtr[k]) byCtr[k] = { calls:0, cost:0, input:0, output:0 };
+    byCtr[k].calls++;
+    byCtr[k].cost   += l.cost_krw     || 0;
+    byCtr[k].input  += l.input_tokens  || 0;
+    byCtr[k].output += l.output_tokens || 0;
+  });
+
+  const totalCost = Object.values(byCtr).reduce((s,v)=>s+v.cost,0);
+  const sorted    = Object.entries(byCtr).sort((a,b)=>b[1].cost-a[1].cost);
+
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:12px">데이터 없음</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:80px 1fr 90px 80px 80px;gap:0;font-size:10px;font-weight:700;color:#888;padding:6px 14px;border-bottom:1.5px solid #E8EAF0;letter-spacing:.3px">
+      <span>센터</span><span>비용 비율</span><span style="text-align:right">호출</span><span style="text-align:right">비용</span><span style="text-align:right">입력토큰</span>
+    </div>
+    ${sorted.map(([name, d]) => {
+      const pct  = totalCost > 0 ? Math.round(d.cost/totalCost*100) : 0;
+      const clr  = CTR_COLORS[name] || '#888';
+      return `<div class="adm-ctr-row">
+        <span style="font-weight:600;color:${clr};font-size:12px;min-width:60px">${name}</span>
+        <div class="adm-bar-wrap"><div class="adm-bar" style="width:${pct}%;background:${clr}"></div></div>
+        <span style="text-align:right;color:#555;min-width:60px">${d.calls}건</span>
+        <span style="text-align:right;color:#E24B4A;font-weight:600;min-width:70px">${d.cost.toLocaleString()}원</span>
+        <span style="text-align:right;color:#888;min-width:70px">${(d.input/1000).toFixed(1)}K</span>
+      </div>`;
+    }).join('')}
+    <div style="padding:8px 14px;border-top:1.5px solid #E8EAF0;display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#1F3864">
+      <span>합계</span>
+      <span style="color:#E24B4A">${totalCost.toLocaleString()}원</span>
+    </div>`;
+}
+
+// ── 문서 유형별 ──
+function renderAdminDocTypeTable(logs) {
+  const el = document.getElementById('adm-doctype-table');
+  if (!el) return;
+
+  const byDoc = {};
+  logs.forEach(l => {
+    const k = l.doc_label || '기타';
+    if (!byDoc[k]) byDoc[k] = { calls:0, cost:0 };
+    byDoc[k].calls++;
+    byDoc[k].cost += l.cost_krw || 0;
+  });
+
+  const sorted = Object.entries(byDoc).sort((a,b)=>b[1].calls-a[1].calls).slice(0,10);
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:12px">데이터 없음</div>';
+    return;
+  }
+
+  const maxCalls = Math.max(...sorted.map(([,d])=>d.calls), 1);
+  el.innerHTML = sorted.map(([name, d]) => {
+    const w = Math.round(d.calls / maxCalls * 100);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #F0F0F0;font-size:12px">
+      <span style="width:130px;color:#333;font-size:11px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${name}">${name}</span>
+      <div style="flex:1;height:7px;background:#E8EAF0;border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${w}%;background:#1F3864;border-radius:4px"></div>
+      </div>
+      <span style="width:36px;text-align:right;font-weight:600;color:#1F3864;flex-shrink:0">${d.calls}건</span>
+      <span style="width:60px;text-align:right;color:#E24B4A;font-size:11px;flex-shrink:0">${d.cost.toLocaleString()}원</span>
+    </div>`;
+  }).join('');
+}
+
+// ── 일별 추이 차트 ──
+function renderAdminDailyChart(logs) {
+  const el = document.getElementById('adm-daily-chart');
+  if (!el) return;
+  if (!logs.length) {
+    el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:12px">데이터 없음</div>';
+    return;
+  }
+
+  const byDay = {};
+  logs.forEach(l => {
+    const day = (l.created_at || '').slice(0, 10);
+    if (!day) return;
+    if (!byDay[day]) byDay[day] = { calls:0, cost:0 };
+    byDay[day].calls++;
+    byDay[day].cost += l.cost_krw || 0;
+  });
+
+  const days = Object.keys(byDay).sort();
+  const maxCost = Math.max(...Object.values(byDay).map(d=>d.cost), 1);
+
+  // 최대 30일치 표시
+  const showDays = days.slice(-30);
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:4px;height:100px;padding:0 4px;overflow-x:auto;min-width:0">
+      ${showDays.map(day => {
+        const d = byDay[day];
+        const h = Math.max(Math.round(d.cost / maxCost * 80), 4);
+        const mmdd = day.slice(5);
+        const isToday = day === new Date().toISOString().slice(0,10);
+        return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:22px">
+          <div style="font-size:9px;color:#555;margin-bottom:2px">${d.cost >= 1000 ? (d.cost/1000).toFixed(1)+'K' : d.cost}</div>
+          <div style="height:${h}px;width:100%;background:${isToday?'#E24B4A':'#1F3864'};border-radius:3px 3px 0 0;opacity:${isToday?1:0.7}" title="${day}: ${d.cost.toLocaleString()}원 · ${d.calls}건"></div>
+          <div style="font-size:9px;color:#aaa;margin-top:3px;white-space:nowrap">${mmdd}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:10px;color:#aaa;text-align:right;margin-top:4px">단위: 원 · 최근 ${showDays.length}일</div>`;
+}
+
+// ── API 로그 목록 ──
+function renderAdminLogs() {
+  const el = document.getElementById('adm-log-body');
+  if (!el) return;
+  const filterCenter = document.getElementById('adm-log-center-filter')?.value || '';
+  const logs = filterByPeriod(_adminAllLogs, _adminPeriodDays)
+    .filter(l => !filterCenter || (l.center_short || '').includes(filterCenter))
+    .slice(0, 50);
+
+  if (!logs.length) {
+    el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:12px">로그 없음</div>';
+    return;
+  }
+
+  const CTR_COLOR = { '삽교': '#1F3864', '덕산': '#0D6E55', '내포소망': '#5C3489' };
+  el.innerHTML = logs.map(l => {
+    const dt = new Date(l.created_at);
+    const dateStr = isNaN(dt) ? l.created_at : `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const ctr = l.center_short || '';
+    const clr = CTR_COLOR[ctr] || '#888';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#fafafa;border:1px solid #eee;border-radius:7px;margin-bottom:4px;font-size:11px">
+      <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${clr}18;color:${clr};border:1px solid ${clr}30;font-weight:600;flex-shrink:0">${ctr||'?'}</span>
+      <span style="color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.doc_label||'?'}</span>
+      <span style="color:#aaa;white-space:nowrap;flex-shrink:0">${dateStr}</span>
+      <span style="color:#E24B4A;font-weight:600;white-space:nowrap;min-width:55px;text-align:right;flex-shrink:0">${(l.cost_krw||0).toLocaleString()}원</span>
+    </div>`;
+  }).join('') + (logs.length === 50 ? '<div style="text-align:center;font-size:11px;color:#aaa;padding:6px">최근 50건만 표시</div>' : '');
+}
+
+// ── 문서 이력 (Supabase) ──
+async function loadAdminDocHistory() {
+  const el = document.getElementById('adm-doc-history-body');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:12px">불러오는 중...</div>';
+
+  const filterCode = document.getElementById('adm-doc-center-filter')?.value || '';
+  try {
+    let url = `${SUPABASE_URL}/rest/v1/documents?doc_type=neq.__residents__&order=created_at.desc&limit=100`;
+    if (filterCode) url += `&center_code=eq.${filterCode}`;
+    const res = await fetch(url, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const docs = await res.json();
+
+    if (!docs.length) {
+      el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:12px">저장된 문서 없음</div>';
+      return;
+    }
+
+    // 센터별 집계
+    const byCtr = {};
+    docs.forEach(d => {
+      const k = d.center_name || d.center_code || '기타';
+      if (!byCtr[k]) byCtr[k] = 0;
+      byCtr[k]++;
+    });
+    const totalStr = Object.entries(byCtr).map(([k,v])=>`${k} ${v}건`).join(' · ');
+
+    const CTR_CLR = { '삽교주간보호센터':'#1F3864','덕산주간보호센터':'#0D6E55','내포소망주간보호센터':'#5C3489' };
+    el.innerHTML = `
+      <div style="font-size:11px;color:#888;margin-bottom:8px;padding:6px 10px;background:#F8F9FB;border-radius:6px">${totalStr} · 총 ${docs.length}건</div>
+      ${docs.map((d,i) => {
+        const dt = new Date(d.created_at);
+        const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+        const clr = CTR_CLR[d.center_name] || '#888';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #E8EAF0;border-radius:8px;margin-bottom:5px;font-size:11px">
+          <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${clr}15;color:${clr};border:1px solid ${clr}30;font-weight:600;flex-shrink:0;white-space:nowrap">${d.center_name||d.center_code}</span>
+          <span style="font-weight:600;color:#333;flex-shrink:0">${d.resident_name||'-'}</span>
+          <span style="color:#888;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.doc_type||''}</span>
+          <span style="color:#aaa;white-space:nowrap;flex-shrink:0;font-size:10px">${dateStr}</span>
+          <button onclick="openAdminDoc(${i})"
+            style="font-size:10px;padding:3px 9px;border-radius:5px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0"
+            onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
+            onmouseout="this.style.background='#fff';this.style.color='#1F3864'">보기</button>
+        </div>`;
+      }).join('')}`;
+    window._adminDocs = docs;
+  } catch(e) {
+    el.innerHTML = `<div style="color:#E24B4A;font-size:12px;padding:8px">조회 오류: ${e.message}</div>`;
+  }
+}
+
+function openAdminDoc(idx) {
+  const docs = window._adminDocs;
+  if (!docs || idx < 0 || idx >= docs.length) return;
+  const d = docs[idx];
+  // hist-doc-modal 재사용
+  if (!document.getElementById('hist-doc-modal')) {
+    const m = document.createElement('div');
+    m.id = 'hist-doc-modal';
+    m.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9999;overflow-y:auto;padding:20px';
+    m.innerHTML = `<div style="background:#fff;border-radius:14px;max-width:860px;margin:auto;overflow:hidden">
+      <div style="background:#1F3864;color:#fff;padding:13px 18px;display:flex;align-items:center;gap:10px">
+        <span id="hist-modal-title" style="font-size:14px;font-weight:600;flex:1"></span>
+        <span id="hist-modal-date" style="font-size:11px;opacity:.7"></span>
+        <button onclick="document.getElementById('hist-doc-modal').style.display='none'" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">✕</button>
+      </div>
+      <div id="hist-modal-body" style="padding:16px;max-height:80vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
+    </div>`;
+    m.addEventListener('click', e => { if(e.target===m) m.style.display='none'; });
+    document.body.appendChild(m);
+  }
+  const dt = new Date(d.created_at);
+  const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+  document.getElementById('hist-modal-title').textContent = `${d.resident_name||''} · ${d.doc_type||''}`;
+  document.getElementById('hist-modal-date').textContent  = `${d.center_name||''} · ${dateStr}`;
+  const content = d.doc_content || '';
+  const body = document.getElementById('hist-modal-body');
+  if (content.trim().toLowerCase().startsWith('<!doctype') || content.trim().toLowerCase().startsWith('<html')) {
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    body.innerHTML = `<iframe src="${blobUrl}" style="width:100%;height:75vh;border:none;border-radius:6px" onload="setTimeout(()=>URL.revokeObjectURL('${blobUrl}'),3000)"></iframe>`;
+  } else {
+    const fullHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${DOC_CSS||''}</style></head><body>${content}</body></html>`;
+    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    body.innerHTML = `<iframe src="${blobUrl}" style="width:100%;height:75vh;border:none;border-radius:6px" onload="setTimeout(()=>URL.revokeObjectURL('${blobUrl}'),3000)"></iframe>`;
+  }
+  document.getElementById('hist-doc-modal').style.display = 'block';
+}
+
+function clearAdminUsageLog() {
+  if (!confirm('localStorage 사용량 기록을 모두 삭제할까요?\nSupabase 기록은 유지됩니다.')) return;
+  localStorage.removeItem('daeum-usage-log');
+  _adminAllLogs = _adminAllLogs.filter(l => l.id); // Supabase 항목만 유지
+  renderAdminFromCache();
+}
+
+// ── 관리자 탭 전환 시 호출 ──
+function initAdminTab() {
+  const isAdmin = sessionStorage.getItem('ium-admin') === '0508';
+  if (isAdmin) {
+    document.getElementById('admin-gate-card').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    loadAdminData();
+  }
+  // 관리자 탭 버튼 항상 표시 (탭 클릭으로만 접근)
+}
+
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.01
+  Day:음 · v2026.06.16.03
 </div>
 </body>
 </html>
