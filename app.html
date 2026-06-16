@@ -8860,8 +8860,9 @@ function findValidAuth() {
   return null;
 }
 
-// DB에서 CENTERS 로드 후 인증 체크
-loadCenters().then(() => {
+// DB에서 CENTERS 로드 후 인증 체크 (DOM 준비 후 실행)
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadCenters();
   const validCode = findValidAuth();
   if (validCode) {
     centerCode = validCode;
