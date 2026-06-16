@@ -5764,6 +5764,7 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
       const isPilot = !!(CENTERS[centerCode]?.pilot);
       const pointMult = isPilot ? POINT_MULTIPLIER_PILOT : POINT_MULTIPLIER_BASE;
       const costKRW = Math.round(costUSD * 1380 * pointMult);
+      const costRawKRW = Math.round(costUSD * 1380);
       const cfg = CENTERS[centerCode] || {};
       const nowIso = new Date().toISOString();
       const log = {
@@ -5774,7 +5775,8 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
         doc: docLabel || '문서',
         input: inputTokens,
         output: outputTokens,
-        costKRW
+        costKRW,
+        costRawKRW
       };
       // localStorage (로컬 빠른 조회용)
       const USAGE_KEY = 'daeum-usage-log';
@@ -9579,7 +9581,8 @@ async function saveUsageToSupabase(log) {
         doc_label:    log.doc          || '',
         input_tokens: log.input        || 0,
         output_tokens:log.output       || 0,
-        cost_krw:     log.costKRW      || 0
+        cost_krw:     log.costKRW      || 0,
+        cost_raw_krw: log.costRawKRW   || 0
       })
     });
   } catch(e) { /* 실패 무시 */ }
@@ -10353,7 +10356,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.20.ff
+  Day:음 · v2026.06.16.77.F
 </div>
 </body>
 </html>
