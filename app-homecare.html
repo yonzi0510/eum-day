@@ -530,15 +530,22 @@ if (!quickCode) {
   location.replace('index.html');
 } else {
   centerCode = quickCode;
-  document.addEventListener('DOMContentLoaded', async () => {
-    await loadCenters();
-    const validCode = findValidAuth();
-    if (validCode) {
-      centerCode = validCode;
-      applyCenterUI();
-    } else {
-      location.replace('index.html');
-    }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // UI 즉시 적용
+    applyCenterUI();
+
+    // DB 로드 백그라운드 (3초 타임아웃)
+    const centersTimeout = new Promise(resolve => setTimeout(resolve, 3000));
+    Promise.race([loadCenters(), centersTimeout]).then(() => {
+      const validCode = findValidAuth();
+      if (!validCode) {
+        location.replace('index.html');
+      } else if (validCode !== centerCode) {
+        centerCode = validCode;
+        applyCenterUI();
+      }
+    }).catch(() => {});
   });
 }
 
