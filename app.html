@@ -522,6 +522,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .style-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1F3864}
 .style-bubble.visible{opacity:1}
 </style>
+<script src="centers.js"></script>
 </head>
 <body>
 
@@ -4016,6 +4017,133 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
       </div>
       <div id="adm-doc-history-body">
         <div style="text-align:center;color:#bbb;padding:16px;font-size:13px">불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- ══ 센터 관리 ══ -->
+    <div class="card" style="margin-top:4px">
+      <div class="card-title" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+        <span>🏥 센터 관리</span>
+        <button onclick="openAddCenterModal()"
+          style="padding:6px 14px;border-radius:7px;border:none;background:#1F3864;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px">
+          + 센터 추가
+        </button>
+      </div>
+
+      <!-- 센터 목록 테이블 -->
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px" id="adm-center-manage-table">
+          <thead>
+            <tr style="background:#F8F9FB;font-size:10px;color:#888;font-weight:700;letter-spacing:.3px">
+              <th style="padding:8px 10px;text-align:left;border-bottom:1.5px solid #E8EAF0">코드 ID</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:1.5px solid #E8EAF0">센터명</th>
+              <th style="padding:8px 10px;text-align:center;border-bottom:1.5px solid #E8EAF0">접속코드</th>
+              <th style="padding:8px 10px;text-align:center;border-bottom:1.5px solid #E8EAF0">종류</th>
+              <th style="padding:8px 10px;text-align:center;border-bottom:1.5px solid #E8EAF0">만료일</th>
+              <th style="padding:8px 10px;text-align:center;border-bottom:1.5px solid #E8EAF0">상태</th>
+              <th style="padding:8px 10px;text-align:center;border-bottom:1.5px solid #E8EAF0">관리</th>
+            </tr>
+          </thead>
+          <tbody id="adm-center-rows"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:12px;padding:10px 12px;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;font-size:11px;color:#7A5C00;line-height:1.7">
+        ⚠️ <strong>주의:</strong> 센터 추가/수정 후 변경사항은 <code style="background:#FFF0C0;padding:1px 4px;border-radius:3px">app.html</code>, <code style="background:#FFF0C0;padding:1px 4px;border-radius:3px">app-homecare.html</code>, <code style="background:#FFF0C0;padding:1px 4px;border-radius:3px">index.html</code> 3개 파일의 CENTERS 객체에 <strong>동일하게 반영</strong>해야 합니다.
+        여기서 저장하면 현재 세션에만 임시 적용되며, 새로고침 시 초기화됩니다.
+      </div>
+    </div>
+
+    <!-- 센터 추가/수정 모달 -->
+    <div id="adm-center-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:16px;padding:28px 24px;max-width:440px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,0.2)">
+        <div style="font-size:15px;font-weight:700;color:#1F3864;margin-bottom:18px" id="adm-modal-title">센터 추가</div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- 코드 ID -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">코드 ID <span style="color:#E24B4A">*</span> <span style="font-weight:400;color:#aaa">(영문 소문자, 예: homecare1)</span></div>
+            <input id="modal-center-id" type="text" placeholder="예: homecare1"
+              style="width:100%;padding:9px 12px;border:1.5px solid #C5CAE9;border-radius:8px;font-size:13px;font-family:inherit;outline:none">
+          </div>
+          <!-- 센터명 -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">센터명 <span style="color:#E24B4A">*</span></div>
+            <input id="modal-center-name" type="text" placeholder="예: ○○방문요양센터"
+              style="width:100%;padding:9px 12px;border:1.5px solid #C5CAE9;border-radius:8px;font-size:13px;font-family:inherit;outline:none">
+          </div>
+          <!-- 줄임명 -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">줄임명 <span style="color:#E24B4A">*</span> <span style="font-weight:400;color:#aaa">(헤더·통계 표시용)</span></div>
+            <input id="modal-center-short" type="text" placeholder="예: ○○방문"
+              style="width:100%;padding:9px 12px;border:1.5px solid #C5CAE9;border-radius:8px;font-size:13px;font-family:inherit;outline:none">
+          </div>
+          <!-- 접속코드 -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">접속코드 <span style="color:#E24B4A">*</span> <span style="font-weight:400;color:#aaa">(숫자 4자리 권장)</span></div>
+            <input id="modal-center-key" type="text" placeholder="예: 1101" maxlength="10"
+              style="width:100%;padding:9px 12px;border:1.5px solid #C5CAE9;border-radius:8px;font-size:13px;font-family:inherit;outline:none;letter-spacing:3px">
+          </div>
+          <!-- 센터 종류 -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">센터 종류 <span style="color:#E24B4A">*</span></div>
+            <div style="display:flex;gap:8px">
+              <label style="display:flex;align-items:center;gap:6px;flex:1;padding:9px 12px;border:1.5px solid #C5CAE9;border-radius:8px;cursor:pointer;font-size:12px;transition:all .2s" id="type-lbl-daycenter">
+                <input type="radio" name="modal-center-type" value="daycenter" onchange="onModalTypeChange()" style="accent-color:#1F3864"> 🏠 주야간보호
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;flex:1;padding:9px 12px;border:1.5px solid #C5CAE9;border-radius:8px;cursor:pointer;font-size:12px;transition:all .2s" id="type-lbl-homecare">
+                <input type="radio" name="modal-center-type" value="homecare" onchange="onModalTypeChange()"> 🚗 방문요양
+              </label>
+            </div>
+            <div style="margin-top:6px;padding:7px 10px;border-radius:6px;font-size:11px;line-height:1.6" id="modal-type-desc" style="display:none"></div>
+          </div>
+          <!-- 헤더 색상 -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">헤더 색상</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                <input type="radio" name="modal-color" value="#1F3864" checked style="accent-color:#1F3864"> <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#1F3864;vertical-align:middle"></span> 네이비
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                <input type="radio" name="modal-color" value="#0D6E55" style="accent-color:#0D6E55"> <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#0D6E55;vertical-align:middle"></span> 그린
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                <input type="radio" name="modal-color" value="#5C3489" style="accent-color:#5C3489"> <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#5C3489;vertical-align:middle"></span> 퍼플
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                <input type="radio" name="modal-color" value="#B85C00" style="accent-color:#B85C00"> <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#B85C00;vertical-align:middle"></span> 브라운
+              </label>
+            </div>
+          </div>
+          <!-- 만료일 -->
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:5px">만료일 <span style="color:#E24B4A">*</span></div>
+            <input id="modal-center-expires" type="date" value="2026-12-31"
+              style="width:100%;padding:9px 12px;border:1.5px solid #C5CAE9;border-radius:8px;font-size:13px;font-family:inherit;outline:none;color:#333">
+          </div>
+        </div>
+
+        <!-- 에러 -->
+        <div id="modal-err" style="display:none;margin-top:10px;padding:8px 12px;background:#FCEBEB;border-radius:7px;font-size:12px;color:#791F1F"></div>
+
+        <!-- 코드 미리보기 -->
+        <div id="modal-code-preview" style="display:none;margin-top:12px;background:#F8F9FB;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px">
+          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:6px;letter-spacing:.3px">CENTERS 코드 미리보기</div>
+          <pre id="modal-code-text" style="font-size:11px;color:#333;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
+          <button onclick="copyModalCode()" style="margin-top:6px;padding:4px 12px;border-radius:5px;border:1px solid #C5CAE9;background:#fff;font-size:11px;cursor:pointer;font-family:inherit;color:#555">📋 코드 복사</button>
+        </div>
+
+        <!-- 버튼 -->
+        <div style="display:flex;gap:8px;margin-top:18px">
+          <button onclick="closeAddCenterModal()"
+            style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #E0E6F0;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+            취소
+          </button>
+          <button onclick="saveCenter()"
+            style="flex:2;padding:10px;border-radius:8px;border:none;background:#1F3864;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+            저장 (현재 세션 적용)
+          </button>
+        </div>
       </div>
     </div>
 
@@ -8708,22 +8836,14 @@ async function loadDocsFromSupabase(centerCode) {
 const POINT_MULTIPLIER_BASE  = 5;
 const POINT_MULTIPLIER_PILOT = 3;
 
-const CENTERS = {
-  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '0101', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '0202', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  // 방문요양 테스트 센터 (추후 추가)
-  // homecare1: { name: '○○방문요양센터', short: '○○', color: '#1F3864', key: '1101', expires: '2026-12-31', pilot: true, type: 'homecare' },
-};
+// CENTERS는 centers.js의 loadCenters()로 로드됨
 
 const urlParams = new URLSearchParams(window.location.search);
 let centerCode = urlParams.get('center') || sessionStorage.getItem('ium-center') || '';
 
 // ────── app.html 인증 체크 ──────
-// sessionStorage에서 유효한 인증 찾기
 function findValidAuth() {
   const today = new Date().toISOString().slice(0,10);
-  // URL 파라미터 center 우선
   const paramCode = urlParams.get('center');
   if (paramCode && CENTERS[paramCode]) {
     const cfg = CENTERS[paramCode];
@@ -8731,7 +8851,6 @@ function findValidAuth() {
       return paramCode;
     }
   }
-  // sessionStorage 전체 확인
   for (const code of Object.keys(CENTERS)) {
     const cfg = CENTERS[code];
     if (sessionStorage.getItem('ium-auth-' + code) === cfg.key && today <= cfg.expires) {
@@ -8741,21 +8860,20 @@ function findValidAuth() {
   return null;
 }
 
-const validCode = findValidAuth();
-if (validCode) {
-  centerCode = validCode;
-  // 센터 UI 즉시 적용 (DOM 로드 후)
-  document.addEventListener('DOMContentLoaded', () => {
-  applyCenterUI();
-  // 관리자 탭 버튼: 이미 인증된 세션이면 표시
-  if (sessionStorage.getItem('ium-admin') === '0508') {
-    const adminBtn = document.getElementById('admin-tab-btn');
-    if (adminBtn) adminBtn.style.display = 'block';
+// DB에서 CENTERS 로드 후 인증 체크
+loadCenters().then(() => {
+  const validCode = findValidAuth();
+  if (validCode) {
+    centerCode = validCode;
+    applyCenterUI();
+    if (sessionStorage.getItem('ium-admin') === '0508') {
+      const adminBtn = document.getElementById('admin-tab-btn');
+      if (adminBtn) adminBtn.style.display = 'block';
+    }
+  } else {
+    location.replace('index.html');
   }
 });
-} else {
-  location.replace('index.html');
-}
 
 function showLockScreen(msg) {
   document.body.style.overflow = 'hidden';
@@ -9507,6 +9625,7 @@ function adminTabLogin() {
       document.getElementById('tab-admin').style.display = 'block';
     }
     loadAdminData();
+    renderCenterManageTable();
   } else {
     document.getElementById('adm-code-error').style.display = 'block';
     document.getElementById('adm-code-input').value = '';
@@ -9523,6 +9642,198 @@ function adminLogout() {
 }
 
 function adminRefresh() { loadAdminData(); }
+
+// ════════════════════════════════════════
+//  센터 관리
+// ════════════════════════════════════════
+let _editingCenterId = null; // 수정 중인 센터 ID (null이면 신규 추가)
+
+// 센터 목록 렌더링
+function renderCenterManageTable() {
+  const tbody = document.getElementById('adm-center-rows');
+  if (!tbody) return;
+  const today = new Date().toISOString().slice(0,10);
+
+  tbody.innerHTML = Object.entries(CENTERS).map(([id, cfg]) => {
+    const isExpired = today > cfg.expires;
+    const typeLabel = cfg.type === 'homecare'
+      ? '<span style="background:#E1F5EE;color:#085041;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">🚗 방문요양</span>'
+      : '<span style="background:#EEF2FF;color:#3730A3;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">🏠 주야간보호</span>';
+    const statusBadge = isExpired
+      ? '<span style="background:#FCEBEB;color:#791F1F;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">만료</span>'
+      : '<span style="background:#E1F5EE;color:#085041;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600">활성</span>';
+    return `<tr style="border-bottom:0.5px solid #F0F0F0">
+      <td style="padding:10px 10px;color:#555;font-size:11px;font-family:monospace">${id}</td>
+      <td style="padding:10px 10px">
+        <div style="font-weight:600;font-size:12px;color:#1F3864">${cfg.name}</div>
+        <div style="font-size:10px;color:#aaa;margin-top:1px">${cfg.short}</div>
+      </td>
+      <td style="padding:10px 10px;text-align:center;font-weight:700;font-size:13px;letter-spacing:2px;color:#333">${cfg.key}</td>
+      <td style="padding:10px 10px;text-align:center">${typeLabel}</td>
+      <td style="padding:10px 10px;text-align:center;font-size:11px;color:${isExpired?'#E24B4A':'#555'}">${cfg.expires}</td>
+      <td style="padding:10px 10px;text-align:center">${statusBadge}</td>
+      <td style="padding:10px 10px;text-align:center">
+        <div style="display:flex;gap:5px;justify-content:center">
+          <button onclick="openEditCenterModal('${id}')"
+            style="padding:4px 10px;border-radius:5px;border:1px solid #C5CAE9;background:#fff;font-size:11px;cursor:pointer;font-family:inherit;color:#1F3864;font-weight:500">수정</button>
+          <button onclick="deleteCenter('${id}')"
+            style="padding:4px 10px;border-radius:5px;border:1px solid #FCEBEB;background:#FCEBEB;font-size:11px;cursor:pointer;font-family:inherit;color:#791F1F;font-weight:500">삭제</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// 모달 열기 (신규)
+function openAddCenterModal() {
+  _editingCenterId = null;
+  document.getElementById('adm-modal-title').textContent = '센터 추가';
+  document.getElementById('modal-center-id').value = '';
+  document.getElementById('modal-center-id').disabled = false;
+  document.getElementById('modal-center-name').value = '';
+  document.getElementById('modal-center-short').value = '';
+  document.getElementById('modal-center-key').value = '';
+  document.getElementById('modal-center-expires').value = '2026-12-31';
+  document.querySelectorAll('input[name="modal-center-type"]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[name="modal-color"]').forEach(r => { r.checked = r.value === '#1F3864'; });
+  document.getElementById('modal-err').style.display = 'none';
+  document.getElementById('modal-code-preview').style.display = 'none';
+  document.getElementById('modal-type-desc').style.display = 'none';
+  const modal = document.getElementById('adm-center-modal');
+  modal.style.display = 'flex';
+}
+
+// 모달 열기 (수정)
+function openEditCenterModal(id) {
+  const cfg = CENTERS[id];
+  if (!cfg) return;
+  _editingCenterId = id;
+  document.getElementById('adm-modal-title').textContent = '센터 수정';
+  document.getElementById('modal-center-id').value = id;
+  document.getElementById('modal-center-id').disabled = true; // ID는 수정 불가
+  document.getElementById('modal-center-name').value = cfg.name;
+  document.getElementById('modal-center-short').value = cfg.short;
+  document.getElementById('modal-center-key').value = cfg.key;
+  document.getElementById('modal-center-expires').value = cfg.expires;
+  document.querySelectorAll('input[name="modal-center-type"]').forEach(r => { r.checked = r.value === (cfg.type || 'daycenter'); });
+  document.querySelectorAll('input[name="modal-color"]').forEach(r => { r.checked = r.value === cfg.color; });
+  document.getElementById('modal-err').style.display = 'none';
+  onModalTypeChange();
+  updateModalCodePreview();
+  const modal = document.getElementById('adm-center-modal');
+  modal.style.display = 'flex';
+}
+
+// 모달 닫기
+function closeAddCenterModal() {
+  document.getElementById('adm-center-modal').style.display = 'none';
+  _editingCenterId = null;
+}
+
+// 타입 변경 시 설명 업데이트
+function onModalTypeChange() {
+  const type = document.querySelector('input[name="modal-center-type"]:checked')?.value;
+  const descEl = document.getElementById('modal-type-desc');
+  if (!descEl) return;
+  if (!type) { descEl.style.display = 'none'; return; }
+  descEl.style.display = 'block';
+  if (type === 'homecare') {
+    descEl.style.background = '#E1F5EE';
+    descEl.style.color = '#085041';
+    descEl.innerHTML = '🚗 <strong>방문요양</strong> — 로그인 후 <code>app-homecare.html</code>로 이동합니다.<br>생성 문서: 상담일지 · 사례관리 · 낙상위험도 · 욕창위험도 · 인지기능 · 욕구사정 · 결과평가 · 계획서';
+  } else {
+    descEl.style.background = '#EEF2FF';
+    descEl.style.color = '#3730A3';
+    descEl.innerHTML = '🏠 <strong>주야간보호</strong> — 로그인 후 <code>app.html</code>로 이동합니다.<br>생성 문서: 상담일지 · 사례관리 · 기초평가 · 욕구사정 · 결과평가 · 계획서 · 연계기록지 등';
+  }
+  updateModalCodePreview();
+}
+
+// 코드 미리보기 업데이트
+function updateModalCodePreview() {
+  const id      = document.getElementById('modal-center-id')?.value.trim();
+  const name    = document.getElementById('modal-center-name')?.value.trim();
+  const short_  = document.getElementById('modal-center-short')?.value.trim();
+  const key     = document.getElementById('modal-center-key')?.value.trim();
+  const expires = document.getElementById('modal-center-expires')?.value;
+  const type    = document.querySelector('input[name="modal-center-type"]:checked')?.value || 'daycenter';
+  const color   = document.querySelector('input[name="modal-color"]:checked')?.value || '#1F3864';
+
+  if (!id && !name) { document.getElementById('modal-code-preview').style.display = 'none'; return; }
+
+  document.getElementById('modal-code-preview').style.display = 'block';
+  document.getElementById('modal-code-text').textContent =
+    `${id || 'id미입력'}: { name: '${name||''}', short: '${short_||''}', color: '${color}', key: '${key||''}', expires: '${expires||''}', pilot: true, type: '${type}' },`;
+}
+
+// 저장 (현재 세션 적용)
+function saveCenter() {
+  const id      = document.getElementById('modal-center-id')?.value.trim();
+  const name    = document.getElementById('modal-center-name')?.value.trim();
+  const short_  = document.getElementById('modal-center-short')?.value.trim();
+  const key     = document.getElementById('modal-center-key')?.value.trim();
+  const expires = document.getElementById('modal-center-expires')?.value;
+  const type    = document.querySelector('input[name="modal-center-type"]:checked')?.value;
+  const color   = document.querySelector('input[name="modal-color"]:checked')?.value || '#1F3864';
+  const errEl   = document.getElementById('modal-err');
+
+  // 유효성 검사
+  const errors = [];
+  if (!id)      errors.push('코드 ID를 입력해주세요');
+  if (!/^[a-z0-9_]+$/.test(id||'')) errors.push('코드 ID는 영문 소문자·숫자·_ 만 사용 가능합니다');
+  if (!_editingCenterId && CENTERS[id]) errors.push(`이미 존재하는 코드 ID입니다: ${id}`);
+  if (!name)    errors.push('센터명을 입력해주세요');
+  if (!short_)  errors.push('줄임명을 입력해주세요');
+  if (!key)     errors.push('접속코드를 입력해주세요');
+  if (Object.entries(CENTERS).some(([cid, cfg]) => cfg.key === key && cid !== (_editingCenterId || '')))
+    errors.push(`이미 사용 중인 접속코드입니다: ${key}`);
+  if (!type)    errors.push('센터 종류를 선택해주세요');
+  if (!expires) errors.push('만료일을 입력해주세요');
+
+  if (errors.length) {
+    errEl.innerHTML = errors.map(e => `• ${e}`).join('<br>');
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // CENTERS에 적용 (현재 세션)
+  const targetId = _editingCenterId || id;
+  CENTERS[targetId] = { name, short: short_, color, key, expires, pilot: true, type };
+
+  errEl.style.display = 'none';
+  closeAddCenterModal();
+  renderCenterManageTable();
+
+  // 코드 복사 안내
+  const codeSnippet = `${targetId}: { name: '${name}', short: '${short_}', color: '${color}', key: '${key}', expires: '${expires}', pilot: true, type: '${type}' },`;
+  alert(`✅ 현재 세션에 적용됐어요!\n\n아래 코드를 app.html, app-homecare.html, index.html 의 CENTERS 객체에 추가해주세요:\n\n${codeSnippet}`);
+}
+
+// 삭제
+function deleteCenter(id) {
+  const cfg = CENTERS[id];
+  if (!cfg) return;
+  if (!confirm(`"${cfg.name}" 센터를 삭제할까요?\n현재 세션에서만 삭제되며, 파일에는 직접 반영해야 합니다.`)) return;
+  delete CENTERS[id];
+  renderCenterManageTable();
+}
+
+// 모달 코드 복사
+function copyModalCode() {
+  const text = document.getElementById('modal-code-text')?.textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => alert('복사됐어요! 3개 파일의 CENTERS에 붙여넣어 주세요.')).catch(() => alert('복사 실패'));
+}
+
+// 입력 변경 시 미리보기 업데이트
+document.addEventListener('DOMContentLoaded', () => {
+  ['modal-center-id','modal-center-name','modal-center-short','modal-center-key','modal-center-expires'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateModalCodePreview);
+  });
+  document.querySelectorAll('input[name="modal-color"]').forEach(r => {
+    r.addEventListener('change', updateModalCodePreview);
+  });
+});
 
 function setAdminPeriod(days, btn) {
   _adminPeriodDays = days;
