@@ -122,18 +122,22 @@ body{
   <div class="copy">© 2026 Day:음 · 저작권 등록 완료</div>
 </div>
 
+<script src="centers.js"></script>
 <script>
-// ────── 센터 정의 (app.html / app-homecare.html과 동일하게 유지) ──────
-const CENTERS = {
-  sapgyo:  { name: '삽교주간보호센터',   short: '삽교',   color: '#1F3864', key: '0101', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  center2: { name: '덕산주간보호센터',   short: '덕산',   color: '#0D6E55', key: '0202', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  center3: { name: '내포소망주간보호센터', short: '내포소망', color: '#5C3489', key: '0303', expires: '2026-12-31', pilot: true, type: 'daycenter' },
-  // 방문요양 테스트 센터 추가 시 아래에 입력
-  // homecare1: { name: '○○방문요양센터', short: '○○', color: '#1F3864', key: '1101', expires: '2026-12-31', pilot: true, type: 'homecare' },
-};
+// DB에서 CENTERS 로드 후 세션 체크
+document.addEventListener('DOMContentLoaded', async () => {
+  // 로딩 표시
+  const btn = document.querySelector('.login-btn');
+  if (btn) btn.textContent = '연결 중...';
 
-// 이미 인증된 세션이면 바로 이동
-(function() {
+  await loadCenters();
+
+  if (btn) btn.textContent = '입장하기';
+
+  // 포커스
+  document.getElementById('code-input')?.focus();
+
+  // 이미 인증된 세션이면 바로 이동
   const today = new Date().toISOString().slice(0,10);
   for (const [code, cfg] of Object.entries(CENTERS)) {
     if (sessionStorage.getItem('ium-auth-' + code) === cfg.key && today <= cfg.expires) {
@@ -141,7 +145,7 @@ const CENTERS = {
       return;
     }
   }
-})();
+});
 
 function doLogin() {
   const input = document.getElementById('code-input').value.trim();
@@ -151,8 +155,8 @@ function doLogin() {
   if (!input) return;
 
   // 관리자 코드
-  if (input === '0508') {
-    sessionStorage.setItem('daeum-admin-auth', '0508');
+  if (input === ADMIN_CODE) {
+    sessionStorage.setItem('daeum-admin-auth', ADMIN_CODE);
     location.replace('admin.html');
     return;
   }
@@ -175,30 +179,19 @@ function doLogin() {
     return;
   }
 
-  // 인증 저장
   sessionStorage.setItem(`ium-auth-${code}`, input);
   sessionStorage.setItem('ium-center', code);
-
-  // 타입에 따라 분기
   redirectByType(code, cfg.type);
 }
 
 function redirectByType(code, type) {
-  const urlParams = new URLSearchParams(window.location.search);
   const centerParam = `?center=${code}`;
-
   if (type === 'homecare') {
     location.replace('app-homecare.html' + centerParam);
   } else {
-    // daycenter (기본)
     location.replace('app.html' + centerParam);
   }
 }
-
-// 포커스
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('code-input')?.focus();
-});
 </script>
 </body>
 </html>
