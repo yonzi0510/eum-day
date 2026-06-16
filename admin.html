@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day:음 관리자</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px;background:#0F1923;color:#E8EAF0;min-height:100vh}
+
+/* ── 로그인 화면 ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:#1A2535;border:1px solid #2A3A50;border-radius:20px;padding:44px 36px 36px;width:100%;max-width:360px;text-align:center}
+.login-logo{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:4px}
+.login-logo span{color:#4ECFA0}
+.login-sub{font-size:12px;color:#607080;margin-bottom:36px}
+.login-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#1F3864;color:#7AAEE8;border:1px solid #2A4A7A;margin-bottom:28px;letter-spacing:.5px}
+.login-input{width:100%;padding:13px 16px;background:#0F1923;border:1.5px solid #2A3A50;border-radius:10px;font-size:15px;font-family:inherit;color:#fff;text-align:center;letter-spacing:6px;transition:border .2s;margin-bottom:8px}
+.login-input:focus{outline:none;border-color:#4ECFA0}
+.login-input::placeholder{letter-spacing:1px;font-size:13px;color:#405060}
+.login-error{font-size:11px;color:#E24B4A;min-height:18px;margin-bottom:10px}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#1F3864,#0D6E55);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
+.login-btn:hover{opacity:.88}
+
+/* ── 대시보드 ── */
+#dashboard{display:none}
+.top-bar{background:#1A2535;border-bottom:1px solid #2A3A50;padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.top-logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.top-logo span{color:#4ECFA0}
+.top-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;background:#1F3864;color:#7AAEE8;border:1px solid #2A4A7A}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.top-time{font-size:11px;color:#607080}
+.top-btn{padding:5px 13px;border-radius:6px;border:1px solid #2A3A50;background:rgba(255,255,255,.05);color:#AAB4C0;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s}
+.top-btn:hover{border-color:#4ECFA0;color:#4ECFA0}
+.top-btn.danger:hover{border-color:#E24B4A;color:#E24B4A}
+
+/* ── 사이드 탭 ── */
+.layout{display:grid;grid-template-columns:180px 1fr;min-height:calc(100vh - 49px)}
+.sidebar{background:#141E2B;border-right:1px solid #2A3A50;padding:16px 0}
+.side-label{font-size:9px;font-weight:700;color:#405060;letter-spacing:1.5px;padding:0 16px 6px;margin-top:8px}
+.side-btn{width:100%;display:flex;align-items:center;gap:9px;padding:10px 16px;border:none;background:none;color:#7A8A9A;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .18s;text-align:left}
+.side-btn:hover{background:rgba(78,207,160,.06);color:#C8D4E0}
+.side-btn.active{background:rgba(78,207,160,.12);color:#4ECFA0;font-weight:700}
+.side-btn .si{font-size:15px;flex-shrink:0}
+.side-divider{height:1px;background:#2A3A50;margin:8px 16px}
+
+.content{padding:22px 24px;overflow-y:auto}
+.sec-content{display:none}
+.sec-content.active{display:block}
+
+/* ── 공통 카드 ── */
+.card{background:#1A2535;border:1px solid #2A3A50;border-radius:12px;padding:18px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:700;color:#C8D4E0;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title-left{display:flex;align-items:center;gap:7px}
+
+/* ── KPI 그리드 ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.kpi-card{background:#141E2B;border:1px solid #2A3A50;border-radius:10px;padding:14px 16px}
+.kpi-label{font-size:10px;color:#607080;margin-bottom:6px;font-weight:600;letter-spacing:.3px}
+.kpi-val{font-size:22px;font-weight:800;line-height:1}
+.kpi-sub{font-size:10px;color:#405060;margin-top:4px}
+
+/* ── 기간 버튼 ── */
+.period-row{display:flex;gap:6px;flex-wrap:wrap}
+.period-btn{padding:5px 12px;border-radius:20px;border:1px solid #2A3A50;background:none;font-size:11px;font-weight:600;color:#607080;cursor:pointer;font-family:inherit;transition:all .18s}
+.period-btn:hover{border-color:#4ECFA0;color:#4ECFA0}
+.period-btn.active{background:#4ECFA0;border-color:#4ECFA0;color:#0F1923}
+
+/* ── 테이블 ── */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:#141E2B;color:#607080;font-weight:700;padding:8px 12px;text-align:left;border-bottom:1.5px solid #2A3A50;font-size:10px;letter-spacing:.3px;white-space:nowrap}
+.data-table th.right,.data-table td.right{text-align:right}
+.data-table td{padding:9px 12px;border-bottom:0.5px solid #1E2E42;color:#A8B4C0;vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(78,207,160,.04)}
+
+/* ── 바 차트 ── */
+.bar-wrap{height:8px;background:#1E2E42;border-radius:4px;overflow:hidden;min-width:60px}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+
+/* ── 뱃지 ── */
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.badge-blue{background:#1F3864;color:#7AAEE8}
+.badge-teal{background:#0D4A3A;color:#4ECFA0}
+.badge-purple{background:#2A1A4A;color:#A07AE8}
+.badge-gray{background:#1E2E42;color:#607080}
+.badge-red{background:#3A1420;color:#E24B4A}
+.badge-amber{background:#3A2A10;color:#C8A040}
+
+/* ── 로그 아이템 ── */
+.log-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#141E2B;border:1px solid #2A3A50;border-radius:8px;margin-bottom:4px;font-size:11px}
+.log-ctr{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;flex-shrink:0}
+.log-doc{color:#A8B4C0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-time{color:#405060;white-space:nowrap;flex-shrink:0;font-size:10px}
+.log-cost{color:#4ECFA0;font-weight:700;white-space:nowrap;min-width:55px;text-align:right;flex-shrink:0}
+
+/* ── 일별 차트 ── */
+.daily-chart{display:flex;align-items:flex-end;gap:5px;height:90px;padding-bottom:4px}
+.daily-col{display:flex;flex-direction:column;align-items:center;flex:1;min-width:18px}
+.daily-bar{width:100%;border-radius:3px 3px 0 0;transition:height .3s}
+.daily-val{font-size:8px;color:#607080;margin-bottom:2px;white-space:nowrap}
+.daily-date{font-size:8px;color:#405060;margin-top:3px;white-space:nowrap}
+
+/* ── 센터 관리 ── */
+.center-card{background:#141E2B;border:1.5px solid #2A3A50;border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:border .2s}
+.center-card:hover{border-color:#2A4A6A}
+.center-name{font-size:14px;font-weight:700;color:#C8D4E0;margin-bottom:3px}
+.center-meta{font-size:11px;color:#607080;margin-bottom:12px}
+.field-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.field-label{font-size:11px;color:#607080;width:80px;flex-shrink:0;font-weight:600}
+.field-input{flex:1;padding:7px 10px;background:#0F1923;border:1.5px solid #2A3A50;border-radius:7px;font-size:12px;font-family:inherit;color:#C8D4E0;transition:border .2s}
+.field-input:focus{outline:none;border-color:#4ECFA0}
+.field-select{flex:1;padding:7px 10px;background:#0F1923;border:1.5px solid #2A3A50;border-radius:7px;font-size:12px;font-family:inherit;color:#C8D4E0}
+.save-btn{padding:6px 16px;border-radius:7px;border:none;background:#1F3864;color:#7AAEE8;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s}
+.save-btn:hover{background:#4ECFA0;color:#0F1923}
+.save-msg{font-size:11px;color:#4ECFA0;margin-left:8px;display:none}
+
+/* ── 입력 필터 ── */
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.filter-select{padding:6px 10px;background:#141E2B;border:1px solid #2A3A50;border-radius:7px;font-size:12px;font-family:inherit;color:#A8B4C0}
+.filter-select:focus{outline:none;border-color:#4ECFA0}
+.sm-btn{padding:5px 12px;border-radius:6px;border:1px solid #2A3A50;background:none;color:#607080;font-size:11px;cursor:pointer;font-family:inherit;transition:all .18s}
+.sm-btn:hover{border-color:#E24B4A;color:#E24B4A}
+
+/* ── 문서 이력 ── */
+.doc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#141E2B;border:1px solid #2A3A50;border-radius:8px;margin-bottom:5px;font-size:11px}
+.doc-view-btn{font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #2A4A6A;background:none;color:#7AAEE8;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;transition:all .15s}
+.doc-view-btn:hover{background:#1F3864;border-color:#1F3864}
+
+/* ── 반응형 ── */
+@media(max-width:680px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ 로그인 화면 ══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Day<span>:음</span></div>
+    <div class="login-sub">하루의 기록이 문서를 만듭니다</div>
+    <div class="login-badge">🔐 ADMIN CONSOLE</div>
+    <input class="login-input" id="login-input" type="password" placeholder="관리자 코드 입력"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+  </div>
+</div>
+
+<!-- ══ 대시보드 ══ -->
+<div id="dashboard">
+
+  <!-- 상단 바 -->
+  <div class="top-bar">
+    <div class="top-logo">Day<span>:음</span></div>
+    <div class="top-badge">관리자 콘솔</div>
+    <div class="top-right">
+      <span class="top-time" id="top-time"></span>
+      <button class="top-btn" onclick="refreshAll()">🔄 새로고침</button>
+      <button class="top-btn danger" onclick="doLogout()">로그아웃</button>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- 사이드바 -->
+    <div class="sidebar">
+      <div class="side-label">모니터링</div>
+      <button class="side-btn active" onclick="showSec('sec-overview',this)"><span class="si">📊</span> 사용량 개요</button>
+      <button class="side-btn" onclick="showSec('sec-logs',this)"><span class="si">📋</span> API 로그</button>
+      <button class="side-btn" onclick="showSec('sec-docs',this)"><span class="si">🗂</span> 문서 이력</button>
+      <div class="side-divider"></div>
+      <div class="side-label">관리</div>
+      <button class="side-btn" onclick="showSec('sec-centers',this)"><span class="si">🏥</span> 센터 코드 관리</button>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="content">
+
+      <!-- ─── 섹션1: 사용량 개요 ─── -->
+      <div class="sec-content active" id="sec-overview">
+
+        <!-- 기간 필터 -->
+        <div class="card" style="padding:12px 16px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:600;color:#607080">조회 기간</span>
+            <div class="period-row">
+              <button class="period-btn active" onclick="setPeriod(0,this)">오늘</button>
+              <button class="period-btn" onclick="setPeriod(7,this)">7일</button>
+              <button class="period-btn" onclick="setPeriod(30,this)">30일</button>
+              <button class="period-btn" onclick="setPeriod(90,this)">90일</button>
+              <button class="period-btn" onclick="setPeriod(9999,this)">전체</button>
+            </div>
+            <span style="margin-left:auto;font-size:11px;color:#405060" id="last-updated">-</span>
+          </div>
+        </div>
+
+        <!-- KPI 카드 4개 -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">총 API 호출</div>
+            <div class="kpi-val" style="color:#7AAEE8" id="kpi-calls">-</div>
+            <div class="kpi-sub" id="kpi-calls-sub"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">포인트 소모 (추정)</div>
+            <div class="kpi-val" style="color:#4ECFA0" id="kpi-cost">-</div>
+            <div class="kpi-sub" id="kpi-cost-sub"></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">입력 토큰</div>
+            <div class="kpi-val" style="color:#A07AE8" id="kpi-input">-</div>
+            <div class="kpi-sub">tokens</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">출력 토큰</div>
+            <div class="kpi-val" style="color:#C8A040" id="kpi-output">-</div>
+            <div class="kpi-sub">tokens</div>
+          </div>
+        </div>
+
+        <!-- 센터별 사용량 -->
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-left">🏥 센터별 사용량</div>
+            <span style="font-size:10px;color:#405060" id="center-period-label"></span>
+          </div>
+          <div id="center-table">
+            <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+          </div>
+        </div>
+
+        <!-- 문서 유형별 -->
+        <div class="card">
+          <div class="card-title"><div class="card-title-left">📄 문서 유형별 호출</div></div>
+          <div id="doctype-table">
+            <div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>
+          </div>
+        </div>
+
+        <!-- 일별 추이 -->
+        <div class="card">
+          <div class="card-title"><div class="card-title-left">📈 일별 포인트 소모 추이</div></div>
+          <div id="daily-chart">
+            <div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>
+          </div>
+        </div>
+
+      </div><!-- /sec-overview -->
+
+      <!-- ─── 섹션2: API 로그 ─── -->
+      <div class="sec-content" id="sec-logs">
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-left">📋 API 호출 로그</div>
+          </div>
+          <div class="filter-row">
+            <select class="filter-select" id="log-center-filter" onchange="renderLogs()">
+              <option value="">전체 센터</option>
+              <option value="삽교">삽교</option>
+              <option value="덕산">덕산</option>
+              <option value="내포소망">내포소망</option>
+            </select>
+            <select class="filter-select" id="log-doc-filter" onchange="renderLogs()">
+              <option value="">전체 문서</option>
+            </select>
+            <button class="sm-btn" onclick="clearLocalLogs()">로컬 로그 초기화</button>
+            <span style="margin-left:auto;font-size:11px;color:#405060" id="log-count"></span>
+          </div>
+          <div id="log-body">
+            <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── 섹션3: 문서 이력 ─── -->
+      <div class="sec-content" id="sec-docs">
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-left">🗂 생성 문서 이력</div>
+          </div>
+          <div class="filter-row">
+            <select class="filter-select" id="doc-center-filter" onchange="loadDocHistory()">
+              <option value="">전체 센터</option>
+              <option value="sapgyo">삽교주간보호센터</option>
+              <option value="center2">덕산주간보호센터</option>
+              <option value="center3">내포소망주간보호센터</option>
+            </select>
+            <span style="margin-left:auto;font-size:11px;color:#405060" id="doc-count"></span>
+          </div>
+          <div id="doc-history-body">
+            <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── 섹션4: 센터 코드 관리 ─── -->
+      <div class="sec-content" id="sec-centers">
+        <div style="font-size:12px;color:#607080;margin-bottom:14px;line-height:1.7;background:#141E2B;border:1px solid #2A3A50;border-radius:8px;padding:10px 14px">
+          ⚠️ 코드·만료일 변경 후 <strong style="color:#C8D4E0">저장</strong>을 눌러야 반영됩니다. 변경 즉시 해당 센터 재로그인이 필요합니다.
+        </div>
+        <div id="center-manage-body">
+          <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+        </div>
+
+        <!-- 신규 센터 추가 -->
+        <div class="card" style="border-color:#2A4A2A">
+          <div class="card-title" style="color:#4ECFA0">➕ 신규 센터 추가</div>
+          <div class="field-row">
+            <span class="field-label">센터 ID</span>
+            <input class="field-input" id="new-code" placeholder="예) center4" style="max-width:160px">
+            <span style="font-size:11px;color:#405060">URL 파라미터로 사용 (?center=...)</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">센터명</span>
+            <input class="field-input" id="new-name" placeholder="예) 홍성주간보호센터">
+          </div>
+          <div class="field-row">
+            <span class="field-label">약칭</span>
+            <input class="field-input" id="new-short" placeholder="예) 홍성" style="max-width:120px">
+          </div>
+          <div class="field-row">
+            <span class="field-label">접속 코드</span>
+            <input class="field-input" id="new-key" placeholder="예) 0404" style="max-width:120px">
+            <span style="font-size:11px;color:#405060">센터가 로그인 시 입력하는 코드</span>
+          </div>
+          <div class="field-row">
+            <span class="field-label">만료일</span>
+            <input class="field-input" id="new-expires" type="date" style="max-width:160px" value="2026-12-31">
+          </div>
+          <div class="field-row">
+            <span class="field-label">시범 운영</span>
+            <select class="field-select" id="new-pilot" style="max-width:120px">
+              <option value="true">예 (×3 할인)</option>
+              <option value="false">아니오 (×5 정가)</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <span class="field-label">색상</span>
+            <input class="field-input" id="new-color" placeholder="#1F3864" style="max-width:120px">
+          </div>
+          <button class="save-btn" onclick="addCenter()" style="margin-top:4px">➕ 센터 추가</button>
+          <span class="save-msg" id="add-msg">✅ 추가됐습니다! app.html의 CENTERS 상수를 수동으로 업데이트해주세요.</span>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /layout -->
+</div><!-- /dashboard -->
+
+<!-- 문서 뷰어 모달 -->
+<div id="doc-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;overflow-y:auto;padding:20px">
+  <div style="background:#1A2535;border:1px solid #2A3A50;border-radius:14px;max-width:860px;margin:auto;overflow:hidden">
+    <div style="background:#141E2B;border-bottom:1px solid #2A3A50;padding:13px 18px;display:flex;align-items:center;gap:10px">
+      <span id="modal-title" style="font-size:13px;font-weight:700;color:#C8D4E0;flex:1"></span>
+      <span id="modal-date" style="font-size:11px;color:#607080"></span>
+      <button onclick="document.getElementById('doc-modal').style.display='none'" style="background:none;border:none;color:#607080;font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div id="modal-body" style="padding:16px;max-height:80vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  설정
+// ═══════════════════════════════════════════
+const SUPABASE_URL = 'https://lujzhilzhiktrlidhpxs.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Vbzkn1OLZbLe-EgrvlACEA_5RjfHnS9';
+const ADMIN_CODE   = '0508';
+
+// 현재 app.html의 CENTERS 복사 (관리 기준값)
+const CENTERS_DEF = {
+  sapgyo:  { name:'삽교주간보호센터',    short:'삽교',    color:'#1F3864', key:'0101', expires:'2026-12-31', pilot:true },
+  center2: { name:'덕산주간보호센터',    short:'덕산',    color:'#0D6E55', key:'0202', expires:'2026-12-31', pilot:true },
+  center3: { name:'내포소망주간보호센터', short:'내포소망', color:'#5C3489', key:'0303', expires:'2026-12-31', pilot:true },
+};
+
+const CTR_COLORS = { '삽교':'#1F3864','덕산':'#0D6E55','내포소망':'#5C3489' };
+const CTR_BADGES = { '삽교주간보호센터':'badge-blue','덕산주간보호센터':'badge-teal','내포소망주간보호센터':'badge-purple' };
+
+let _allLogs    = [];
+let _periodDays = 0;
+let _allDocs    = [];
+let _centers    = JSON.parse(localStorage.getItem('daeum-admin-centers') || 'null') || structuredClone(CENTERS_DEF);
+
+// ─── 시계 ───
+function updateClock() {
+  const now = new Date();
+  const el = document.getElementById('top-time');
+  if (el) el.textContent = now.toLocaleString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+
+// ═══════════════════════════════════════════
+//  로그인 / 로그아웃
+// ═══════════════════════════════════════════
+function doLogin() {
+  const val = document.getElementById('login-input').value.trim();
+  const err = document.getElementById('login-error');
+  if (val === ADMIN_CODE) {
+    sessionStorage.setItem('daeum-admin-auth', ADMIN_CODE);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    updateClock();
+    initDashboard();
+  } else {
+    err.textContent = '코드가 올바르지 않습니다';
+    document.getElementById('login-input').value = '';
+    document.getElementById('login-input').focus();
+    setTimeout(() => err.textContent = '', 2500);
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('daeum-admin-auth');
+  location.reload();
+}
+
+document.getElementById('login-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// 이미 인증된 세션이면 바로 입장
+if (sessionStorage.getItem('daeum-admin-auth') === ADMIN_CODE) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  updateClock();
+  document.addEventListener('DOMContentLoaded', initDashboard);
+}
+
+// ═══════════════════════════════════════════
+//  섹션 전환
+// ═══════════════════════════════════════════
+function showSec(id, btn) {
+  document.querySelectorAll('.sec-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'sec-logs')    renderLogs();
+  if (id === 'sec-docs')    loadDocHistory();
+  if (id === 'sec-centers') renderCenterManage();
+}
+
+// ═══════════════════════════════════════════
+//  데이터 로드
+// ═══════════════════════════════════════════
+async function initDashboard() {
+  await loadAllData();
+  renderCenterManage();
+}
+
+async function refreshAll() {
+  document.getElementById('last-updated').textContent = '로드 중...';
+  await loadAllData();
+}
+
+async function loadAllData() {
+  // Supabase usage_logs
+  const sbLogs = await fetchSupabase(`/rest/v1/usage_logs?order=created_at.desc&limit=2000`);
+
+  // localStorage 병합
+  const localRaw = JSON.parse(localStorage.getItem('daeum-usage-log') || '[]');
+  const localLogs = localRaw.map(l => ({
+    created_at:   l.ts   || '',
+    center_short: l.center || '',
+    center_name:  l.center_name || l.center || '',
+    center_code:  l.center_code || '',
+    doc_label:    l.doc  || '',
+    input_tokens: l.input  || 0,
+    output_tokens:l.output || 0,
+    cost_krw:     l.costKRW || 0
+  }));
+
+  if (sbLogs && sbLogs.length > 0) {
+    const sbSet = new Set(sbLogs.map(l => l.created_at));
+    const onlyLocal = localLogs.filter(l => !sbSet.has(l.created_at));
+    _allLogs = [...sbLogs, ...onlyLocal].sort((a,b) => b.created_at.localeCompare(a.created_at));
+  } else {
+    _allLogs = [...localLogs].sort((a,b) => b.created_at.localeCompare(a.created_at));
+  }
+
+  // 문서 유형 필터 옵션 채우기
+  const docTypes = [...new Set(_allLogs.map(l => l.doc_label).filter(Boolean))].sort();
+  const docSel = document.getElementById('log-doc-filter');
+  if (docSel) {
+    docSel.innerHTML = '<option value="">전체 문서</option>' +
+      docTypes.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+
+  const now = new Date();
+  const el = document.getElementById('last-updated');
+  if (el) el.textContent = `마지막 갱신: ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+  renderOverview();
+}
+
+async function fetchSupabase(path) {
+  try {
+    const res = await fetch(SUPABASE_URL + path, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+// ═══════════════════════════════════════════
+//  기간 필터
+// ═══════════════════════════════════════════
+function setPeriod(days, btn) {
+  _periodDays = days;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOverview();
+}
+
+function filterByPeriod(logs) {
+  if (_periodDays >= 9999) return logs;
+  const cutoff = _periodDays === 0
+    ? new Date(new Date().setHours(0,0,0,0)).toISOString()
+    : new Date(Date.now() - _periodDays * 86400000).toISOString();
+  return logs.filter(l => (l.created_at || '') >= cutoff);
+}
+
+// ═══════════════════════════════════════════
+//  개요 렌더링
+// ═══════════════════════════════════════════
+function renderOverview() {
+  const logs = filterByPeriod(_allLogs);
+  const label = _periodDays === 0 ? '오늘' : _periodDays >= 9999 ? '전체' : `최근 ${_periodDays}일`;
+  const el = document.getElementById('center-period-label');
+  if (el) el.textContent = label;
+
+  renderKPI(logs);
+  renderCenterTable(logs);
+  renderDocTypeTable(logs);
+  renderDailyChart(logs);
+}
+
+function renderKPI(logs) {
+  const calls  = logs.length;
+  const cost   = logs.reduce((s,l) => s + (l.cost_krw || 0), 0);
+  const input  = logs.reduce((s,l) => s + (l.input_tokens || 0), 0);
+  const output = logs.reduce((s,l) => s + (l.output_tokens || 0), 0);
+  const allCost = _allLogs.reduce((s,l) => s + (l.cost_krw || 0), 0);
+  const pct = allCost > 0 ? Math.round(cost / allCost * 100) : 100;
+
+  set('kpi-calls',  calls.toLocaleString() + '건');
+  set('kpi-calls-sub', `전체 ${_allLogs.length}건`);
+  set('kpi-cost',   cost.toLocaleString() + 'P');
+  set('kpi-cost-sub', `전체 대비 ${pct}%`);
+  set('kpi-input',  input >= 1000 ? (input/1000).toFixed(1)+'K' : input+'');
+  set('kpi-output', output >= 1000 ? (output/1000).toFixed(1)+'K' : output+'');
+}
+
+function renderCenterTable(logs) {
+  const el = document.getElementById('center-table');
+  if (!el) return;
+
+  const byCtr = {};
+  logs.forEach(l => {
+    const k = l.center_short || Object.values(_centers).find(c => c.short === l.center_short)?.short || l.center_name || '기타';
+    if (!byCtr[k]) byCtr[k] = { calls:0, cost:0, input:0, output:0 };
+    byCtr[k].calls++;
+    byCtr[k].cost   += l.cost_krw      || 0;
+    byCtr[k].input  += l.input_tokens  || 0;
+    byCtr[k].output += l.output_tokens || 0;
+  });
+
+  const totalCost = Object.values(byCtr).reduce((s,v) => s + v.cost, 0);
+  const sorted = Object.entries(byCtr).sort((a,b) => b[1].cost - a[1].cost);
+
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">데이터 없음</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>센터</th>
+        <th>비율</th>
+        <th class="right">호출</th>
+        <th class="right">포인트 소모</th>
+        <th class="right">입력 토큰</th>
+        <th class="right">출력 토큰</th>
+      </tr></thead>
+      <tbody>
+        ${sorted.map(([name, d]) => {
+          const pct = totalCost > 0 ? Math.round(d.cost / totalCost * 100) : 0;
+          const clr = CTR_COLORS[name] || '#607080';
+          return `<tr>
+            <td><span style="font-weight:700;color:${clr}">${name}</span></td>
+            <td style="min-width:100px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="bar-wrap" style="flex:1"><div class="bar-fill" style="width:${pct}%;background:${clr}"></div></div>
+                <span style="font-size:10px;color:#405060;width:28px;text-align:right">${pct}%</span>
+              </div>
+            </td>
+            <td class="right">${d.calls}건</td>
+            <td class="right" style="color:#4ECFA0;font-weight:600">${d.cost.toLocaleString()}P</td>
+            <td class="right">${(d.input/1000).toFixed(1)}K</td>
+            <td class="right">${(d.output/1000).toFixed(1)}K</td>
+          </tr>`;
+        }).join('')}
+        <tr style="border-top:1.5px solid #2A3A50">
+          <td colspan="3" style="font-weight:700;color:#C8D4E0">합계</td>
+          <td class="right" style="color:#4ECFA0;font-weight:800">${totalCost.toLocaleString()}P</td>
+          <td class="right">${(_allLogs.reduce((s,l)=>s+(l.input_tokens||0),0)/1000).toFixed(1)}K</td>
+          <td class="right">${(_allLogs.reduce((s,l)=>s+(l.output_tokens||0),0)/1000).toFixed(1)}K</td>
+        </tr>
+      </tbody>
+    </table>`;
+}
+
+function renderDocTypeTable(logs) {
+  const el = document.getElementById('doctype-table');
+  if (!el) return;
+
+  const byDoc = {};
+  logs.forEach(l => {
+    const k = l.doc_label || '기타';
+    if (!byDoc[k]) byDoc[k] = { calls:0, cost:0 };
+    byDoc[k].calls++;
+    byDoc[k].cost += l.cost_krw || 0;
+  });
+
+  const sorted = Object.entries(byDoc).sort((a,b) => b[1].calls - a[1].calls).slice(0, 10);
+  if (!sorted.length) {
+    el.innerHTML = '<div style="text-align:center;color:#405060;padding:12px;font-size:12px">데이터 없음</div>';
+    return;
+  }
+
+  const maxCalls = Math.max(...sorted.map(([,d]) => d.calls), 1);
+  el.innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>문서 유형</th><th>호출 비율</th><th class="right">호출</th><th class="right">포인트</th></tr></thead>
+      <tbody>
+        ${sorted.map(([name, d]) => {
+          const w = Math.round(d.calls / maxCalls * 100);
+          return `<tr>
+            <td style="color:#A8B4C0;font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${name}">${name}</td>
+            <td style="min-width:80px"><div class="bar-wrap"><div class="bar-fill" style="width:${w}%;background:#4ECFA0;opacity:.7"></div></div></td>
+            <td class="right">${d.calls}건</td>
+            <td class="right" style="color:#4ECFA0">${d.cost.toLocaleString()}P</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderDailyChart(logs) {
+  const el = document.getElementById('daily-chart');
+  if (!el) return;
+
+  const byDay = {};
+  logs.forEach(l => {
+    const day = (l.created_at || '').slice(0, 10);
+    if (!day) return;
+    if (!byDay[day]) byDay[day] = { cost:0, calls:0 };
+    byDay[day].cost  += l.cost_krw || 0;
+    byDay[day].calls++;
+  });
+
+  const days = Object.keys(byDay).sort();
+  const show = days.slice(-30);
+  if (!show.length) {
+    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">데이터 없음</div>';
+    return;
+  }
+
+  const maxCost = Math.max(...show.map(d => byDay[d].cost), 1);
+  const today = new Date().toISOString().slice(0, 10);
+
+  el.innerHTML = `
+    <div class="daily-chart">
+      ${show.map(day => {
+        const d = byDay[day];
+        const h = Math.max(Math.round(d.cost / maxCost * 75), 4);
+        const isToday = day === today;
+        const mmdd = day.slice(5);
+        const valStr = d.cost >= 1000 ? (d.cost/1000).toFixed(1)+'K' : d.cost+'';
+        return `<div class="daily-col">
+          <div class="daily-val">${valStr}</div>
+          <div class="daily-bar" style="height:${h}px;background:${isToday ? '#4ECFA0' : '#2A4A6A'}" title="${day}: ${d.cost.toLocaleString()}P · ${d.calls}건"></div>
+          <div class="daily-date">${mmdd}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:10px;color:#405060;text-align:right;margin-top:4px">단위: P · 최근 ${show.length}일</div>`;
+}
+
+// ═══════════════════════════════════════════
+//  API 로그
+// ═══════════════════════════════════════════
+function renderLogs() {
+  const el = document.getElementById('log-body');
+  if (!el) return;
+
+  const ctrFilter = document.getElementById('log-center-filter')?.value || '';
+  const docFilter = document.getElementById('log-doc-filter')?.value || '';
+
+  const filtered = filterByPeriod(_allLogs)
+    .filter(l => !ctrFilter || (l.center_short || '').includes(ctrFilter))
+    .filter(l => !docFilter || (l.doc_label || '') === docFilter)
+    .slice(0, 100);
+
+  const countEl = document.getElementById('log-count');
+  if (countEl) countEl.textContent = `${filtered.length}건 표시`;
+
+  if (!filtered.length) {
+    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">로그 없음</div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(l => {
+    const dt = new Date(l.created_at);
+    const dateStr = isNaN(dt) ? l.created_at :
+      `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const ctr = l.center_short || '';
+    const clr = CTR_COLORS[ctr] || '#405060';
+    return `<div class="log-item">
+      <span class="log-ctr" style="background:${clr}20;color:${clr};border:1px solid ${clr}40">${ctr || '?'}</span>
+      <span class="log-doc">${l.doc_label || '?'}</span>
+      <span class="log-time">${dateStr}</span>
+      <span style="font-size:10px;color:#405060;white-space:nowrap;margin-right:4px">in:${(l.input_tokens||0).toLocaleString()} out:${(l.output_tokens||0).toLocaleString()}</span>
+      <span class="log-cost">${(l.cost_krw||0).toLocaleString()}P</span>
+    </div>`;
+  }).join('') + (filtered.length === 100 ? '<div style="text-align:center;font-size:11px;color:#405060;padding:6px">최근 100건만 표시</div>' : '');
+}
+
+function clearLocalLogs() {
+  if (!confirm('localStorage 로컬 로그를 초기화할까요?\nSupabase 기록은 유지됩니다.')) return;
+  localStorage.removeItem('daeum-usage-log');
+  _allLogs = _allLogs.filter(l => l.id);
+  renderOverview();
+  renderLogs();
+}
+
+// ═══════════════════════════════════════════
+//  문서 이력
+// ═══════════════════════════════════════════
+async function loadDocHistory() {
+  const el = document.getElementById('doc-history-body');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>';
+
+  const filterCode = document.getElementById('doc-center-filter')?.value || '';
+  let url = `/rest/v1/documents?doc_type=neq.__residents__&order=created_at.desc&limit=200`;
+  if (filterCode) url += `&center_code=eq.${filterCode}`;
+
+  const docs = await fetchSupabase(url);
+  if (!docs) {
+    el.innerHTML = '<div style="color:#E24B4A;font-size:12px;padding:8px">조회 오류</div>';
+    return;
+  }
+  _allDocs = docs;
+
+  const countEl = document.getElementById('doc-count');
+  if (countEl) countEl.textContent = `총 ${docs.length}건`;
+
+  if (!docs.length) {
+    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">저장된 문서 없음</div>';
+    return;
+  }
+
+  el.innerHTML = docs.map((d, i) => {
+    const dt  = new Date(d.created_at);
+    const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const ctrName = d.center_name || d.center_code || '';
+    const badgeCls = CTR_BADGES[ctrName] || 'badge-gray';
+    return `<div class="doc-item">
+      <span class="badge ${badgeCls}" style="flex-shrink:0">${ctrName}</span>
+      <span style="font-weight:600;color:#C8D4E0;flex-shrink:0">${d.resident_name || '-'}</span>
+      <span style="color:#607080;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.doc_type || ''}</span>
+      <span style="color:#405060;white-space:nowrap;font-size:10px">${dateStr}</span>
+      <button class="doc-view-btn" onclick="openDoc(${i})">보기</button>
+    </div>`;
+  }).join('');
+}
+
+function openDoc(idx) {
+  const d = _allDocs[idx];
+  if (!d) return;
+  const dt = new Date(d.created_at);
+  document.getElementById('modal-title').textContent = `${d.resident_name || ''} · ${d.doc_type || ''}`;
+  document.getElementById('modal-date').textContent  = `${d.center_name || ''} · ${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+  const body = document.getElementById('modal-body');
+  const content = d.doc_content || '';
+  const isFullHtml = content.trim().toLowerCase().startsWith('<!doctype') || content.trim().toLowerCase().startsWith('<html');
+  const html = isFullHtml ? content : `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"></head><body style="font-family:'Noto Sans KR',sans-serif;padding:16px">${content}</body></html>`;
+  const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  body.innerHTML = `<iframe src="${url}" style="width:100%;height:75vh;border:none;border-radius:6px" onload="setTimeout(()=>URL.revokeObjectURL('${url}'),3000)"></iframe>`;
+  document.getElementById('doc-modal').style.display = 'block';
+}
+
+document.getElementById('doc-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('doc-modal'))
+    document.getElementById('doc-modal').style.display = 'none';
+});
+
+// ═══════════════════════════════════════════
+//  센터 코드 관리
+// ═══════════════════════════════════════════
+function renderCenterManage() {
+  const el = document.getElementById('center-manage-body');
+  if (!el) return;
+
+  el.innerHTML = Object.entries(_centers).map(([id, c]) => `
+    <div class="center-card" id="ccard-${id}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:12px;height:12px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+        <div class="center-name">${c.name}</div>
+        <span class="badge ${c.pilot ? 'badge-amber' : 'badge-gray'}" style="margin-left:auto">${c.pilot ? '🎁 시범 ×3' : '정식 ×5'}</span>
+      </div>
+      <div class="center-meta">센터 ID: <strong style="color:#A8B4C0">${id}</strong> · 약칭: <strong style="color:#A8B4C0">${c.short}</strong></div>
+
+      <div class="field-row">
+        <span class="field-label">접속 코드</span>
+        <input class="field-input" id="key-${id}" value="${c.key}" style="max-width:140px;font-family:monospace;letter-spacing:2px">
+        <span style="font-size:11px;color:#405060">센터 로그인 시 입력하는 코드</span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">만료일</span>
+        <input class="field-input" id="exp-${id}" type="date" value="${c.expires}" style="max-width:160px">
+      </div>
+      <div class="field-row">
+        <span class="field-label">포인트 배수</span>
+        <select class="field-select" id="pilot-${id}" style="max-width:160px">
+          <option value="true" ${c.pilot ? 'selected' : ''}>시범 운영 (×3 할인)</option>
+          <option value="false" ${!c.pilot ? 'selected' : ''}>정식 (×5 기본가)</option>
+        </select>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <button class="save-btn" onclick="saveCenter('${id}')">💾 저장</button>
+        <span class="save-msg" id="msg-${id}"></span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveCenter(id) {
+  const key     = document.getElementById(`key-${id}`)?.value?.trim();
+  const expires = document.getElementById(`exp-${id}`)?.value;
+  const pilot   = document.getElementById(`pilot-${id}`)?.value === 'true';
+
+  if (!key || !expires) return;
+
+  _centers[id] = { ..._centers[id], key, expires, pilot };
+  localStorage.setItem('daeum-admin-centers', JSON.stringify(_centers));
+
+  const msg = document.getElementById(`msg-${id}`);
+  if (msg) {
+    msg.textContent = '✅ 저장됨 (app.html CENTERS도 함께 수정 필요)';
+    msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; }, 4000);
+  }
+  renderCenterManage();
+}
+
+function addCenter() {
+  const id      = document.getElementById('new-code')?.value?.trim();
+  const name    = document.getElementById('new-name')?.value?.trim();
+  const short   = document.getElementById('new-short')?.value?.trim();
+  const key     = document.getElementById('new-key')?.value?.trim();
+  const expires = document.getElementById('new-expires')?.value;
+  const pilot   = document.getElementById('new-pilot')?.value === 'true';
+  const color   = document.getElementById('new-color')?.value?.trim() || '#1F3864';
+
+  if (!id || !name || !key) {
+    alert('센터 ID, 센터명, 접속 코드는 필수입니다.');
+    return;
+  }
+  if (_centers[id]) {
+    alert(`'${id}' ID가 이미 존재합니다.`);
+    return;
+  }
+
+  _centers[id] = { name, short: short || name, color, key, expires: expires || '2026-12-31', pilot };
+  localStorage.setItem('daeum-admin-centers', JSON.stringify(_centers));
+
+  const msg = document.getElementById('add-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 6000); }
+
+  // 입력 초기화
+  ['new-code','new-name','new-short','new-key','new-color'].forEach(i => {
+    const el = document.getElementById(i);
+    if (el) el.value = '';
+  });
+
+  renderCenterManage();
+}
+
+// ── 유틸 ──
+function set(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+</script>
+</body>
+</html>
