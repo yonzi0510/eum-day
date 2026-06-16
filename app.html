@@ -6428,52 +6428,6 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     setTimeout(() => buildDateVerify(type), 600);
     setUiLock(false);
 
-    // 어르신 정보 저장 + 문서별 Supabase 저장
-    const cfg = CENTERS[centerCode] || {};
-    if (type === 'monthly') {
-      // 월간문서 — 정제된 HTML로 저장
-      const r = window._monthlyHtml || '';
-      await saveResidentFromResult(type, r);
-      // 선택된 문서 타입별로 각각 저장
-      const docMap = {
-        m1: { checked: document.getElementById('m1')?.checked, label: '분기별 상담일지' },
-        m2: { checked: document.getElementById('m2')?.checked, label: '보호자 상담일지' },
-        m3: { checked: document.getElementById('m3')?.checked, label: '사례관리 회의록' },
-        m4: { checked: document.getElementById('m4')?.checked, label: '월간 현황 요약' },
-        m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
-      };
-      const resName = window.currentLinkedName || '수급자';
-      for (const [, v] of Object.entries(docMap)) {
-        if (v.checked) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, v.label, r);
-      }
-      // 선택 없으면 '월간문서'로 통합 저장
-      if (!Object.values(docMap).some(v => v.checked))
-        await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '월간문서', r);
-
-    } else {
-      // 정기문서 — 4단계 각각 저장
-      const resName = window.currentLinkedName || '수급자';
-      console.log('[정기문서 저장] resName:', resName, '| center:', centerCode);
-      const saveMap = [
-        { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
-        { html: window._periodicHtml2, label: '욕구사정' },
-        { html: window._periodicHtml3, label: '급여제공결과평가' },
-        { html: window._periodicHtml4, label: '급여제공계획서' },
-      ];
-      for (const { html: h, label } of saveMap) {
-        console.log(`[정기문서 저장] ${label}: html길이=${h ? h.length : 0}`);
-        if (h) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, h);
-      }
-      // 어르신 현황 업데이트용 합본 — 정제된 HTML 사용
-      const resultForSave = (window._periodicHtml1 || '') +
-                            (window._periodicHtml2 || '') +
-                            (window._periodicHtml3 || '') +
-                            (window._periodicHtml4 || '');
-      await saveResidentFromResult(type, resultForSave);
-    }
-
-    // 샘플 모드일 때만 샘플 어르신 저장 (실제 파일이면 저장 안 함)
-
   } catch (err) {
     prog.classList.remove('show');
     setUiLock(false);
@@ -6496,7 +6450,67 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     errBox.innerHTML = `⚠️ <strong>문서 생성 오류</strong><br>${err.message.replace(/\n/g, '<br>')}<br><span style="font-size:11px;color:#a33">위 메시지를 캡처해서 전달해 주시면 빠르게 확인하겠습니다.</span>`;
     errBox.style.display = 'block';
     console.error(err);
+    return; // 저장 블록 실행 안 되도록 명시적 return
   }
+
+  // ── Supabase 저장 (try-catch 바깥 — 생성 오류와 분리) ──
+  try {
+    const cfg = CENTERS[centerCode] || {};
+    if (type === 'monthly') {
+      const r = extractBodyContent(window._monthlyHtml || '');
+      console.log('[저장] monthly, html길이=', r.length);
+      await saveResidentFromResult(type, window._monthlyHtml || '');
+      const docMap = {
+        m1: { checked: document.getElementById('m1')?.checked, label: '분기별 상담일지' },
+        m2: { checked: document.getElementById('m2')?.checked, label: '보호자 상담일지' },
+        m3: { checked: document.getElementById('m3')?.checked, label: '사례관리 회의록' },
+        m4: { checked: document.getElementById('m4')?.checked, label: '월간 현황 요약' },
+        m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
+      };
+      const resName = window.currentLinkedName || '수급자';
+      let savedCount = 0;
+      for (const [, v] of Object.entries(docMap)) {
+        if (v.checked) {
+          console.log('[저장] monthly doc:', v.label, 'content길이=', r.length);
+          await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, v.label, r);
+          savedCount++;
+        }
+      }
+      if (savedCount === 0) {
+        console.log('[저장] 선택 없음 → 월간문서 통합 저장, content길이=', r.length);
+        await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '월간문서', r);
+      }
+    } else {
+      const resName = window.currentLinkedName || '수급자';
+      console.log('[저장] periodic, resName=', resName);
+      const saveMap = [
+        { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
+        { html: window._periodicHtml2, label: '욕구사정' },
+        { html: window._periodicHtml3, label: '급여제공결과평가' },
+        { html: window._periodicHtml4, label: '급여제공계획서' },
+      ];
+      for (const { html: h, label } of saveMap) {
+        const fragment = extractBodyContent(h);
+        console.log(`[저장] periodic ${label}: html길이=${fragment.length}`);
+        if (fragment) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, fragment);
+      }
+      const resultForSave = (window._periodicHtml1 || '') + (window._periodicHtml2 || '') +
+                            (window._periodicHtml3 || '') + (window._periodicHtml4 || '');
+      await saveResidentFromResult(type, resultForSave);
+    }
+  } catch(saveErr) {
+    console.error('[저장 오류]', saveErr.message);
+  }
+
+// ── HTML에서 body 내용만 추출 (DOC_CSS 제외 → Supabase 용량 절감) ──
+function extractBodyContent(fullHtml) {
+  if (!fullHtml) return '';
+  // <body>...</body> 안의 내용만 추출
+  const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) return bodyMatch[1].trim();
+  // body 태그 없으면 전체 반환 (조각 HTML인 경우)
+  return fullHtml;
+}
 }
 
 // ────── 피드백 → AI 수정본 ──────
@@ -8861,7 +8875,7 @@ function togCI(el) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.15.26
+  Day:음 · v2026.06.16.01
 </div>
 </body>
 </html>
