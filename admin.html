@@ -209,7 +209,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             <div class="kpi-sub" id="kpi-calls-sub"></div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">포인트 소모 (추정)</div>
+            <div class="kpi-label">API 비용 (원화)</div>
             <div class="kpi-val" style="color:#4ECFA0" id="kpi-cost">-</div>
             <div class="kpi-sub" id="kpi-cost-sub"></div>
           </div>
@@ -246,7 +246,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
 
         <!-- 일별 추이 -->
         <div class="card">
-          <div class="card-title"><div class="card-title-left">📈 일별 포인트 소모 추이</div></div>
+          <div class="card-title"><div class="card-title-left">📈 일별 API 비용 추이</div></div>
           <div id="daily-chart">
             <div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>
           </div>
@@ -583,7 +583,7 @@ function renderKPI(logs) {
 
   set('kpi-calls',  calls.toLocaleString() + '건');
   set('kpi-calls-sub', `전체 ${_allLogs.length}건`);
-  set('kpi-cost',   cost.toLocaleString() + 'P');
+  set('kpi-cost',   '₩' + cost.toLocaleString());
   set('kpi-cost-sub', `전체 대비 ${pct}%`);
   set('kpi-input',  input >= 1000 ? (input/1000).toFixed(1)+'K' : input+'');
   set('kpi-output', output >= 1000 ? (output/1000).toFixed(1)+'K' : output+'');
@@ -617,7 +617,7 @@ function renderCenterTable(logs) {
         <th>센터</th>
         <th>비율</th>
         <th class="right">호출</th>
-        <th class="right">포인트 소모</th>
+        <th class="right">API 비용</th>
         <th class="right">입력 토큰</th>
         <th class="right">출력 토큰</th>
       </tr></thead>
@@ -634,14 +634,14 @@ function renderCenterTable(logs) {
               </div>
             </td>
             <td class="right">${d.calls}건</td>
-            <td class="right" style="color:#4ECFA0;font-weight:600">${d.cost.toLocaleString()}P</td>
+            <td class="right" style="color:#4ECFA0;font-weight:600">₩${d.cost.toLocaleString()}</td>
             <td class="right">${(d.input/1000).toFixed(1)}K</td>
             <td class="right">${(d.output/1000).toFixed(1)}K</td>
           </tr>`;
         }).join('')}
         <tr style="border-top:1.5px solid #2A3A50">
           <td colspan="3" style="font-weight:700;color:#C8D4E0">합계</td>
-          <td class="right" style="color:#4ECFA0;font-weight:800">${totalCost.toLocaleString()}P</td>
+          <td class="right" style="color:#4ECFA0;font-weight:800">'₩' + ${totalCost.toLocaleString()}</td>
           <td class="right">${(_allLogs.reduce((s,l)=>s+(l.input_tokens||0),0)/1000).toFixed(1)}K</td>
           <td class="right">${(_allLogs.reduce((s,l)=>s+(l.output_tokens||0),0)/1000).toFixed(1)}K</td>
         </tr>
@@ -656,9 +656,10 @@ function renderDocTypeTable(logs) {
   const byDoc = {};
   logs.forEach(l => {
     const k = l.doc_label || '기타';
-    if (!byDoc[k]) byDoc[k] = { calls:0, cost:0 };
+    if (!byDoc[k]) byDoc[k] = { calls:0, cost:0, raw:0 };
     byDoc[k].calls++;
     byDoc[k].cost += l.cost_krw || 0;
+    byDoc[k].raw  += l.cost_raw_krw || Math.round((l.cost_krw || 0) / 3);
   });
 
   const sorted = Object.entries(byDoc).sort((a,b) => b[1].calls - a[1].calls).slice(0, 10);
@@ -670,15 +671,16 @@ function renderDocTypeTable(logs) {
   const maxCalls = Math.max(...sorted.map(([,d]) => d.calls), 1);
   el.innerHTML = `
     <table class="data-table">
-      <thead><tr><th>문서 유형</th><th>호출 비율</th><th class="right">호출</th><th class="right">포인트</th></tr></thead>
+      <thead><tr><th>문서 유형</th><th>호출 비율</th><th class="right">호출</th><th class="right">원가</th><th class="right">청구금액</th></tr></thead>
       <tbody>
         ${sorted.map(([name, d]) => {
           const w = Math.round(d.calls / maxCalls * 100);
           return `<tr>
-            <td style="color:#A8B4C0;font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${name}">${name}</td>
-            <td style="min-width:80px"><div class="bar-wrap"><div class="bar-fill" style="width:${w}%;background:#4ECFA0;opacity:.7"></div></div></td>
+            <td style="color:#A8B4C0;font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${name}">${name}</td>
+            <td style="min-width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:${w}%;background:#4ECFA0;opacity:.7"></div></div></td>
             <td class="right">${d.calls}건</td>
-            <td class="right" style="color:#4ECFA0">${d.cost.toLocaleString()}P</td>
+            <td class="right" style="color:#A8B4C0">₩${d.raw.toLocaleString()}</td>
+            <td class="right" style="color:#4ECFA0;font-weight:600">₩${d.cost.toLocaleString()}</td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -718,12 +720,12 @@ function renderDailyChart(logs) {
         const valStr = d.cost >= 1000 ? (d.cost/1000).toFixed(1)+'K' : d.cost+'';
         return `<div class="daily-col">
           <div class="daily-val">${valStr}</div>
-          <div class="daily-bar" style="height:${h}px;background:${isToday ? '#4ECFA0' : '#2A4A6A'}" title="${day}: ${d.cost.toLocaleString()}P · ${d.calls}건"></div>
+          <div class="daily-bar" style="height:${h}px;background:${isToday ? '#4ECFA0' : '#2A4A6A'}" title="${day}: ₩${d.cost.toLocaleString()} · ${d.calls}건"></div>
           <div class="daily-date">${mmdd}</div>
         </div>`;
       }).join('')}
     </div>
-    <div style="font-size:10px;color:#405060;text-align:right;margin-top:4px">단위: P · 최근 ${show.length}일</div>`;
+    <div style="font-size:10px;color:#405060;text-align:right;margin-top:4px">단위: ₩ · 최근 ${show.length}일</div>`;
 }
 
 // ═══════════════════════════════════════════
@@ -760,7 +762,7 @@ function renderLogs() {
       <span class="log-doc">${l.doc_label || '?'}</span>
       <span class="log-time">${dateStr}</span>
       <span style="font-size:10px;color:#405060;white-space:nowrap;margin-right:4px">in:${(l.input_tokens||0).toLocaleString()} out:${(l.output_tokens||0).toLocaleString()}</span>
-      <span class="log-cost">${(l.cost_krw||0).toLocaleString()}P</span>
+      <span class="log-cost">₩${(l.cost_krw||0).toLocaleString()}</span>
     </div>`;
   }).join('') + (filtered.length === 100 ? '<div style="text-align:center;font-size:11px;color:#405060;padding:6px">최근 100건만 표시</div>' : '');
 }
