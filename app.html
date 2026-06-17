@@ -2276,6 +2276,12 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
       cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap">
       📅 한 달 루틴
     </button>
+    <button id="gtab-btn-halfyear" onclick="switchGuideTab('halfyear')"
+      style="flex:1;padding:10px 8px;border-radius:10px;border:1.5px solid #E0E6F0;
+      background:#fff;color:#888;font-size:13px;font-weight:700;
+      cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap">
+      📋 반기 루틴
+    </button>
   </div>
 
   <!-- 흐름도 패널 -->
@@ -3423,6 +3429,332 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 </div>
 
     </div>
+  </div>
+
+  <!-- ══ 반기루틴 패널 ══ -->
+  <div id="gtab-halfyear" style="display:none">
+    <div style="font-size:12px;color:#888;margin-bottom:16px;line-height:1.6">
+      반기마다 진행하는 정기문서 작성 순서와 공단 업로드 방법을 안내합니다.
+    </div>
+
+    <!-- 반기 문서 순서 카드 -->
+    <div style="background:white;border-radius:14px;border:1.5px solid #E0E6F0;padding:20px 20px 24px;margin-bottom:20px">
+      <div style="font-size:14px;font-weight:700;color:#1F3864;margin-bottom:16px">📋 반기 정기문서 작성 순서</div>
+
+      <!-- STEP 흐름 -->
+      <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;gap:8px">
+
+        <!-- STEP 1 -->
+        <div style="flex:1;min-width:140px;background:#EEF3FB;border-radius:10px;padding:14px 12px;text-align:center">
+          <div style="font-size:10px;font-weight:700;color:#1F3864;opacity:0.6;margin-bottom:4px">STEP 1</div>
+          <div style="font-size:22px;margin-bottom:4px">🩺</div>
+          <div style="font-size:13px;font-weight:700;color:#1F3864">기초평가</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;line-height:1.5">낙상위험도<br>욕창위험도<br>인지기능(CIST)</div>
+        </div>
+
+        <div style="font-size:20px;color:#C5CAE9">→</div>
+
+        <!-- STEP 2 -->
+        <div style="flex:1;min-width:140px;background:#EEF3FB;border-radius:10px;padding:14px 12px;text-align:center">
+          <div style="font-size:10px;font-weight:700;color:#1F3864;opacity:0.6;margin-bottom:4px">STEP 2</div>
+          <div style="font-size:22px;margin-bottom:4px">📝</div>
+          <div style="font-size:13px;font-weight:700;color:#1F3864">욕구사정</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;line-height:1.5">최소 3개월 기록지<br>이전 욕구사정·계획서<br>함께 업로드</div>
+        </div>
+
+        <div style="font-size:20px;color:#C5CAE9">→</div>
+
+        <!-- STEP 3 -->
+        <div style="flex:1;min-width:140px;background:#EEF3FB;border-radius:10px;padding:14px 12px;text-align:center">
+          <div style="font-size:10px;font-weight:700;color:#1F3864;opacity:0.6;margin-bottom:4px">STEP 3</div>
+          <div style="font-size:22px;margin-bottom:4px">📊</div>
+          <div style="font-size:13px;font-weight:700;color:#1F3864">급여제공결과평가</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;line-height:1.5">욕구사정 결과 기반<br>상태변화 여부 판단</div>
+        </div>
+
+        <div style="font-size:20px;color:#C5CAE9">→</div>
+
+        <!-- STEP 4 -->
+        <div style="flex:1;min-width:140px;background:#E6F5F1;border-radius:10px;padding:14px 12px;text-align:center;border:2px solid #0D6E55">
+          <div style="font-size:10px;font-weight:700;color:#0D6E55;opacity:0.8;margin-bottom:4px">STEP 4</div>
+          <div style="font-size:22px;margin-bottom:4px">📄</div>
+          <div style="font-size:13px;font-weight:700;color:#0D6E55">급여제공계획서</div>
+          <div style="font-size:10px;color:#555;margin-top:4px;line-height:1.5">작성자·면허번호<br>작성일·적용기간 입력<br>→ 엑셀 자동 출력</div>
+        </div>
+      </div>
+
+      <!-- Day:음 안내 -->
+      <div style="margin-top:16px;background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:10px 14px;font-size:11px;color:#7A5C00;line-height:1.7">
+        💡 <strong>Day:음 정기문서 탭</strong>에서 기초평가 → 욕구사정 → 결과평가 → 계획서를 순서대로 한 번에 생성할 수 있어요.<br>
+        급여제공계획서는 생성 완료 후 <strong>📥 엑셀 다운로드</strong> 버튼으로 공단 업로드용 파일을 받을 수 있어요.
+      </div>
+    </div>
+
+    <!-- 공단 업로드 가이드 SVG -->
+    <div style="background:white;border-radius:14px;border:1.5px solid #E0E6F0;padding:20px 20px 24px;margin-bottom:8px">
+      <div style="font-size:14px;font-weight:700;color:#1F3864;margin-bottom:16px">📤 급여제공계획서 공단 업로드 방법</div>
+      <div style="width:100%;overflow-x:auto">
+        <svg viewBox="0 0 860 1700" xmlns="http://www.w3.org/2000/svg" font-family="'Apple SD Gothic Neo','Malgun Gothic',sans-serif">
+
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L10,4 z" fill="#1F3864"/>
+    </marker>
+    <marker id="arr-amber" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L10,4 z" fill="#BA7517"/>
+    </marker>
+    <marker id="arr-green" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L10,4 z" fill="#0D6E55"/>
+    </marker>
+  </defs>
+
+  <!-- 전체 배경 -->
+  <rect width="860" height="1700" fill="#F0F3FA"/>
+
+  <!-- ══ 헤더 ══ -->
+  <rect x="0" y="0" width="860" height="76" fill="#1F3864"/>
+  <text x="430" y="26" text-anchor="middle" fill="white" font-size="11" opacity="0.6">급여제공계획서 공단 등록 완전 가이드</text>
+  <text x="430" y="54" text-anchor="middle" fill="white" font-size="20" font-weight="bold">Day:음 엑셀 → 공단 업로드 → 케어포 → 통보 완료</text>
+
+  <!-- ══ PART 1 라벨 ══ -->
+  <!-- y=90 -->
+  <rect x="30" y="90" width="800" height="28" rx="7" fill="#1F3864" opacity="0.1"/>
+  <text x="50" y="109" fill="#1F3864" font-size="12" font-weight="bold">PART 1　공단 업무포털 등록</text>
+
+  <!-- ══ STEP 1: Day:음 엑셀 다운로드 ══ -->
+  <!-- 카드: y=128, h=106 → bottom=234 -->
+  <rect x="30" y="128" width="800" height="106" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="128" width="5" height="106" rx="3" fill="#1F3864"/>
+  <circle cx="70" cy="166" r="17" fill="#1F3864"/>
+  <text x="70" y="172" text-anchor="middle" fill="white" font-size="14" font-weight="bold">1</text>
+  <!-- 제목 y=162 -->
+  <text x="100" y="162" fill="#1F3864" font-size="14" font-weight="bold">Day:음에서 엑셀 다운로드</text>
+  <!-- 설명 y=182 -->
+  <text x="100" y="182" fill="#555" font-size="12">정기문서 탭 → 급여제공계획서 생성 완료 후 아래 버튼 클릭</text>
+  <!-- 버튼 y=196~224 -->
+  <rect x="100" y="196" width="286" height="30" rx="7" fill="#854F0B"/>
+  <text x="243" y="216" text-anchor="middle" fill="white" font-size="12" font-weight="bold">📥 급여제공계획서 엑셀 다운로드</text>
+  <!-- 화살표 -->
+  <line x1="390" y1="211" x2="408" y2="211" stroke="#aaa" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- 파일 배지 -->
+  <rect x="412" y="196" width="130" height="30" rx="7" fill="#E8F5E9" stroke="#66BB6A" stroke-width="1.5"/>
+  <text x="477" y="216" text-anchor="middle" fill="#2E7D32" font-size="11" font-weight="bold">📊 xlsx 저장됨</text>
+
+  <!-- 연결선 bottom=234 → next top=258 -->
+  <line x1="430" y1="234" x2="430" y2="254" stroke="#1F3864" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- ══ STEP 2: 공단 접속 ══ -->
+  <!-- 카드: y=258, h=110 → bottom=368 -->
+  <rect x="30" y="258" width="800" height="110" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="258" width="5" height="110" rx="3" fill="#1F3864"/>
+  <circle cx="70" cy="296" r="17" fill="#1F3864"/>
+  <text x="70" y="302" text-anchor="middle" fill="white" font-size="14" font-weight="bold">2</text>
+  <text x="100" y="292" fill="#1F3864" font-size="14" font-weight="bold">공단 업무포털 접속 → 급여제공계획서</text>
+  <!-- URL 박스 y=302~330 -->
+  <rect x="100" y="302" width="240" height="28" rx="6" fill="#EEF2FF" stroke="#C5CAE9" stroke-width="1.5"/>
+  <text x="220" y="320" text-anchor="middle" fill="#1F3864" font-size="12" font-weight="bold">🌐 longtermcare.or.kr</text>
+  <!-- 메뉴 경로 y=342~358 -->
+  <rect x="100" y="340" width="500" height="20" rx="5" fill="#F5F5F5"/>
+  <text x="110" y="354" fill="#1F3864" font-size="11" font-weight="bold">급여계약</text>
+  <text x="172" y="354" fill="#aaa" font-size="11"> ▶ </text>
+  <text x="192" y="354" fill="#1F3864" font-size="11" font-weight="bold">급여제공계획서</text>
+  <text x="290" y="354" fill="#aaa" font-size="11"> ▶ </text>
+  <text x="310" y="354" fill="#555" font-size="11">수급자 검색 후 체크 선택</text>
+
+  <!-- 연결선 -->
+  <line x1="430" y1="368" x2="430" y2="388" stroke="#1F3864" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- ══ STEP 3: 등록 버튼 → 기본정보 입력 ══ -->
+  <!-- 카드: y=392, h=128 → bottom=520 -->
+  <rect x="30" y="392" width="800" height="128" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="392" width="5" height="128" rx="3" fill="#1F3864"/>
+  <circle cx="70" cy="430" r="17" fill="#1F3864"/>
+  <text x="70" y="436" text-anchor="middle" fill="white" font-size="14" font-weight="bold">3</text>
+  <text x="100" y="426" fill="#1F3864" font-size="14" font-weight="bold">급여제공계획서 등록 버튼 → 기본정보 입력 후 등록</text>
+  <text x="100" y="448" fill="#555" font-size="12">우측 상단 <tspan fill="#E24B4A" font-weight="bold">급여제공계획서 등록</tspan> 클릭 → 팝업에서 아래 정보 입력 → 등록 클릭</text>
+  <!-- 팝업 모형 y=460~500 -->
+  <rect x="100" y="460" width="596" height="50" rx="8" fill="#F8F9FB" stroke="#C5CAE9" stroke-width="1"/>
+  <rect x="100" y="460" width="596" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="398" y="475" text-anchor="middle" fill="#1F3864" font-size="11" font-weight="bold">표준장기이용계획서정보 조회 팝업</text>
+  <text x="110" y="498" fill="#555" font-size="11">표준이용계획서번호 · 작성일자 · 적용기간 시작일 · 종료일 입력</text>
+  <rect x="616" y="476" width="44" height="22" rx="5" fill="#1F3864"/>
+  <text x="638" y="491" text-anchor="middle" fill="white" font-size="10" font-weight="bold">등 록</text>
+
+  <!-- 연결선 -->
+  <line x1="430" y1="520" x2="430" y2="540" stroke="#1F3864" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- ══ STEP 4: 필요내용 탭 → 엑셀업로드 ══ -->
+  <!-- 카드: y=544, h=160 → bottom=704 -->
+  <rect x="30" y="544" width="800" height="160" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="544" width="5" height="160" rx="3" fill="#1F3864"/>
+  <circle cx="70" cy="582" r="17" fill="#1F3864"/>
+  <text x="70" y="588" text-anchor="middle" fill="white" font-size="14" font-weight="bold">4</text>
+  <!-- 제목 y=578 -->
+  <text x="100" y="578" fill="#1F3864" font-size="14" font-weight="bold">급여제공계획서 이력 탭 → 업로드 → 팝업에서 엑셀업로드</text>
+  <!-- 설명 y=598 -->
+  <text x="100" y="598" fill="#555" font-size="12">급여제공계획서 이력 탭 클릭 → 해당 행의 우측 업로드 버튼 클릭</text>
+
+  <!-- 탭 바 y=612~634 — 이력 탭 활성 -->
+  <rect x="100" y="612" width="596" height="24" rx="5" fill="#E8EAF0"/>
+  <rect x="100" y="612" width="112" height="24" rx="5" fill="#C5CAE9"/>
+  <text x="156" y="628" text-anchor="middle" fill="#666" font-size="10">급여제공계획서 내역</text>
+  <rect x="214" y="612" width="112" height="24" rx="5" fill="#1F3864"/>
+  <text x="270" y="628" text-anchor="middle" fill="white" font-size="10" font-weight="bold">급여제공계획서 이력</text>
+  <rect x="328" y="612" width="86" height="24" rx="5" fill="#C5CAE9"/>
+  <text x="371" y="628" text-anchor="middle" fill="#666" font-size="10">필요내용 작성</text>
+  <rect x="416" y="612" width="86" height="24" rx="5" fill="#C5CAE9"/>
+  <text x="459" y="628" text-anchor="middle" fill="#666" font-size="10">목표 주기 작성</text>
+  <rect x="504" y="612" width="86" height="24" rx="5" fill="#C5CAE9"/>
+  <text x="547" y="628" text-anchor="middle" fill="#666" font-size="10">급여제공계획서 통보</text>
+
+  <!-- 업로드 안내 y=644~694 -->
+  <rect x="100" y="644" width="596" height="50" rx="7" fill="#FFF8E1" stroke="#FFB300" stroke-width="1.5"/>
+  <text x="116" y="662" fill="#7A5C00" font-size="12">우측</text>
+  <rect x="150" y="648" width="64" height="24" rx="5" fill="#1F3864"/>
+  <text x="182" y="664" text-anchor="middle" fill="white" font-size="11" font-weight="bold">업로드</text>
+  <text x="220" y="662" fill="#7A5C00" font-size="12"> 버튼 클릭 → 팝업 창 열림 → 팝업 우측 상단</text>
+  <rect x="488" y="648" width="80" height="24" rx="5" fill="#E24B4A"/>
+  <text x="528" y="664" text-anchor="middle" fill="white" font-size="11" font-weight="bold">↑ 엑셀업로드</text>
+  <text x="574" y="662" fill="#7A5C00" font-size="12"> 클릭</text>
+  <text x="116" y="682" fill="#854F0B" font-size="11">⚠ 기존 저장 내용 있으면 먼저 삭제해야 업로드 버튼 활성화됨</text>
+
+  <!-- 연결선 -->
+  <line x1="430" y1="704" x2="430" y2="724" stroke="#1F3864" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- ══ STEP 5: 파일 선택 → 열기 ══ -->
+  <!-- 카드: y=728, h=126 → bottom=854 -->
+  <rect x="30" y="728" width="800" height="126" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="728" width="5" height="126" rx="3" fill="#1F3864"/>
+  <circle cx="70" cy="766" r="17" fill="#1F3864"/>
+  <text x="70" y="772" text-anchor="middle" fill="white" font-size="14" font-weight="bold">5</text>
+  <text x="100" y="762" fill="#1F3864" font-size="14" font-weight="bold">파일 선택 팝업 → Day:음 엑셀 파일 선택 → 열기</text>
+  <text x="100" y="782" fill="#555" font-size="12">팝업창에서 다운로드 폴더 → Day:음 xlsx 파일 선택 → 열기(O) 클릭</text>
+  <!-- 파일 선택 모형 y=796~830 -->
+  <rect x="100" y="796" width="596" height="36" rx="8" fill="#F8F9FB" stroke="#C5CAE9" stroke-width="1"/>
+  <rect x="112" y="806" width="336" height="18" rx="4" fill="#EEF2FF" stroke="#9AAECC" stroke-width="1"/>
+  <text x="280" y="819" text-anchor="middle" fill="#1F3864" font-size="10">L00000000000 홍○○수급자 급여제공계획.xlsx</text>
+  <rect x="456" y="804" width="52" height="22" rx="5" fill="#1F3864"/>
+  <text x="482" y="819" text-anchor="middle" fill="white" font-size="11" font-weight="bold">열기(O)</text>
+  <!-- 경고 y=844 -->
+  <text x="100" y="844" fill="#854F0B" font-size="11">⚠ 장기요양관리번호가 수급자 정보와 일치해야 업로드 가능</text>
+
+  <!-- 연결선 -->
+  <line x1="430" y1="854" x2="430" y2="874" stroke="#1F3864" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- ══ STEP 6: 내용 확인 → 저장 ══ -->
+  <!-- 카드: y=878, h=104 → bottom=982 -->
+  <rect x="30" y="878" width="800" height="104" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="878" width="5" height="104" rx="3" fill="#1F3864"/>
+  <circle cx="70" cy="916" r="17" fill="#1F3864"/>
+  <text x="70" y="922" text-anchor="middle" fill="white" font-size="14" font-weight="bold">6</text>
+  <text x="100" y="912" fill="#1F3864" font-size="14" font-weight="bold">업로드 내용 확인 → 저장</text>
+  <text x="100" y="932" fill="#555" font-size="12">필요내용 · 목표주기 탭에 자동 입력된 내용 확인 후 저장 클릭</text>
+  <!-- 자동입력 항목 박스 y=946~974 -->
+  <rect x="100" y="946" width="596" height="26" rx="7" fill="#E8F5E9" stroke="#66BB6A" stroke-width="1.5"/>
+  <text x="398" y="963" text-anchor="middle" fill="#1B5E20" font-size="11" font-weight="bold">✅ 자동 입력: 필요내용 · 세부제공내용 · 작성자 · 주기 · 횟수 · 시간(분) · 세부목표</text>
+
+  <!-- 연결선 -->
+  <line x1="430" y1="982" x2="430" y2="1002" stroke="#1F3864" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- ══ STEP 7: 출력 → 엑셀 다운 ══ -->
+  <!-- 카드: y=1006, h=100 → bottom=1106 -->
+  <rect x="30" y="1006" width="800" height="100" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="1006" width="5" height="100" rx="3" fill="#1F3864"/>
+  <circle cx="70" cy="1044" r="17" fill="#1F3864"/>
+  <text x="70" y="1050" text-anchor="middle" fill="white" font-size="14" font-weight="bold">7</text>
+  <text x="100" y="1040" fill="#1F3864" font-size="14" font-weight="bold">출력 버튼 → 엑셀 다운로드 (케어포용)</text>
+  <text x="100" y="1062" fill="#555" font-size="12">저장 후 우측 상단 출력 버튼 클릭 → 엑셀 버튼 → PC에 저장</text>
+  <text x="100" y="1082" fill="#555" font-size="12">저장된 파일 = 케어포 업로드용 공단 통보 파일</text>
+
+  <!-- 연결선 -->
+  <line x1="430" y1="1106" x2="430" y2="1126" stroke="#1F3864" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- ══ PART 2 라벨 ══ -->
+  <!-- y=1130 -->
+  <rect x="30" y="1130" width="800" height="28" rx="7" fill="#BA7517" opacity="0.1"/>
+  <text x="50" y="1149" fill="#BA7517" font-size="12" font-weight="bold">PART 2　케어포 연동 및 전자서명</text>
+
+  <!-- ══ STEP 8: 케어포 → 전자서명 ══ -->
+  <!-- 카드: y=1168, h=138 → bottom=1306 -->
+  <rect x="30" y="1168" width="800" height="158" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="1168" width="5" height="158" rx="3" fill="#BA7517"/>
+  <circle cx="70" cy="1206" r="17" fill="#BA7517"/>
+  <text x="70" y="1212" text-anchor="middle" fill="white" font-size="14" font-weight="bold">8</text>
+  <text x="100" y="1202" fill="#BA7517" font-size="14" font-weight="bold">케어포 급여제공계획서 업로드 → 전자서명</text>
+  <text x="100" y="1224" fill="#555" font-size="12">케어포 접속 → 급여제공계획서 → 공단 다운 엑셀 파일 업로드</text>
+
+  <!-- 4단계 흐름 박스 y=1238~1276 -->
+  <!-- 박스1 -->
+  <rect x="100" y="1238" width="148" height="56" rx="7" fill="#FFF4EF" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="174" y="1256" text-anchor="middle" fill="#7A3800" font-size="12" font-weight="bold">케어포 업로드</text>
+  <text x="174" y="1272" text-anchor="middle" fill="#BA7517" font-size="10">급여제공계획서</text>
+  <text x="174" y="1286" text-anchor="middle" fill="#BA7517" font-size="10">신규작성 클릭 후 업로드</text>
+  <!-- 화살표 -->
+  <line x1="250" y1="1266" x2="268" y2="1266" stroke="#BA7517" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+  <!-- 박스2 -->
+  <rect x="272" y="1238" width="140" height="56" rx="7" fill="#FFF4EF" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="342" y="1270" text-anchor="middle" fill="#7A3800" font-size="12" font-weight="bold">전자서명 보내기</text>
+  <!-- 화살표 -->
+  <line x1="414" y1="1266" x2="432" y2="1266" stroke="#BA7517" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+  <!-- 박스3 -->
+  <rect x="436" y="1238" width="140" height="56" rx="7" fill="#FFF4EF" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="506" y="1262" text-anchor="middle" fill="#7A3800" font-size="12" font-weight="bold">유선안내</text>
+  <text x="506" y="1280" text-anchor="middle" fill="#7A3800" font-size="12" font-weight="bold">상담입력</text>
+  <!-- 화살표 -->
+  <line x1="578" y1="1266" x2="596" y2="1266" stroke="#BA7517" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+  <!-- 박스4 -->
+  <rect x="600" y="1238" width="140" height="56" rx="7" fill="#FFF4EF" stroke="#BA7517" stroke-width="1.2"/>
+  <text x="670" y="1270" text-anchor="middle" fill="#7A3800" font-size="12" font-weight="bold">전자서명 완료</text>
+
+  <!-- 연결선 -->
+  <line x1="430" y1="1306" x2="430" y2="1326" stroke="#BA7517" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr-amber)"/>
+
+  <!-- ══ PART 3 라벨 ══ -->
+  <!-- y=1330 -->
+  <rect x="30" y="1330" width="800" height="28" rx="7" fill="#0D6E55" opacity="0.1"/>
+  <text x="50" y="1349" fill="#0D6E55" font-size="12" font-weight="bold">PART 3　공단 계획 통보 (전자서명 완료 후)</text>
+
+  <!-- ══ STEP 9: 통보 탭 → 계획통보 ══ -->
+  <!-- 카드: y=1368, h=186 → bottom=1554 -->
+  <rect x="30" y="1368" width="800" height="186" rx="12" fill="white" stroke="#C5CAE9" stroke-width="1.5"/>
+  <rect x="30" y="1368" width="5" height="186" rx="3" fill="#0D6E55"/>
+  <circle cx="70" cy="1406" r="17" fill="#0D6E55"/>
+  <text x="70" y="1412" text-anchor="middle" fill="white" font-size="14" font-weight="bold">9</text>
+  <text x="100" y="1402" fill="#0D6E55" font-size="14" font-weight="bold">공단 계획서 통보 탭 → 필수 항목 입력 → 계획통보</text>
+  <text x="100" y="1422" fill="#555" font-size="12">급여제공계획서 통보 탭 이동 → 아래 4가지 항목 직접 입력</text>
+  <text x="100" y="1440" fill="#E24B4A" font-size="11" font-weight="bold">⚠ 이 항목들은 엑셀 업로드 불가 — 반드시 직접 입력</text>
+
+  <!-- 4개 항목 y=1454~1498 -->
+  <rect x="100" y="1454" width="144" height="40" rx="8" fill="#FCEBEB" stroke="#E24B4A" stroke-width="1.2"/>
+  <text x="172" y="1479" text-anchor="middle" fill="#791F1F" font-size="12" font-weight="bold">📌 동의자</text>
+
+  <rect x="258" y="1454" width="144" height="40" rx="8" fill="#FCEBEB" stroke="#E24B4A" stroke-width="1.2"/>
+  <text x="330" y="1479" text-anchor="middle" fill="#791F1F" font-size="12" font-weight="bold">📌 동의일자</text>
+
+  <rect x="416" y="1454" width="144" height="40" rx="8" fill="#FCEBEB" stroke="#E24B4A" stroke-width="1.2"/>
+  <text x="488" y="1479" text-anchor="middle" fill="#791F1F" font-size="12" font-weight="bold">📌 목표</text>
+
+  <rect x="574" y="1454" width="144" height="40" rx="8" fill="#FCEBEB" stroke="#E24B4A" stroke-width="1.2"/>
+  <text x="646" y="1479" text-anchor="middle" fill="#791F1F" font-size="12" font-weight="bold">📌 종합의견</text>
+
+  <!-- 추가 입력 안내 y=1508 -->
+  <text x="100" y="1510" fill="#555" font-size="11">총괄확인자 선택 · 수급자와의 관계 선택 · 전화번호 입력 후</text>
+
+  <!-- 계획통보 버튼 y=1520~1546 -->
+  <rect x="350" y="1518" width="130" height="30" rx="8" fill="#0D6E55"/>
+  <text x="415" y="1537" text-anchor="middle" fill="white" font-size="13" font-weight="bold">계획통보 클릭</text>
+
+  <!-- ══ 완료 배너 ══ -->
+  <!-- y=1580~1660 -->
+  <rect x="30" y="1580" width="800" height="100" rx="14" fill="#1F3864"/>
+  <text x="430" y="1616" text-anchor="middle" fill="white" font-size="12" opacity="0.7">전체 프로세스 완료</text>
+  <text x="430" y="1650" text-anchor="middle" fill="white" font-size="18" font-weight="bold">✅ 급여제공계획서 공단 통보 완료</text>
+
+</svg>
+
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -5570,19 +5902,22 @@ function clearUsageLog() {
 
 // ────── 가이드 탭 서브탭 ──────
 function switchGuideTab(tab) {
-  const flow    = document.getElementById('gtab-flow');
-  const routine = document.getElementById('gtab-routine');
-  const btnFlow    = document.getElementById('gtab-btn-flow');
-  const btnRoutine = document.getElementById('gtab-btn-routine');
-  if (tab === 'flow') {
-    flow.style.display = 'block'; routine.style.display = 'none';
-    btnFlow.style.background = '#1F3864'; btnFlow.style.color = '#fff'; btnFlow.style.borderColor = '#1F3864';
-    btnRoutine.style.background = '#fff'; btnRoutine.style.color = '#888'; btnRoutine.style.borderColor = '#E0E6F0';
-  } else {
-    flow.style.display = 'none'; routine.style.display = 'block';
-    btnRoutine.style.background = '#1F3864'; btnRoutine.style.color = '#fff'; btnRoutine.style.borderColor = '#1F3864';
-    btnFlow.style.background = '#fff'; btnFlow.style.color = '#888'; btnFlow.style.borderColor = '#E0E6F0';
-  }
+  const flow      = document.getElementById('gtab-flow');
+  const routine   = document.getElementById('gtab-routine');
+  const halfyear  = document.getElementById('gtab-halfyear');
+  const btnFlow      = document.getElementById('gtab-btn-flow');
+  const btnRoutine   = document.getElementById('gtab-btn-routine');
+  const btnHalfyear  = document.getElementById('gtab-btn-halfyear');
+  // 전체 숨기기
+  [flow, routine, halfyear].forEach(el => el && (el.style.display = 'none'));
+  [btnFlow, btnRoutine, btnHalfyear].forEach(btn => {
+    if (btn) { btn.style.background='#fff'; btn.style.color='#888'; btn.style.borderColor='#E0E6F0'; }
+  });
+  // 선택 탭 활성화
+  const panelMap = { flow, routine, halfyear };
+  const btnMap   = { flow: btnFlow, routine: btnRoutine, halfyear: btnHalfyear };
+  if (panelMap[tab]) panelMap[tab].style.display = 'block';
+  if (btnMap[tab])   { btnMap[tab].style.background='#1F3864'; btnMap[tab].style.color='#fff'; btnMap[tab].style.borderColor='#1F3864'; }
 }
 
 // ────── 탭 전환 ──────
@@ -10390,7 +10725,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.17.82
+  Day:음 · v2026.06.17.83
 </div>
 </body>
 </html>
