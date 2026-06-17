@@ -6276,7 +6276,7 @@ CIST 평가 시행 여부 반드시 명시. 없으면 "작성일 기준 최근 C
 - 면허번호: ${planLicense || '(미입력)'}
 - 작성일: ${planDate || '(미입력)'}
 - 적용기간: ${planStart || '(미입력)'} ~ ${planEnd || '(미입력)'}
-- 센터 기능회복훈련 프로그램: ${planRehab || '백세체조, 슬링재활운동, 빙고게임, 이야기여행'}
+- 센터 추가 프로그램: ${planRehab ? `기록지 외 추가 제공 프로그램이 있으니 기능회복훈련에 반영할 것: ${planRehab}` : '(없음 — 기록지에서 확인된 프로그램명만 사용할 것)'}
 
 ### 코드 작성 핵심 규칙 (반드시 준수)
 코드 결정 순서:
@@ -6324,19 +6324,28 @@ CIST 평가 시행 여부 반드시 명시. 없으면 "작성일 기준 최근 C
 ### 기능회복훈련 — 기록지 기반 프로그램 분석
 [반드시 수행] 급여제공기록지에서 실제 제공된 프로그램명과 활동 묘사를 모두 파악할 것.
 반드시 기록지에서 실제 확인된 프로그램명만 사용 — 기록지에 없는 프로그램명 임의 기재 절대 금지.
-파악한 프로그램명과 특이사항(어르신의 실제 참여 모습 묘사)을 읽고, 어르신이 실제로 사용한 신체·인지 기능을 해석하여 서술.
+파악한 프로그램명과 특이사항(어르신의 실제 참여 모습 묘사)을 읽고, 어르신이 실제로 사용한 신체·인지 기능을 해석하여 세부제공내용을 서술.
+
+[핵심 규칙] T51·T52·T53·T58 모두 기록지에서 확인된 실제 프로그램명을 세부제공내용에 반드시 명시할 것.
+"근력강화 운동을 지원하겠음"처럼 추상적으로만 쓰는 것은 불가. 반드시 실제 프로그램명을 포함하여 구체적으로 서술.
+
 예시:
-- "빙고게임 — 빙고판 자르고 붙이고 찾으며 참여" → "가위질(소근육 조작), 숫자 찾기·판단(인지기능) 등을 활용하여 지원하겠음."
-- "수공예(펠트 꽃만들기) — 바느질·가위질 참여" → "소근육 조작 및 집중력을 활용한 작업 활동을 지원하겠음."
+- T51: 기록지에 "슬링재활운동" 확인 → "슬링재활운동을 통해 어깨·팔 근력 강화를 지원하겠음."
+- T51: 기록지에 "백세체조" 확인 → "백세체조(팔운동·손가락운동·지구력훈련)를 통해 상지 근력 유지를 지원하겠음."
+- T52: "워커를 사용하여 안전한 보행 훈련을 실시하겠음. 균형 유지를 위한 앉았다 일어서기를 반복 지원하겠음."
+- T53: "식사 시 수저 사용 보조 및 흘리지 않도록 주시하며 지원하겠음."
+- T58: 기록지에 "빙고게임" 확인 → "빙고게임(가위질·숫자 찾기·판단 활용)을 통해 인지자극 활동을 제공하겠음."
+- T58: 기록지에 "이야기여행" 확인 → "이야기여행 프로그램을 통해 회상요법 및 정서적 안정을 지원하겠음."
+- T58: 기록지에 "수공예(펠트 꽃만들기)" 확인 → "수공예(펠트 꽃만들기, 바느질·가위질 참여)를 통해 소근육 조작 및 집중력 활동을 제공하겠음."
 
 프로그램 훈련 영역 매핑:
-- T51(신체기능훈련): 근력·연하·팔·손가락·조화·지구력 관련 활동
-- T52(기본동작훈련): 체위변경/일어나기/앉아있기/균형/이동/보행 [T51 직후 필수 배치]
-- T53(일상생활동작훈련): 식사/배설/옷갈아입기/목욕/몸단장 관련 지원
+- T51(신체기능훈련): 근력·연하·팔·손가락·조화·지구력 관련 활동 — 기록지 프로그램명 필수 포함
+- T52(기본동작훈련): 체위변경/일어나기/앉아있기/균형/이동/보행 [T51 직후 필수 배치] — 구체적 동작 서술
+- T53(일상생활동작훈련): 식사/배설/옷갈아입기/목욕/몸단장 관련 지원 — 기록지 ADL 기록 반영
 - T55(물리치료): 통증 어르신 필수
-- T58(여가·정서 프로그램): 여가·정서 활동
+- T58(여가·정서 프로그램): 여가·정서 활동 — 기록지 프로그램명 필수 포함
 - T61(사회적응훈련): 월 1회, 60분
-${planRehab ? '추가 센터 프로그램: ' + planRehab : ''}
+${planRehab ? `기록지 외 추가 제공 프로그램이 있으니 기능회복훈련에 반영할 것: ${planRehab}` : ''}
 
 ### 주기 코드값
 1=월, 2=주, 3=일, 4=필요시 (필요시인 경우 횟수 열 공란)
@@ -7016,8 +7025,10 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     const cfg = CENTERS[centerCode] || {};
     if (type === 'monthly') {
       const r = extractBodyContent(window._monthlyHtml || '');
-      console.log('[저장] monthly, html길이=', r.length);
+      // saveResidentFromResult 먼저 실행 → 이름 추출 후 currentLinkedName 갱신
       await saveResidentFromResult(type, window._monthlyHtml || '');
+      // 추출된 이름 사용 (연동 없이 직접 업로드한 경우도 포함)
+      const resName = window.currentLinkedName || '수급자';
       const docMap = {
         m1: { checked: document.getElementById('m1')?.checked, label: '분기별 상담일지' },
         m2: { checked: document.getElementById('m2')?.checked, label: '보호자 상담일지' },
@@ -7025,22 +7036,23 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
         m4: { checked: document.getElementById('m4')?.checked, label: '월간 현황 요약' },
         m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
       };
-      const resName = window.currentLinkedName || '수급자';
       let savedCount = 0;
       for (const [, v] of Object.entries(docMap)) {
         if (v.checked) {
-          console.log('[저장] monthly doc:', v.label, 'content길이=', r.length);
           await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, v.label, r);
           savedCount++;
         }
       }
       if (savedCount === 0) {
-        console.log('[저장] 선택 없음 → 월간문서 통합 저장, content길이=', r.length);
         await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '월간문서', r);
       }
     } else {
+      // saveResidentFromResult 먼저 실행 → 이름 추출
+      const resultForSave = (window._periodicHtml1 || '') + (window._periodicHtml2 || '') +
+                            (window._periodicHtml3 || '') + (window._periodicHtml4 || '');
+      await saveResidentFromResult(type, resultForSave);
+      // 추출된 이름 사용
       const resName = window.currentLinkedName || '수급자';
-      console.log('[저장] periodic, resName=', resName);
       const saveMap = [
         { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
         { html: window._periodicHtml2, label: '욕구사정' },
@@ -7049,12 +7061,8 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       ];
       for (const { html: h, label } of saveMap) {
         const fragment = extractBodyContent(h);
-        console.log(`[저장] periodic ${label}: html길이=${fragment.length}`);
         if (fragment) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, fragment);
       }
-      const resultForSave = (window._periodicHtml1 || '') + (window._periodicHtml2 || '') +
-                            (window._periodicHtml3 || '') + (window._periodicHtml4 || '');
-      await saveResidentFromResult(type, resultForSave);
     }
   } catch(saveErr) {
     console.error('[저장 오류]', saveErr.message);
@@ -7709,10 +7717,10 @@ function parseResidentDataFromHtml(type, html) {
 
     // ── 기능회복훈련 (T51/T52/T53) — 계획서에서 파싱 ──
     // 세부제공내용 또는 세부목표내용 패턴 추출
-    // T51 신체기능훈련 영역 텍스트
-    const t51Match = text.match(/T51[^가-힣]*신체기능[^\n]{0,10}\n?([\s\S]{10,300}?)(?=T52|T53|T55|T58|T60|T61|$)/);
-    const t52Match = text.match(/T52[^가-힣]*기본동작[^\n]{0,10}\n?([\s\S]{10,300}?)(?=T53|T55|T58|T60|T61|$)/);
-    const t53Match = text.match(/T53[^가-힣]*일상생활[^\n]{0,10}\n?([\s\S]{10,300}?)(?=T55|T58|T60|T61|$)/);
+    // T51 신체기능훈련 영역 텍스트 — 프로그램명 포함 패턴까지 매칭
+    const t51Match = text.match(/(?:T51|신체기능(?:의\s*)?훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T52|T53|T55|T58|T60|T61|기본동작|일상생활동작|$)/);
+    const t52Match = text.match(/(?:T52|기본동작\s*훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T53|T55|T58|T60|T61|일상생활동작|$)/);
+    const t53Match = text.match(/(?:T53|일상생활동작\s*훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T55|T58|T60|T61|$)/);
 
     // 세부제공내용 기반 추출 (테이블 셀 패턴)
     const extractCellText = (pattern) => {
@@ -7723,7 +7731,6 @@ function parseResidentDataFromHtml(type, html) {
         const cells = row.querySelectorAll('td');
         for (let i = 0; i < cells.length; i++) {
           if (pattern.test(cells[i].textContent)) {
-            // 같은 행 또는 다음 행에서 세부제공내용 셀 찾기
             const content = cells[cells.length - 1]?.textContent.trim();
             if (content && content.length > 10) return content;
           }
@@ -7732,7 +7739,7 @@ function parseResidentDataFromHtml(type, html) {
       return null;
     };
 
-    const rehabBody  = t51Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T51|신체기능의\s*훈련/);
+    const rehabBody  = t51Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T51|신체기능(?:의)?\s*훈련/);
     const rehabBasic = t52Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T52|기본동작\s*훈련/);
     const rehabAdl   = t53Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T53|일상생활동작\s*훈련/);
 
@@ -7869,12 +7876,25 @@ async function saveResidentFromResult(type, resultHtml) {
       const tmp = document.createElement('div');
       tmp.innerHTML = resultHtml;
       const text = (tmp.innerText || '').replace(/\s+/g, ' ');
-      for (const pat of [/수급자명?\s*[:\|]?\s*([가-힣]{2,5})/, /수급자\s+([가-힣]{2,5})/, /성명\s*[:\|]?\s*([가-힣]{2,5})/]) {
+      // 이름으로 절대 들어오면 안 되는 단어 목록
+      const FORBIDDEN = new Set(['수급자','어르신','욕구사정','욕구사','기초평가','결과평가','계획서','상담일지','작성자','사회복지','담당자','기관명','센터명','시설장','보호자','미입력']);
+      for (const pat of [
+        /수급자\s*:\s*([가-힣]{2,4})/,
+        /수급자명\s*[:\|]\s*([가-힣]{2,4})/,
+        /성\s*명\s*[:\|]?\s*([가-힣]{2,4})/,
+        /수급자\s+([가-힣]{2,4})\s/,
+      ]) {
         const m = text.match(pat);
-        if (m?.[1] && m[1] !== '수급자' && m[1] !== '어르신') { name = m[1]; break; }
+        if (m?.[1] && !FORBIDDEN.has(m[1]) && /^[가-힣]{2,4}$/.test(m[1])) {
+          name = m[1];
+          break;
+        }
       }
     }
     if (!name) return;
+
+    // 추출된 이름을 currentLinkedName에 반영 (후속 Supabase 저장에서 사용)
+    if (!window.currentLinkedName) window.currentLinkedName = name;
 
     // [B안] 문서 HTML 보관
     saveRecentDocHtml(name, type, resultHtml);
@@ -7929,8 +7949,12 @@ async function saveResidentFromResult(type, resultHtml) {
         if (!existingRes.needs) existingRes.needs = {};
         existingRes.needs.excretion = parsed.excretion;
       }
-      // rehab 병합
-      if (parsed.rehab) existingRes.rehab = parsed.rehab;
+      // rehab 병합 — 정기문서 생성 시에는 항상 덮어씀 (파싱 실패면 undefined로 리셋)
+      if (type === 'periodic') {
+        existingRes.rehab = parsed.rehab || undefined;
+      } else if (parsed.rehab) {
+        existingRes.rehab = parsed.rehab;
+      }
       // 기초평가 요약 업데이트
       if (parsed.fall || parsed.pressure) {
         const parts = [];
@@ -10356,7 +10380,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.16.77.F
+  Day:음 · v2026.06.17.79
 </div>
 </body>
 </html>
