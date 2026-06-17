@@ -5793,6 +5793,8 @@ const DOC_CSS = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'No
 
 // AI 초안 안내문구 — 모든 생성 문서에 자동 삽입
 const AI_DRAFT_NOTICE = `<div class="ai-draft-notice"><span style="font-size:16px;flex-shrink:0">⚠️</span><span>이 문서는 AI(Day:음)가 급여제공기록지를 바탕으로 작성한 <strong>초안</strong>입니다. 반드시 담당자의 검토와 수정이 필요합니다.</span></div>`;
+
+function buildMonthlyPrompt(opinion) {
   // 선택된 문서 확인
   const docs = {
     m1: document.getElementById('m1')?.checked, // 분기별 상담일지
@@ -7039,15 +7041,12 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     const cfg = CENTERS[centerCode] || {};
     if (type === 'monthly') {
       const r = extractBodyContent(window._monthlyHtml || '');
-      // saveResidentFromResult 먼저 실행 → 이름 추출 후 currentLinkedName 갱신
       await saveResidentFromResult(type, window._monthlyHtml || '');
-      // 추출된 이름 사용 (연동 없이 직접 업로드한 경우도 포함)
       const resName = window.currentLinkedName || '수급자';
       const docMap = {
         m1: { checked: document.getElementById('m1')?.checked, label: '분기별 상담일지' },
         m2: { checked: document.getElementById('m2')?.checked, label: '보호자 상담일지' },
         m3: { checked: document.getElementById('m3')?.checked, label: '사례관리 회의록' },
-        m4: { checked: document.getElementById('m4')?.checked, label: '월간 현황 요약' },
         m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
       };
       let savedCount = 0;
@@ -7061,11 +7060,9 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
         await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '월간문서', r);
       }
     } else {
-      // saveResidentFromResult 먼저 실행 → 이름 추출
       const resultForSave = (window._periodicHtml1 || '') + (window._periodicHtml2 || '') +
                             (window._periodicHtml3 || '') + (window._periodicHtml4 || '');
       await saveResidentFromResult(type, resultForSave);
-      // 추출된 이름 사용
       const resName = window.currentLinkedName || '수급자';
       const saveMap = [
         { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
@@ -7731,7 +7728,7 @@ function parseResidentDataFromHtml(type, html) {
 
     // ── 기능회복훈련 (T51/T52/T53) — 계획서에서 파싱 ──
     // 세부제공내용 또는 세부목표내용 패턴 추출
-    // T51 신체기능훈련 영역 텍스트 — 프로그램명 포함 패턴까지 매칭
+    // T51 신체기능훈련 영역 텍스트
     const t51Match = text.match(/(?:T51|신체기능(?:의\s*)?훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T52|T53|T55|T58|T60|T61|기본동작|일상생활동작|$)/);
     const t52Match = text.match(/(?:T52|기본동작\s*훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T53|T55|T58|T60|T61|일상생활동작|$)/);
     const t53Match = text.match(/(?:T53|일상생활동작\s*훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T55|T58|T60|T61|$)/);
@@ -7890,7 +7887,6 @@ async function saveResidentFromResult(type, resultHtml) {
       const tmp = document.createElement('div');
       tmp.innerHTML = resultHtml;
       const text = (tmp.innerText || '').replace(/\s+/g, ' ');
-      // 이름으로 절대 들어오면 안 되는 단어 목록
       const FORBIDDEN = new Set(['수급자','어르신','욕구사정','욕구사','기초평가','결과평가','계획서','상담일지','작성자','사회복지','담당자','기관명','센터명','시설장','보호자','미입력']);
       for (const pat of [
         /수급자\s*:\s*([가-힣]{2,4})/,
@@ -7907,7 +7903,7 @@ async function saveResidentFromResult(type, resultHtml) {
     }
     if (!name) return;
 
-    // 추출된 이름을 currentLinkedName에 반영 (후속 Supabase 저장에서 사용)
+    // 추출된 이름을 currentLinkedName에 반영
     if (!window.currentLinkedName) window.currentLinkedName = name;
 
     // [B안] 문서 HTML 보관
@@ -10394,7 +10390,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.17.81
+  Day:음 · v2026.06.17.82
 </div>
 </body>
 </html>
