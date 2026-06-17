@@ -746,6 +746,7 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     <button class="sub-tab" onclick="switchSub('sub-periodic',this)">📋 정기 문서</button>
     <button class="sub-tab" onclick="switchSub('sub-adhoc',this)">🔔 수시 문서</button>
     <button class="sub-tab" onclick="switchSub('sub-survey',this)">📊 조사</button>
+    <button class="sub-tab" onclick="switchSub('sub-report',this)">📝 보고서</button>
   </div>
 
   <!-- ── 서브탭: 월간 문서 ── -->
@@ -1952,6 +1953,132 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   </div>
 
   </div><!-- /sub-survey -->
+
+  <!-- ── 서브탭: 보고서 작성 ── -->
+  <div class="sub-content" id="sub-report">
+
+    <div id="report-input">
+
+      <!-- 보고서 종류 선택 -->
+      <div class="card" style="padding:14px 16px">
+        <div class="card-title" style="margin-bottom:12px"><div class="num">1</div> 보고서 종류 선택</div>
+        <select id="report-type" onchange="onReportTypeChange()"
+          style="width:100%;padding:10px 12px;border:1.5px solid #E0E6F0;border-radius:8px;font-size:13px;font-family:inherit;color:#333;background:#fff;cursor:pointer">
+          <option value="">— 보고서 종류를 선택하세요 —</option>
+          <optgroup label="🚨 재난·안전">
+            <option value="fire">재난·화재 대응훈련 결과보고서</option>
+            <option value="disaster">재난상황 대응훈련 결과보고서 (지진·풍수해)</option>
+          </optgroup>
+          <optgroup label="📚 직원교육">
+            <option value="human_rights">노인인권 및 학대예방교육 결과보고서</option>
+            <option value="operation">운영규정 교육 결과보고서</option>
+            <option value="guideline">급여제공지침 교육 결과보고서</option>
+            <option value="infection">감염관리 교육 결과보고서</option>
+          </optgroup>
+          <optgroup label="📋 기타 기록">
+            <option value="volunteer">자원봉사 활동 결과보고서</option>
+            <option value="health_check">건강검진 실시 결과보고서</option>
+          </optgroup>
+        </select>
+        <!-- 평가지표 배지 -->
+        <div id="report-indicator-badge" style="display:none;margin-top:10px;padding:8px 12px;background:#EEF2FF;border-left:3px solid #4361EE;border-radius:0 6px 6px 0;font-size:11px;color:#3730A3;line-height:1.6"></div>
+      </div>
+
+      <!-- 기본 정보 -->
+      <div class="card" id="report-info-card" style="display:none;padding:14px 16px">
+        <div class="card-title" style="margin-bottom:12px"><div class="num">2</div> 기본 정보 입력</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div style="font-size:11px;color:#888;margin-bottom:4px">실시일자</div>
+            <input type="date" id="report-date" style="width:100%;padding:8px 10px;border:1.5px solid #E0E6F0;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#888;margin-bottom:4px">장소</div>
+            <input type="text" id="report-place" placeholder="예) 삽교주간보호센터 프로그램실" style="width:100%;padding:8px 10px;border:1.5px solid #E0E6F0;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div style="grid-column:1/-1">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">제목</div>
+            <input type="text" id="report-title" placeholder="훈련/교육 제목" style="width:100%;padding:8px 10px;border:1.5px solid #E0E6F0;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div id="report-method-wrap">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">교육방법</div>
+            <input type="text" id="report-method" placeholder="예) 집합교육, 시청각 자료 활용" style="width:100%;padding:8px 10px;border:1.5px solid #E0E6F0;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div id="report-instructor-wrap">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">강사명</div>
+            <input type="text" id="report-instructor" placeholder="예) 김영지 (사회복지사)" style="width:100%;padding:8px 10px;border:1.5px solid #E0E6F0;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+          <div style="grid-column:1/-1">
+            <div style="font-size:11px;color:#888;margin-bottom:4px" id="report-participants-label">참석자</div>
+            <input type="text" id="report-participants" placeholder="예) 요양보호사 5명, 수급자 12명" style="width:100%;padding:8px 10px;border:1.5px solid #E0E6F0;border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box">
+          </div>
+        </div>
+      </div>
+
+      <!-- 내용 입력 -->
+      <div class="card" id="report-content-card" style="display:none;padding:14px 16px">
+        <div class="card-title" style="margin-bottom:8px"><div class="num">3</div> 실시 내용 및 특이사항 <span style="color:#E24B4A">*</span></div>
+        <div style="font-size:11px;color:#999;margin-bottom:8px">실제 진행된 내용, 참석자 반응, 특이사항 등을 입력해주세요. 입력하신 내용을 바탕으로 AI가 보고서 초안을 작성합니다.</div>
+        <textarea id="report-memo" rows="5"
+          placeholder="예) 오전 10시 화재경보 발령 → 대피 안내 방송 → 어르신 현관 방향 대피 실시 → 소화기 사용법 시연 → 직원별 역할 점검. 이동 불편 어르신 2명 휠체어 보조 대피 완료. 특이사항 없음."
+          style="width:100%;padding:10px;border:1.5px solid #E0E6F0;border-radius:6px;font-size:12px;font-family:inherit;resize:vertical;box-sizing:border-box;line-height:1.7"></textarea>
+      </div>
+
+      <!-- 첨부파일 -->
+      <div class="card" id="report-attach-card" style="display:none;padding:14px 16px">
+        <div class="card-title" style="margin-bottom:8px"><div class="num">4</div> 자료 첨부 <span style="color:#E24B4A">*</span> <span style="font-size:10px;font-weight:400;color:#888">(사진·교육자료·서식 등)</span></div>
+        <div style="font-size:11px;color:#999;margin-bottom:8px">실제 진행 자료를 첨부해주세요. 첨부 자료를 바탕으로 AI가 보고서를 작성합니다.</div>
+        <div class="upload-zone" id="report-upload" onclick="document.getElementById('report-file').click()" style="padding:14px;cursor:pointer">
+          <div style="font-size:22px;margin-bottom:4px">📎</div>
+          <div style="font-size:12px;color:#888">사진 또는 교육자료를 첨부해주세요 (PDF·이미지)</div>
+          <div id="report-fname" style="display:none;margin-top:6px"><span class="file-tag">✓ <span id="report-fn"></span></span></div>
+        </div>
+        <input type="file" id="report-file" style="display:none" accept=".pdf,.png,.jpg,.jpeg"
+          onchange="handleReportFile(this)">
+      </div>
+
+      <button class="gen-btn" id="report-gen-btn" style="display:none;background:#1F3864"
+        onclick="startReportGenerate()">✨ 보고서 생성하기</button>
+
+    </div><!-- /report-input -->
+
+    <!-- 진행 -->
+    <div class="prog-wrap" id="report-prog" style="display:none">
+      <div class="card">
+        <div class="card-title"><div class="num" style="background:#1F3864">⚡</div> 보고서 작성 중...</div>
+        <div style="background:#F0F4FF;border-radius:8px;padding:12px;margin-top:8px">
+          <div style="font-size:12px;color:#1F3864;margin-bottom:8px" id="report-prog-msg">AI가 보고서를 작성하고 있습니다...</div>
+          <div style="background:#D8E0F5;border-radius:4px;height:6px;overflow:hidden">
+            <div id="report-pct-bar" style="height:100%;background:#1F3864;width:0%;transition:width .4s ease;border-radius:4px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div class="result-wrap" id="report-result" style="display:none">
+      <div class="doc-result">
+        <div class="doc-result-head" style="background:#1F3864">
+          <span>📝</span>
+          <span class="doc-result-title" id="report-result-title">보고서 — 완성</span>
+          <div style="display:flex;gap:6px">
+            <button onclick="document.getElementById('report-iframe').contentWindow.print()"
+              style="font-size:11px;padding:5px 10px;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:4px;cursor:pointer;font-family:inherit">🖨️ 인쇄</button>
+            <button onclick="downloadReportWord()"
+              style="font-size:11px;padding:5px 10px;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:4px;cursor:pointer;font-family:inherit">⬇ Word</button>
+          </div>
+        </div>
+        <div style="border:1px solid #E0E6F0;border-radius:0 0 8px 8px;overflow:hidden">
+          <iframe id="report-iframe" style="width:100%;height:520px;border:none"></iframe>
+        </div>
+        <button onclick="resetReport()" style="margin-top:10px;width:100%;padding:9px;background:#f5f5f5;color:#555;border:1px solid #ddd;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">
+          ↩ 새 보고서 작성
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /sub-report -->
+
 
 </div><!-- /main -->
 </div><!-- /tab-docs -->
@@ -4793,6 +4920,336 @@ async function loadPdfLib() {
   return window.PDFLib;
 }
 
+
+// ════════════════════════════════════════
+//  보고서 작성 탭
+// ════════════════════════════════════════
+
+const REPORT_CONFIG = {
+  fire: {
+    label: '재난·화재 대응훈련 결과보고서',
+    badge: '📌 평가지표 23 (재난상황 대응훈련) · 2점 · 반기 1회 이상 실시 필수',
+    defaultTitle: '화재 대응 소방훈련',
+    showMethod: false, showInstructor: false,
+    participantsHint: '직원 전원 + 이용 수급자',
+  },
+  disaster: {
+    label: '재난상황 대응훈련 결과보고서',
+    badge: '📌 평가지표 23 (재난상황 대응훈련) · 2점 · 반기 1회 이상 실시 필수 · 사진 첨부 권장',
+    defaultTitle: '재난상황 대응훈련 (지진·풍수해)',
+    showMethod: false, showInstructor: false,
+    participantsHint: '직원 전원 + 이용 수급자',
+  },
+  human_rights: {
+    label: '노인인권 및 학대예방교육 결과보고서',
+    badge: '📌 평가지표 19 (노인인권교육) · 반기 1회 이상 · 참석자 서명 필수',
+    defaultTitle: '노인인권 및 학대예방교육',
+    showMethod: true, showInstructor: true,
+    participantsHint: '직원 전원 (참석자 서명 필수)',
+  },
+  operation: {
+    label: '운영규정 교육 결과보고서',
+    badge: '📌 평가지표 6 (운영규정) · 연 1회 이상 직원 교육 권장',
+    defaultTitle: '운영규정 직원 교육',
+    showMethod: true, showInstructor: true,
+    participantsHint: '직원 전원',
+  },
+  guideline: {
+    label: '급여제공지침 교육 결과보고서',
+    badge: '📌 평가지표 7 (급여제공지침) · 연 1회 이상 직원 교육 권장',
+    defaultTitle: '급여제공지침 직원 교육',
+    showMethod: true, showInstructor: true,
+    participantsHint: '직원 전원',
+  },
+  infection: {
+    label: '감염관리 교육 결과보고서',
+    badge: '📌 평가지표 22 (감염관리) · 반기 1회 이상 · 직원·수급자 대상',
+    defaultTitle: '감염예방 및 위생관리 교육',
+    showMethod: true, showInstructor: true,
+    participantsHint: '직원 전원 + 이용 수급자',
+  },
+  volunteer: {
+    label: '자원봉사 활동 결과보고서',
+    badge: '📌 평가지표 3·5 (지역사회 연계) · 자원봉사 활동 기록 보관 필수',
+    defaultTitle: '자원봉사 활동 결과',
+    showMethod: false, showInstructor: false,
+    participantsHint: '자원봉사자 및 참여 수급자',
+  },
+  health_check: {
+    label: '건강검진 실시 결과보고서',
+    badge: '📌 평가지표 (직원 건강관리) · 연 1회 건강검진 실시 권장',
+    defaultTitle: '직원 건강검진 실시 결과',
+    showMethod: false, showInstructor: false,
+    participantsHint: '검진 참여 직원',
+  },
+};
+
+function onReportTypeChange() {
+  const type = document.getElementById('report-type').value;
+  const badge = document.getElementById('report-indicator-badge');
+  const infoCard = document.getElementById('report-info-card');
+  const contentCard = document.getElementById('report-content-card');
+  const attachCard = document.getElementById('report-attach-card');
+  const genBtn = document.getElementById('report-gen-btn');
+
+  if (!type) {
+    badge.style.display = 'none';
+    infoCard.style.display = 'none';
+    contentCard.style.display = 'none';
+    attachCard.style.display = 'none';
+    genBtn.style.display = 'none';
+    return;
+  }
+
+  const cfg = REPORT_CONFIG[type];
+  badge.style.display = 'block';
+  badge.innerHTML = cfg.badge;
+  infoCard.style.display = 'block';
+  contentCard.style.display = 'block';
+  attachCard.style.display = 'block';
+  genBtn.style.display = 'block';
+
+  // 제목 기본값
+  const titleEl = document.getElementById('report-title');
+  if (!titleEl.value) titleEl.value = cfg.defaultTitle;
+
+  // 교육방법/강사명 표시
+  document.getElementById('report-method-wrap').style.display = cfg.showMethod ? 'block' : 'none';
+  document.getElementById('report-instructor-wrap').style.display = cfg.showInstructor ? 'block' : 'none';
+
+  // 참석자 힌트
+  document.getElementById('report-participants').placeholder = `예) ${cfg.participantsHint}`;
+}
+
+function handleReportFile(input) {
+  if (!input.files || !input.files[0]) return;
+  window.reportFile = input.files[0];
+  document.getElementById('report-fn').textContent = input.files[0].name;
+  document.getElementById('report-fname').style.display = 'block';
+}
+
+async function startReportGenerate() {
+  const type = document.getElementById('report-type').value;
+  if (!type) { alert('보고서 종류를 선택해주세요.'); return; }
+
+  const cfg = REPORT_CONFIG[type];
+  const date = document.getElementById('report-date').value;
+  const place = document.getElementById('report-place').value;
+  const title = document.getElementById('report-title').value;
+  const method = document.getElementById('report-method').value;
+  const instructor = document.getElementById('report-instructor').value;
+  const participants = document.getElementById('report-participants').value;
+  const memo = document.getElementById('report-memo').value;
+
+  if (!date) { alert('실시일자를 입력해주세요.'); return; }
+  if (!title) { alert('제목을 입력해주세요.'); return; }
+  if (!memo.trim()) { alert('실시 내용 및 특이사항을 입력해주세요.'); return; }
+  if (!window.reportFile) { alert('자료(사진·교육자료 등)를 첨부해주세요.'); return; }
+
+  const centerName = (typeof CENTER_NAME !== 'undefined' ? CENTER_NAME : '삽교주간보호센터');
+  const confirmed = await showAiDisclaimerModal();
+  if (!confirmed) return;
+
+  document.getElementById('report-input').style.display = 'none';
+  document.getElementById('report-prog').style.display = 'block';
+  document.getElementById('report-result').style.display = 'none';
+
+  const progMsg = document.getElementById('report-prog-msg');
+  const progBar = document.getElementById('report-pct-bar');
+  const msgs = ['입력 내용 분석 중...', '보고서 구조 설계 중...', '본문 작성 중...', '서식 정리 중...'];
+  let pct = 0;
+  const progTimer = setInterval(() => {
+    pct = Math.min(pct + 8, 88);
+    progBar.style.width = pct + '%';
+    progMsg.textContent = msgs[Math.floor(pct / 25)] || msgs[3];
+  }, 400);
+
+  try {
+    const dateStr = date ? new Date(date).toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric'}) : '';
+    const methodLine = cfg.showMethod && method ? `
+교육방법: ${method}` : '';
+    const instructorLine = cfg.showInstructor && instructor ? `
+강사: ${instructor}` : '';
+
+    const prompt = `당신은 장기요양 주야간보호센터의 사회복지사입니다.
+아래 정보와 첨부 자료를 바탕으로 "${cfg.label}"를 작성해주세요.
+
+【기관명】 ${centerName}
+【보고서 종류】 ${cfg.label}
+【제목】 ${title}
+【실시일자】 ${dateStr}
+【장소】 ${place || '센터 내'}${methodLine}${instructorLine}
+【참석자】 ${participants || '해당 없음'}
+【실시 내용 및 특이사항】
+${memo}
+
+첨부된 사진/자료를 참고하여 실제 진행 내용을 구체적으로 반영해주세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+아래 HTML 템플릿 구조와 CSS를 그대로 사용하여 보고서를 완성하세요.
+클래스명·CSS는 절대 변경하지 말고, 내용(텍스트)만 실제 내용으로 채우세요.
+보고서 종류에 따라 섹션 제목과 항목은 적절히 조정하세요.
+(예: 교육보고서는 "교육 목적/교육 내용/교육 결과/향후 계획",
+ 훈련보고서는 "훈련 목적/훈련 내용 및 절차/훈련 결과/미비점 및 개선계획",
+ 자원봉사는 "활동 목적/활동 내용/활동 결과/향후 계획" 등)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<title>${cfg.label}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px;line-height:1.75}
+.page{background:#fff;max-width:800px;margin:0 auto;padding:44px 52px 52px;box-shadow:0 3px 16px rgba(0,0,0,.18)}
+.doc-header{text-align:center;margin-bottom:28px}
+.agency-name{font-size:11pt;color:#555;margin-bottom:6px;letter-spacing:.5px}
+.doc-title{font-size:18pt;font-weight:700;letter-spacing:4px;color:#1a1a1a;border-bottom:3px double #1a1a1a;padding-bottom:10px;margin-bottom:6px}
+.doc-subtitle{font-size:10pt;color:#888;letter-spacing:1px}
+.info-tbl{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:10pt}
+.info-tbl th{background:#2C3E6B;color:#fff;border:1px solid #2C3E6B;padding:7px 12px;text-align:center;font-weight:600;white-space:nowrap;width:110px}
+.info-tbl td{border:1px solid #B0B8CC;padding:7px 14px}
+.info-tbl tr:nth-child(even) td{background:#F8F9FC}
+.sec-title{background:#2C3E6B;color:#fff;font-size:10.5pt;font-weight:700;padding:8px 16px;margin-top:22px;margin-bottom:0;letter-spacing:.5px}
+.sec-body{border:1px solid #B0B8CC;border-top:none;padding:14px 18px 16px;font-size:10pt;line-height:1.95}
+.item-label{font-weight:700;color:#2C3E6B;margin-top:10px;margin-bottom:4px;font-size:10pt}
+.item-label:first-child{margin-top:0}
+.item-body{padding-left:10px;color:#333}
+.result-tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt}
+.result-tbl th{background:#E8ECF5;border:1px solid #B0B8CC;padding:7px 12px;text-align:center;font-weight:600;color:#2C3E6B}
+.result-tbl td{border:1px solid #B0B8CC;padding:7px 12px;text-align:center}
+.result-tbl td.left{text-align:left;padding-left:14px}
+.badge-good{background:#E8F5E9;color:#1B5E20;border-radius:4px;padding:1px 8px;font-size:9.5pt;font-weight:600}
+.badge-warn{background:#FFF8E1;color:#E65100;border-radius:4px;padding:1px 8px;font-size:9.5pt;font-weight:600}
+.improve-item{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+.improve-num{background:#2C3E6B;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:9pt;font-weight:700;flex-shrink:0;margin-top:2px}
+.indicator-box{background:#EEF2FF;border:1px solid #C5CAE9;border-radius:6px;padding:10px 14px;margin-top:18px;font-size:9.5pt;color:#3949AB;line-height:1.8}
+.sign-wrap{margin-top:28px;border:1.5px solid #B0B8CC;border-radius:6px;padding:18px 22px}
+.sign-title{font-size:10pt;font-weight:700;color:#2C3E6B;margin-bottom:14px;text-align:center;letter-spacing:1px}
+.sign-row{display:flex;border:1px solid #B0B8CC}
+.sign-cell{flex:1;padding:14px 16px;border-right:1px solid #B0B8CC}
+.sign-cell:last-child{border-right:none}
+.sign-cell-label{font-size:10pt;font-weight:700;color:#555;margin-bottom:8px}
+.sign-cell-line{border-bottom:1px solid #888;margin-top:22px;position:relative}
+.sign-cell-line::after{content:'(인)';position:absolute;right:0;bottom:2px;font-size:9pt;color:#aaa}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-header">
+    <div class="agency-name">${centerName}</div>
+    <div class="doc-title">【여기에 보고서 제목】</div>
+    <div class="doc-subtitle">【여기에 부제 예: 2026년 상반기】</div>
+  </div>
+  <table class="info-tbl">
+    <!-- 기본 정보 행들: 훈련명/실시일자/장소/참가인원/작성자 등 실제 내용으로 채울 것 -->
+  </table>
+  <!-- sec-title + sec-body 패턴으로 섹션 구성 -->
+  <div class="sec-title">1. 【섹션 제목】</div>
+  <div class="sec-body">【내용】</div>
+  <!-- 필요한 섹션 수만큼 반복 -->
+  <!-- 결과가 있는 경우 result-tbl 사용 -->
+  <!-- 개선사항은 improve-item + improve-num 패턴 사용 -->
+  <!-- 평가지표 배지: indicator-box 사용 -->
+  <div class="indicator-box">📌 ${cfg.badge.replace('📌 ','')}</div>
+  <div class="sign-wrap">
+    <div class="sign-title">결 재</div>
+    <div class="sign-row">
+      <div class="sign-cell"><div class="sign-cell-label">작성자</div><div>사회복지사 &nbsp; 【작성자명】</div><div class="sign-cell-line"></div></div>
+      <div class="sign-cell"><div class="sign-cell-label">검토자</div><div>&nbsp;</div><div class="sign-cell-line"></div></div>
+      <div class="sign-cell"><div class="sign-cell-label">기관장</div><div>&nbsp;</div><div class="sign-cell-line"></div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
+위 템플릿을 완성된 HTML로 출력하세요. 마크다운 없이 순수 HTML만 출력하세요.`;
+
+    const messages = [{ role: 'user', content: prompt }];
+    let fileContent = null;
+    if (window.reportFile) {
+      const b64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = () => rej(new Error('파일 읽기 실패'));
+        r.readAsDataURL(window.reportFile);
+      });
+      const mt = window.reportFile.type || 'application/pdf';
+      messages[0].content = [
+        { type: mt.startsWith('image') ? 'image' : 'document',
+          source: { type: 'base64', media_type: mt, data: b64 } },
+        { type: 'text', text: prompt }
+      ];
+    }
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'x-api-key': getApiKey() },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4000, messages })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+
+    clearInterval(progTimer);
+    progBar.style.width = '100%';
+    await new Promise(r => setTimeout(r, 300));
+
+    let html = data.content[0].text;
+    html = html.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    const iframe = document.getElementById('report-iframe');
+    iframe.srcdoc = html;
+    window._reportHtml = html;
+    window._reportType = type;
+
+    document.getElementById('report-result-title').textContent = `${cfg.label} — 완성`;
+    document.getElementById('report-prog').style.display = 'none';
+    document.getElementById('report-result').style.display = 'block';
+
+  } catch (e) {
+    clearInterval(progTimer);
+    document.getElementById('report-prog').style.display = 'none';
+    document.getElementById('report-input').style.display = 'block';
+    alert('보고서 생성 중 오류가 발생했습니다: ' + e.message);
+  }
+}
+
+function downloadReportWord() {
+  if (!window._reportHtml) return;
+  const blob = new Blob(['﻿' + window._reportHtml], { type: 'application/msword;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const cfg = REPORT_CONFIG[window._reportType] || {};
+  const _d = new Date().toLocaleDateString('ko-KR').split('. ').join('-').replace('.','');
+  a.download = `${cfg.label || '보고서'}_${_d}.doc`;
+  a.click();
+}
+
+function resetReport() {
+  document.getElementById('report-input').style.display = 'block';
+  document.getElementById('report-result').style.display = 'none';
+  document.getElementById('report-prog').style.display = 'none';
+  document.getElementById('report-type').value = '';
+  document.getElementById('report-title').value = '';
+  document.getElementById('report-date').value = '';
+  document.getElementById('report-place').value = '';
+  document.getElementById('report-method').value = '';
+  document.getElementById('report-instructor').value = '';
+  document.getElementById('report-participants').value = '';
+  document.getElementById('report-memo').value = '';
+  document.getElementById('report-indicator-badge').style.display = 'none';
+  document.getElementById('report-info-card').style.display = 'none';
+  document.getElementById('report-content-card').style.display = 'none';
+  document.getElementById('report-attach-card').style.display = 'none';
+  document.getElementById('report-gen-btn').style.display = 'none';
+  document.getElementById('report-fname').style.display = 'none';
+  window.reportFile = null;
+  window._reportHtml = null;
+}
+
 // ════════════════════════════════════════
 //  조사 탭
 // ════════════════════════════════════════
@@ -6124,7 +6581,7 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
 
 // ────── 월간 문서 프롬프트 ──────
 // ────── 문서 HTML CSS 상수 (프롬프트에서 분리) ──────
-const DOC_CSS = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px;line-height:1.75}.page{background:#fff;max-width:880px;margin:0 auto 36px auto;padding:38px 50px 44px 50px;box-shadow:0 3px 16px rgba(0,0,0,0.18)}.doc-title-main{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1a3a6e;padding-bottom:10px;border-bottom:2.5px solid #1a3a6e;margin-bottom:6px}.doc-title-sub{text-align:center;font-size:9.5pt;color:#555;margin-bottom:18px;letter-spacing:1px}.doc-title-guardian{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1e5c28;padding-bottom:10px;border-bottom:2.5px solid #1e5c28;margin-bottom:6px}.info-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10pt}.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e}.info-tbl td{border:1px solid #9aaecc;padding:5px 10px}.session-hd{background:#1a3a6e;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.session-hd-guardian{background:#1e5c28;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.meta-tbl{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:0}.meta-tbl th{background:#eef2fb;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e;width:100px}.meta-tbl td{border:1px solid #9aaecc;padding:5px 10px}.meta-tbl-g th{background:#e4f0e6;color:#1e5c28;border-color:#8abf92}.meta-tbl-g td{border-color:#8abf92}.content-hd{background:#eef2fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.content-box{border:1px solid #9aaecc;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.soap-para{margin-bottom:14px}.soap-para:last-child{margin-bottom:0}.soap-label{font-weight:bold;color:#1a3a6e;font-size:10.5pt}.action-hd{background:#f0f4fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.action-body{border:1px solid #9aaecc;border-top:none;padding:12px 18px;font-size:10.5pt;line-height:2.05}.action-body .item{padding:1px 0}.action-body .dt{color:#4a5a7a;font-size:10pt}.benefit-hd{background:#fdf6e0;border:1px solid #c8a84b;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#7a5c10;letter-spacing:.5px}.benefit-body{border:1px solid #c8a84b;border-top:none;padding:14px 18px 16px 18px;font-size:10.5pt;line-height:1.95;background:#fffdf5}.b-row{margin-bottom:8px}.b-row:last-child{margin-bottom:0}.blabel{font-weight:bold;color:#7a5c10;min-width:76px;display:inline-block}.b-detail{padding-left:20px;margin-top:4px}.b-basis{padding-left:36px;font-size:10pt;color:#555;margin-top:3px;line-height:1.85}.b-basis-item{margin-bottom:1px}.content-hd-g{background:#e8f4ea;border:1px solid #8abf92;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1e5c28}.content-box-g{border:1px solid #8abf92;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.divider{border:none;border-top:2px dashed #b0bccc;margin:32px 0}.case-hd-bar{background:#a02020;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.case-box{border:1px solid #b84040;border-top:none;padding:16px 22px 18px 22px;background:#fff8f8;font-size:10.5pt;line-height:1.95}.case-box .clabel{font-weight:bold;color:#a02020;display:inline-block;min-width:76px}.case-box .crow{margin-bottom:6px}.case-box .cbasis{padding-left:14px;margin-top:6px;line-height:2.0}.case-box .cbasis p{margin-bottom:4px}.source-report{background:#f0f4ff;border:1px solid #c5cae9;border-radius:8px;padding:14px;margin-top:20px;font-size:10pt;line-height:1.8}.case-draft-notice{background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:11pt;color:#5D4037;line-height:1.7}.ai-draft-notice{background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:10pt;color:#5D4037;line-height:1.7;display:flex;align-items:flex-start;gap:8px;print-color-adjust:exact;-webkit-print-color-adjust:exact}`;
+const DOC_CSS = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Noto Sans KR','맑은 고딕','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:10.5pt;color:#1a1a1a;background:#d8dce4;padding:28px 16px;line-height:1.75}.page{background:#fff;max-width:880px;margin:0 auto 36px auto;padding:38px 50px 44px 50px;box-shadow:0 3px 16px rgba(0,0,0,0.18)}.doc-title-main{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1a3a6e;padding-bottom:10px;border-bottom:2.5px solid #1a3a6e;margin-bottom:6px}.doc-title-sub{text-align:center;font-size:9.5pt;color:#555;margin-bottom:18px;letter-spacing:1px}.doc-title-guardian{text-align:center;font-size:15.5pt;font-weight:bold;letter-spacing:3px;color:#1e5c28;padding-bottom:10px;border-bottom:2.5px solid #1e5c28;margin-bottom:6px}.info-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:10pt}.info-tbl th{background:#dce6f5;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e}.info-tbl td{border:1px solid #9aaecc;padding:5px 10px}.session-hd{background:#1a3a6e;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.session-hd-guardian{background:#1e5c28;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.meta-tbl{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:0}.meta-tbl th{background:#eef2fb;border:1px solid #9aaecc;padding:5px 10px;text-align:center;font-weight:bold;white-space:nowrap;color:#1a3a6e;width:100px}.meta-tbl td{border:1px solid #9aaecc;padding:5px 10px}.meta-tbl-g th{background:#e4f0e6;color:#1e5c28;border-color:#8abf92}.meta-tbl-g td{border-color:#8abf92}.content-hd{background:#eef2fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.content-box{border:1px solid #9aaecc;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.soap-para{margin-bottom:14px}.soap-para:last-child{margin-bottom:0}.soap-label{font-weight:bold;color:#1a3a6e;font-size:10.5pt}.action-hd{background:#f0f4fb;border:1px solid #9aaecc;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1a3a6e}.action-body{border:1px solid #9aaecc;border-top:none;padding:12px 18px;font-size:10.5pt;line-height:2.05}.action-body .item{padding:1px 0}.action-body .dt{color:#4a5a7a;font-size:10pt}.benefit-hd{background:#fdf6e0;border:1px solid #c8a84b;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#7a5c10;letter-spacing:.5px}.benefit-body{border:1px solid #c8a84b;border-top:none;padding:14px 18px 16px 18px;font-size:10.5pt;line-height:1.95;background:#fffdf5}.b-row{margin-bottom:8px}.b-row:last-child{margin-bottom:0}.blabel{font-weight:bold;color:#7a5c10;min-width:76px;display:inline-block}.b-detail{padding-left:20px;margin-top:4px}.b-basis{padding-left:36px;font-size:10pt;color:#555;margin-top:3px;line-height:1.85}.b-basis-item{margin-bottom:1px}.content-hd-g{background:#e8f4ea;border:1px solid #8abf92;border-top:none;padding:6px 16px;font-weight:bold;font-size:10pt;color:#1e5c28}.content-box-g{border:1px solid #8abf92;border-top:none;padding:16px 20px 18px 20px;font-size:10.5pt;line-height:1.9}.divider{border:none;border-top:2px dashed #b0bccc;margin:32px 0}.case-hd-bar{background:#a02020;color:#fff;font-size:11pt;font-weight:bold;padding:8px 16px;margin-top:28px;letter-spacing:1px}.case-box{border:1px solid #b84040;border-top:none;padding:16px 22px 18px 22px;background:#fff8f8;font-size:10.5pt;line-height:1.95}.case-box .clabel{font-weight:bold;color:#a02020;display:inline-block;min-width:76px}.case-box .crow{margin-bottom:6px}.case-box .cbasis{padding-left:14px;margin-top:6px;line-height:2.0}.case-box .cbasis p{margin-bottom:4px}.source-report{background:#f0f4ff;border:1px solid #c5cae9;border-radius:8px;padding:14px;margin-top:20px;font-size:10pt;line-height:1.8}.case-draft-notice{background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:11pt;color:#5D4037;line-height:1.7}.ai-draft-notice{background:#FFF8E1;border:1.5px solid #FFB300;border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:10pt;color:#5D4037;line-height:1.7;display:flex;align-items:flex-start;gap:8px;print-color-adjust:exact;-webkit-print-color-adjust:exact}.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #c8c8d8;border-radius:6px;overflow:hidden;margin-bottom:24px}.meta-cell{padding:8px 14px;border-right:1px solid #c8c8d8;border-bottom:1px solid #c8c8d8}.meta-cell:nth-child(3n){border-right:none}.meta-cell:nth-last-child(-n+3){border-bottom:none}.meta-label{font-size:10.5px;color:#888;margin-bottom:2px}.meta-value{font-size:13px;font-weight:600}.session-card{background:#fff;border:1px solid #c8c8d8;border-radius:6px;overflow:hidden;margin-bottom:24px;box-shadow:0 1px 4px rgba(0,0,0,.06)}.session-header{background:#3d5a80;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px}.session-header-g{background:#1e5c28;color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px}.session-num{font-size:18px;font-weight:700;opacity:.9;min-width:32px}.session-title{font-size:14px;font-weight:600;flex:1}.session-date{font-size:12px;opacity:.8}.meta-table{width:100%;border-collapse:collapse;border-bottom:1px solid #c8c8d8}.meta-table th,.meta-table td{padding:8px 16px;font-size:12.5px;border-right:1px solid #c8c8d8;border-bottom:1px solid #c8c8d8}.meta-table th{background:#f0f4f8;color:#6b6b8a;font-weight:600;width:90px}.meta-table tr:last-child th,.meta-table tr:last-child td{border-bottom:none}.meta-table td:last-child,.meta-table th:last-child{border-right:none}.meta-table-g th{background:#e8f4ea;color:#1e5c28;border-color:#8abf92}.meta-table-g td{border-color:#8abf92}.soap-box{padding:16px 20px;border-bottom:1px solid #c8c8d8}.soap-box:last-child{border-bottom:none}.soap-label{display:block;font-weight:700;font-size:12.5px;letter-spacing:.4px;margin-bottom:6px;padding-left:8px}.soap-s .soap-label{color:#5c7a9f;border-left:3px solid #5c7a9f}.soap-o .soap-label{color:#7a9e7e;border-left:3px solid #7a9e7e}.soap-a .soap-label{color:#9e7a5c;border-left:3px solid #9e7a5c}.soap-p .soap-label{color:#7a5c9e;border-left:3px solid #7a5c9e}.soap-g .soap-label{color:#1e5c28;border-left:3px solid #1e5c28}.soap-text{font-size:13px;line-height:1.85;color:#3a3a5c;padding-left:11px}.soap-text ul{padding-left:18px;margin-top:4px}.soap-text ul li{margin-bottom:4px}.action-box{background:#f0f4f8;padding:14px 20px;border-top:1px solid #c8c8d8}.action-box-g{background:#e8f4ea;padding:14px 20px;border-top:1px solid #8abf92}.action-title{font-size:11.5px;font-weight:700;color:#6b6b8a;letter-spacing:1px;margin-bottom:8px}.action-title-g{font-size:11.5px;font-weight:700;color:#1e5c28;letter-spacing:1px;margin-bottom:8px}.action-item{display:flex;gap:7px;font-size:12.5px;color:#3a3a5c;margin-bottom:5px;line-height:1.75}.action-item:last-child{margin-bottom:0}.action-arrow{color:#3d5a80;font-weight:700;flex-shrink:0}.action-arrow-g{color:#1e5c28;font-weight:700;flex-shrink:0}.action-date{display:inline-block;background:#3d5a80;color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}.action-date-g{display:inline-block;background:#1e5c28;color:#fff;font-size:10px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}.benefit-box{background:#f0f8f4;border-top:1px solid #c8c8d8;padding:12px 20px;font-size:12px}.benefit-title{font-weight:700;color:#3d8060;margin-bottom:6px;font-size:12px;letter-spacing:.5px}.benefit-row{display:flex;gap:10px;margin-bottom:3px}.benefit-key{color:#888;font-weight:600;min-width:60px;flex-shrink:0}.benefit-val{color:#333}.benefit-sub{padding-left:70px;margin:4px 0}.benefit-sub li{margin-bottom:2px;color:#444}.doc-title-new{font-size:20px;font-weight:700;color:#3d5a80;border-top:3px solid #3d5a80;padding-top:16px;margin-bottom:14px}.doc-title-new span{font-size:13px;font-weight:400;color:#888;margin-left:10px}.doc-title-guardian-new{font-size:20px;font-weight:700;color:#1e5c28;border-top:3px solid #1e5c28;padding-top:16px;margin-bottom:14px}.doc-title-guardian-new span{font-size:13px;font-weight:400;color:#888;margin-left:10px}.guardian-divider{height:2px;background:#1e5c28;margin:32px 0 24px}`;
 
 // AI 초안 안내문구 — 모든 생성 문서에 자동 삽입
 const AI_DRAFT_NOTICE = `<div class="ai-draft-notice"><span style="font-size:16px;flex-shrink:0">⚠️</span><span>이 문서는 AI(Day:음)가 급여제공기록지를 바탕으로 작성한 <strong>초안</strong>입니다. 반드시 담당자의 검토와 수정이 필요합니다.</span></div>`;
@@ -6151,23 +6608,176 @@ function buildMonthlyPrompt(opinion) {
   if (docs.m3) docList.push('3. 사례관리 회의록 — 반드시 초안 제시, 상단에 "※ 사례관리 회의록 초안입니다. 채택 여부는 담당자가 결정하세요." 안내 포함, 상담일지 P항목과 연계하여 작성');
   if (docs.m4) docList.push('4. 월간 현황 요약 — 이용일수·혈압·식사·프로그램 한 페이지');
   if (docs.m5) docList.push(`5. 인지활동형 프로그램관리자 업무수행일지 [별지 제24호의2서식]
-   - 대상: 인지지원등급 수급자 (5등급과 인지지원등급은 별개 등급)
-   - 작성 단위: 해당 월 단위로 작성
-   - 필수 항목 순서대로 작성:
-     1) 기본정보: 수급자명, 장기요양인정번호, 장기요양등급, 작성일자(해당 월 마지막 이용일), 작성자 성명, 시설장(관리책임자) 성명
-     2) 욕구조사: 보유질환 / 영양상태 / 신체상태(보행·신체기능·배뇨배변) / 일상생활기능(식사·세수·양치·화장실) / 인지 및 행동증상 / 동거인 — 기록지에서 확인된 내용 기반으로 서술
-     3) 수급자의 심신상태 및 환경변화: 직전 월 대비 항목별(식사·보행·신체기능·배뇨배변·위생·일상생활·인지기능·행동증상·가족환경) 유지/악화/호전 판단 + 구체적 판단근거 서술
-     4) 급여제공 계획 및 내용 확인: 신체기능프로그램 / 인지기능프로그램 / 사회적응프로그램
-        - 제공계획: 필요내용·제공방법 구체적으로 기재
-        - 제공여부: 제공/미제공 표시
-        - 제공확인내용: 실제로 어떤 활동을 어떻게 제공했는지 상세하게 서술
-          예) "안전하게 이동하기 위해 워커를 사용하여 보행연습을 실시하였음. 균형감각 유지를 위한 앉았다 일어서기 동작을 10회 반복 실시하였음."
-          예) "칠교놀이 및 색칠공부를 통해 인지자극 활동을 제공하였으며, 어르신께서 집중력 있게 참여하셨음."
-          예) "내포홍예공원 야외 사회적응훈련을 실시하여 지역사회 연계 활동 및 정서적 지지를 제공하였음."
-        - 기능회복훈련 기록지에 기재된 실제 프로그램명 반드시 반영
-     5) 인지활동형 프로그램 제공 계획 및 내용 확인: 인지자극활동 / 일상생활 함께하기 — 전월 계획 대비 제공여부·확인내용·향후제공계획 작성
-     6) 수급자(보호자) 상담: 일시·상담대상자·방법·내용 (프로그램 참여현황·건강상태변화·조치사항 포함)
-     7) 향후계획 및 기타사항: 수급자 욕구 변화 여부 / 급여제공계획 재작성 여부 / 다음 달 세부계획`);
+   - 대상: 인지지원등급 수급자만 (5등급과 인지지원등급은 별개 — 혼동 절대 금지)
+   - 작성 단위: 해당 월 단위
+
+   ■ HTML 고정 구조 — 반드시 아래 표 구조 그대로 사용:
+
+   <div class="page">
+   <div style="text-align:center;font-size:17px;font-weight:bold;letter-spacing:2px;margin-bottom:4px">인지활동형 프로그램관리자 업무수행일지</div>
+   <div style="text-align:center;font-size:11px;color:#666;margin-bottom:16px">[별지 제24호의2서식]</div>
+
+   <!-- 1. 기본정보 -->
+   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;width:90px">수급자명</td>
+       <td style="border:1px solid #555;padding:6px 8px">이름</td>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">인정번호</td>
+       <td style="border:1px solid #555;padding:6px 8px">L번호</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">등급</td>
+       <td style="border:1px solid #555;padding:6px 8px">인지지원등급</td>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">작성일자</td>
+       <td style="border:1px solid #555;padding:6px 8px">YYYY.MM.DD</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">작성자</td>
+       <td style="border:1px solid #555;padding:6px 8px">이름 (직종)</td>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">시설장</td>
+       <td style="border:1px solid #555;padding:6px 8px">이름</td>
+     </tr>
+   </table>
+
+   <!-- 2. 욕구조사 -->
+   <div class="sec-title">1. 욕구조사</div>
+   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;width:90px;vertical-align:top">보유질환</td>
+       <td style="border:1px solid #555;padding:6px 8px">실제 보유 질환 기재</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;vertical-align:top">영양상태</td>
+       <td style="border:1px solid #555;padding:6px 8px">기록지 기반 서술</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;vertical-align:top">신체상태</td>
+       <td style="border:1px solid #555;padding:6px 8px">보행·신체기능·배뇨배변 서술</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;vertical-align:top">일상생활<br>기능</td>
+       <td style="border:1px solid #555;padding:6px 8px">식사·세수·양치·화장실 서술</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;vertical-align:top">인지 및<br>행동증상</td>
+       <td style="border:1px solid #555;padding:6px 8px">기록지 기반 서술</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">동거인</td>
+       <td style="border:1px solid #555;padding:6px 8px">독거/배우자/자녀 등</td>
+     </tr>
+   </table>
+
+   <!-- 3. 심신상태 및 환경변화 -->
+   <div class="sec-title">2. 수급자의 심신상태 및 환경변화</div>
+   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+     <tr style="background:#f0f0f0">
+       <th style="border:1px solid #555;padding:5px 8px;width:100px">항목</th>
+       <th style="border:1px solid #555;padding:5px 8px;width:80px">상태</th>
+       <th style="border:1px solid #555;padding:5px 8px">판단근거</th>
+     </tr>
+     <!-- 항목별 행: 식사/보행/신체기능/배뇨배변/위생/일상생활/인지기능/행동증상/가족환경 -->
+     <!-- 상태: 유지/호전/악화 중 하나 -->
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">식사</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">보행</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">신체기능</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">배뇨배변</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">위생</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">일상생활</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">인지기능</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">행동증상</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+     <tr><td style="border:1px solid #555;padding:5px 8px;text-align:center">가족환경</td><td style="border:1px solid #555;padding:5px 8px;text-align:center">유지/호전/악화</td><td style="border:1px solid #555;padding:5px 8px">근거 서술</td></tr>
+   </table>
+
+   <!-- 4. 급여제공 계획 및 내용 확인 -->
+   <div class="sec-title">3. 급여제공 계획 및 내용 확인</div>
+   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+     <tr style="background:#f0f0f0">
+       <th style="border:1px solid #555;padding:5px 8px;width:100px">구분</th>
+       <th style="border:1px solid #555;padding:5px 8px">제공계획</th>
+       <th style="border:1px solid #555;padding:5px 8px;width:70px">제공여부</th>
+       <th style="border:1px solid #555;padding:5px 8px">제공확인내용</th>
+     </tr>
+     <tr>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center;background:#f8f8f8;font-weight:bold">신체기능<br>프로그램</td>
+       <td style="border:1px solid #555;padding:5px 8px">필요내용·제공방법 구체 기재</td>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center">제공/미제공</td>
+       <td style="border:1px solid #555;padding:5px 8px">실제 활동 상세 서술 (예: 워커 이용 보행연습, 앉았다 일어서기 10회 등)</td>
+     </tr>
+     <tr>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center;background:#f8f8f8;font-weight:bold">인지기능<br>프로그램</td>
+       <td style="border:1px solid #555;padding:5px 8px">필요내용·제공방법 구체 기재</td>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center">제공/미제공</td>
+       <td style="border:1px solid #555;padding:5px 8px">실제 활동 상세 서술 (예: 칠교놀이·색칠공부로 인지자극 활동 제공 등)</td>
+     </tr>
+     <tr>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center;background:#f8f8f8;font-weight:bold">사회적응<br>프로그램</td>
+       <td style="border:1px solid #555;padding:5px 8px">필요내용·제공방법 구체 기재</td>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center">제공/미제공</td>
+       <td style="border:1px solid #555;padding:5px 8px">실제 활동 상세 서술 (예: 외부 야외활동, 지역사회 연계 등)</td>
+     </tr>
+   </table>
+
+   <!-- 5. 인지활동형 프로그램 -->
+   <div class="sec-title">4. 인지활동형 프로그램 제공 계획 및 내용 확인</div>
+   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+     <tr style="background:#f0f0f0">
+       <th style="border:1px solid #555;padding:5px 8px;width:100px">구분</th>
+       <th style="border:1px solid #555;padding:5px 8px">전월 제공계획</th>
+       <th style="border:1px solid #555;padding:5px 8px;width:70px">제공여부</th>
+       <th style="border:1px solid #555;padding:5px 8px">제공확인내용</th>
+       <th style="border:1px solid #555;padding:5px 8px">향후제공계획</th>
+     </tr>
+     <tr>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center;background:#f8f8f8;font-weight:bold">인지자극<br>활동</td>
+       <td style="border:1px solid #555;padding:5px 8px">전월 계획 기재</td>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center">제공/미제공</td>
+       <td style="border:1px solid #555;padding:5px 8px">확인내용 서술</td>
+       <td style="border:1px solid #555;padding:5px 8px">향후 계획 서술</td>
+     </tr>
+     <tr>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center;background:#f8f8f8;font-weight:bold">일상생활<br>함께하기</td>
+       <td style="border:1px solid #555;padding:5px 8px">전월 계획 기재</td>
+       <td style="border:1px solid #555;padding:5px 8px;text-align:center">제공/미제공</td>
+       <td style="border:1px solid #555;padding:5px 8px">확인내용 서술</td>
+       <td style="border:1px solid #555;padding:5px 8px">향후 계획 서술</td>
+     </tr>
+   </table>
+
+   <!-- 6. 수급자(보호자) 상담 -->
+   <div class="sec-title">5. 수급자(보호자) 상담</div>
+   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;width:90px">일시</td>
+       <td style="border:1px solid #555;padding:6px 8px">YYYY.MM.DD</td>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">상담대상자</td>
+       <td style="border:1px solid #555;padding:6px 8px">수급자 본인 / 보호자(관계)</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">방법</td>
+       <td style="border:1px solid #555;padding:6px 8px">대면 / 전화</td>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold">내용</td>
+       <td style="border:1px solid #555;padding:6px 8px">프로그램 참여현황·건강상태변화·조치사항 포함 서술</td>
+     </tr>
+   </table>
+
+   <!-- 7. 향후계획 -->
+   <div class="sec-title">6. 향후계획 및 기타사항</div>
+   <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;width:90px;vertical-align:top">수급자 욕구<br>변화 여부</td>
+       <td style="border:1px solid #555;padding:6px 8px">변화 있음 / 변화 없음 — 구체적 내용 서술</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;vertical-align:top">급여제공계획<br>재작성 여부</td>
+       <td style="border:1px solid #555;padding:6px 8px">필요 / 불필요 — 사유 서술</td>
+     </tr>
+     <tr>
+       <td class="label" style="border:1px solid #555;padding:6px 8px;background:#f0f0f0;font-weight:bold;vertical-align:top">다음 달<br>세부계획</td>
+       <td style="border:1px solid #555;padding:6px 8px">다음 달 제공 계획 구체 서술</td>
+     </tr>
+   </table>
+   </div>`);
 
   if (docList.length === 0) docList.push('1. 분기별 상담일지 (기본)');
 
@@ -6181,47 +6791,62 @@ function buildMonthlyPrompt(opinion) {
 요양보호사·간호조무사 등 다른 직종 이름을 상담자로 쓰는 것은 절대 금지.
 
 ■ HTML 출력 형식
-상담일시·상담구분·상담대상·상담형태·상담자 성명 등 회차별 메타 정보는 표(table) 형태로 출력할 것.
-${counselStyle === 'soap' ? `상담 내용(S·O·A·P)은 셀로 분리하지 않고, 단일 테두리 박스 안에 흐르는 텍스트로 작성할 것.
-S·O·A·P 레이블은 각 단락 맨 앞에 굵은 텍스트로 단독 한 줄에 표기하고, 내용은 다음 줄부터 이어서 서술할 것.` : `상담 내용은 단일 테두리 박스 안에 흐르는 서술형 문단으로 작성할 것.
-S·O·A·P 레이블 사용 금지. 상담 경위→상담 내용→판단→조치 순서로 자연스럽게 이어지는 문단으로 서술할 것.`}
-조치내용은 별도 박스로 분리하여 ▶ 항목 형식으로 출력할 것.
+회차별 메타 정보(상담일시·상담구분·상담대상·상담형태·상담자 성명)는 meta-table로 출력.
+S/O/A/P 각 항목은 독립된 soap-box로 분리 출력 (단일 박스에 몰아쓰기 금지).
+조치내용은 action-box로, 급여제공반영은 benefit-box로 분리 출력.
 
 ■ 작성 형식
-모든 문서는 공식 문어체로 작성. 모든 문장은 "~하였음." "~확인됨." "~제공하였음." 등 공문서 어미로 통일.
+모든 문서는 공식 문어체로 작성. 모든 문장은 "~하였음." "~확인됨." "~제공하였음." "~할 예정임." 등 공문서 어미로 통일.
 기록지에 실제로 기재된 날짜와 내용만을 근거로 작성. 임의 추가·추측 절대 금지.
 2026년도 장기요양기관 평가지표(주·야간보호 부문) 기준 준수.
 
-■ 분기별 상담일지 작성 기준
+■ 분기별 상담일지 SOAP 작성 기준
 ${counselStyle === 'soap' ? `
-S (관찰 및 상담 계기)
-담당자가 현장에서 어르신을 직접 관찰하거나 서비스 제공 중 발견한 내용을 계기로 상담이 시작된 것으로 서술.
-"기록을 검토한 결과", "서비스 제공 기록을 전반적으로 검토한 결과" 등 행정적 메타 서술 사용 금지.
-상담일시로 확정된 날짜 이후에 발생한 사건은 S에 포함하지 않을 것.
+【S — 상담 계기】
+서비스 제공 과정에서 담당자가 직접 관찰한 어르신의 말씀·행동·신체 변화를 계기로 상담이 시작된 것으로 서술.
+"기록을 검토한 결과", "서비스 제공 기록을 전반적으로 검토한 결과" 등 행정적 메타 서술 절대 금지.
+상담일시 이후에 발생한 사건은 S에 포함하지 않을 것.
+promo 예시: "서비스 제공 과정에서 어르신이 수일에 걸쳐 '센터에 오고 싶지 않다'는 말씀을 반복적으로 하시는 것이 관찰되었음. 4월 초부터 허리 및 좌측 다리의 저림·땅김 증상을 지속적으로 호소하시고 복약 거부 의사를 표현하시는 등 신체적 불편과 함께 심리적으로도 불안정한 상태가 이어지고 있어 개별 면담을 실시하였음."
 
-O (면담 내용): 어르신이 면담 중 직접 하신 말씀과 담당자가 면담하며 관찰한 내용만 기재.
-예) "별로 불편한 데는 없다고 하심" / "요즘 잠을 못 잔다고 하심" / "다리가 무겁다고 표현하심"
+【O — 면담 내용】(핵심: <ul><li> 목록 형식 필수)
+어르신이 면담 중 직접 하신 말씀 → 큰따옴표(" ") 인용 후 li 항목으로
+담당자가 면담 중 관찰한 내용 → li 항목으로 (객관적 서술)
+promo 예시:
+  <ul>
+    <li>"우울감이 심해서 센터에 오고 싶지 않고, 와도 할 일이 없다. 태우러 오지 말라"는 말씀을 반복하셨음.</li>
+    <li>"허리랑 왼쪽 다리가 저리고 당겨서 걷기도, 앉아 있기도 힘들다"고 하셨음.</li>
+    <li>면담 중 표정이 어둡고 말씀이 적으셨으나 담당자의 질문에는 차분하게 응하셨음.</li>
+  </ul>
 
-[O항목 절대 포함 금지 — 아래 내용은 상담 내용이 아니라 일상 제공 기록임]
+[O항목 절대 포함 금지]
 - 이용 시간·이용일수 등 통계성 정보 (예: "08:15~16:52 총 517분" 절대 금지)
 - 이동서비스·차량번호·송영 관련 내용
-- 식사량·화장실 이용 횟수 등 일상 제공 내역
+- 식사량·화장실 이용 횟수 등 일상 제공 내역 나열
 - 혈압·체온 등 일상 측정 수치 (상담의 직접 원인인 경우에만 예외)
 - 목욕·세면·구강·착탈의 등 신체활동 제공 내역 나열
 - 프로그램 참여 목록 나열
-- 결석 날짜·사유 (단, 결석 자체가 상담 주제인 경우는 예외)
+- 결석 날짜·사유 (결석 자체가 상담 주제인 경우는 예외)
 
-위 내용은 O항목에 절대 쓰지 말 것. 어르신이 면담 중 직접 말씀하신 내용만 O에 포함.
+【A — 상담자 판단】
+관찰·면담 내용을 종합한 전문적 판단을 2~3문장으로 서술.
+신체·심리·환경적 요인의 연관성을 분석하여 기술.
+promo 예시: "허리 및 다리 통증이 분기 초부터 지속되고 있으며, 복약 거부 의사도 반복적으로 표현되고 있어 통증 관리가 적절히 이루어지지 않을 가능성이 우려됨. 센터 이용 거부감 및 우울 정서가 함께 표현되고 있어 신체적 불편과 심리·정서적 상태가 서로 연관된 것으로 판단됨."
 
-A (상담자 판단): 관찰 및 상담 내용을 종합한 전문적 판단 서술.
-P (조치 및 계획): 결정된 구체적 조치사항과 향후 계획을 항목별 서술.` : `
-[서술형 상담 내용 작성 기준]
-상담 경위: 담당자가 현장에서 직접 관찰하거나 서비스 제공 중 발견한 내용을 계기로 상담이 시작된 것으로 서술. "기록을 검토한 결과" 등 행정적 메타 서술 사용 금지. 상담일시 이후 발생한 사건은 포함하지 않을 것.
-상담 내용: 어르신이 면담 중 직접 하신 말씀과 담당자 관찰 내용 중심으로 자연스러운 문장으로 서술.
-[서술형 O항목도 동일하게 금지] 이용시간·이동서비스·식사량·화장실·혈압체온 등 일상 제공 내역 나열 절대 금지.
-판단: 관찰 및 상담 내용을 종합한 전문적 판단을 이어지는 문단으로 서술.
-조치 방향: 결정된 조치사항과 향후 계획을 서술로 마무리.
-S·O·A·P 레이블은 절대 사용 금지. 단락 구분은 빈 줄로만 처리.`}
+【P — 조치 및 계획】(<ul><li> 목록 형식 필수)
+결정된 구체적 조치사항과 향후 계획을 항목별로 분리하여 서술.
+promo 예시:
+  <ul>
+    <li>허리·다리 통증 완화를 위해 물리치료(핫팩·공기압) 및 파스 도포를 지속 제공함.</li>
+    <li>관절약 복용 거부 상황을 기록하고 보호자와 복약 관리 방안을 협의할 예정임.</li>
+    <li>담당 직원이 개별 말벗 및 정서 지지 활동을 강화할 예정임.</li>
+  </ul>` : `
+【서술형 상담 내용 작성 기준】
+상담 경위: 서비스 제공 중 담당자가 직접 관찰한 내용을 계기로 상담이 시작된 것으로 서술. "기록을 검토한 결과" 등 행정적 메타 서술 금지.
+면담 내용: 어르신이 직접 하신 말씀을 큰따옴표(" ")로 인용하여 포함. 담당자 관찰 내용도 객관적으로 서술.
+[금지 항목 동일] 이용시간·이동서비스·식사량·화장실·혈압체온 등 일상 제공 내역 나열 절대 금지.
+판단: 종합 판단을 이어지는 문단으로 서술.
+조치: 결정된 조치와 향후 계획으로 마무리.
+S·O·A·P 레이블 사용 금지. 단락 구분은 <p> 태그로.`}
 
 상담일시 확정 전 필수 검증:
 ① 해당 날짜가 기록지에 실제 이용 기록이 있는 날인지 확인
@@ -6235,16 +6860,59 @@ S·O·A·P 레이블은 절대 사용 금지. 단락 구분은 빈 줄로만 처
 종합상담·행정상담: 12:00~13:30 또는 15:00~16:00
 프로그램 진행 시간대(10:10~11:10, 13:30~14:30)에는 상담 시간 배치 금지.
 
-조치내용 서식:
-▶ [조치 내용 완결 문장]. (YYYY.MM.DD, YYYY.MM.DD, …)
-마지막 항목은 향후 관찰 및 관리 계획으로 마무리. (날짜 표기 없이 "~할 예정임." 어미)
+조치내용 서식 (action-box):
+<div class="action-item"><span class="action-arrow">▶</span><span>조치 내용 완결 문장.<span class="action-date">YYYY.MM.DD</span></span></div>
+날짜가 여러 개면 action-date 태그 여러 개 나열.
+마지막 항목은 향후 관찰·관리 계획으로 마무리. (날짜 없이 "~할 예정임." 어미)
+promo 예시:
+  ▶ 허리·좌측 다리 저림 호소에 대응하여 파스 도포 및 물리치료(핫팩·공기압)를 시행하였음. [2026.04.01] [2026.04.08]
+  ▶ 향후 통증 양상, 복약 이행 여부, 정서 상태 변화를 지속적으로 관찰하고 필요 시 보호자와 연계하여 관리할 예정임.
 
-급여제공반영 (각 회차 조치내용 바로 아래 필수):
-[ 급여제공반영 ]
-· 반영일 : YYYY.MM.DD
-· 급여구분 : (해당 항목)
-· 급여내용 : (반영 내용 + 근거 기록 날짜·요약)
-· 반영사유 : (한 문장)
+급여제공반영 서식 (benefit-box, 조치내용 바로 아래 필수):
+
+아래 5개 항목을 모두 포함할 것:
+① 반영일 — 해당 회차 상담일자
+② 급여구분 — 실제 제공한 급여 유형 (예: 신체활동지원, 정서지원, 인지관리지원 등 복수 가능)
+③ 급여내용 — 제공한 서비스를 항목별로 <ul><li> 목록으로 간결하게 나열
+④ 반영사유 — 단순 한 문장이 아니라, 왜 이 방식으로 급여를 제공하게 됐는지 맥락 있는 서술 (어르신 상태 → 기존 방식의 한계 → 변경·강화 방향 → 어르신 반응 순으로 자연스럽게)
+⑤ 근거기록 — 반영사유를 뒷받침하는 기록지 날짜·내용을 날짜 순으로 나열 (날짜 — 실제 기록 내용 형식)
+
+HTML 구조:
+<div class="benefit-box">
+  <div class="benefit-title">[ 급여제공반영 ]</div>
+  <div class="benefit-row"><span class="benefit-key">반영일</span><span class="benefit-val">YYYY.MM.DD</span></div>
+  <div class="benefit-row"><span class="benefit-key">급여구분</span><span class="benefit-val">신체활동지원, 정서지원 (복수 시 쉼표 구분)</span></div>
+  <div class="benefit-row"><span class="benefit-key">급여내용</span></div>
+  <ul class="benefit-sub">
+    <li>제공 서비스 항목 1</li>
+    <li>제공 서비스 항목 2</li>
+  </ul>
+  <div class="benefit-row" style="margin-top:8px"><span class="benefit-key">반영사유</span></div>
+  <div style="padding-left:8px;margin-top:4px;font-size:11.5px;line-height:1.9;color:#333">
+    어르신 상태 설명 → 기존 방식의 한계 또는 새로운 필요 → 변경·강화한 방향 → 어르신 반응까지 자연스럽게 서술. (2~4문장)
+  </div>
+  <div class="benefit-row" style="margin-top:8px"><span class="benefit-key">근거기록</span></div>
+  <ul class="benefit-sub">
+    <li>YYYY.MM.DD — 실제 기록지 내용 요약 (특이사항 출처 명시)</li>
+    <li>YYYY.MM.DD — 실제 기록지 내용 요약</li>
+  </ul>
+</div>
+
+실제 작성 예시 (이 수준으로 작성할 것):
+  반영일: 2024.01.24
+  급여구분: 신체활동지원, 정서지원
+  급여내용:
+    · 식사 후 걷기운동 및 날씨 불량 시 실내 걷기운동 지원
+    · 속 불편 시 죽·누룽지 등 부드러운 음식으로 대체 제공
+    · 체조시간 좌식 참여 유도
+    · 속쓰림·답답함 호소 시 정서적 지지
+  반영사유:
+    어르신은 평소 활동량이 적고 식후 바로 누워 계시는 시간이 많아 위산 과다와 속쓰림을 반복적으로 호소하셨음. 이에 식후 걷기운동을 권유하고 날씨가 나쁜 날은 실내 걷기로 대체하여 신체활동량을 늘리는 방향으로 보완함. 어르신께서도 식후 걷기운동을 직접 희망하시고 참여 후 만족감을 표현하시는 등 긍정적인 반응을 보이셨음.
+  근거기록:
+    · 2024.01.22 — 속이 안 좋으셔서 점심을 죽으로 드림 (신체활동지원 특이사항)
+    · 2024.01.24 — 점심을 죽으로 드신 뒤 밖에서 걷기운동을 희망하시어 잠시 걷기운동 진행 (신체활동지원 특이사항)
+    · 2024.01.27 — 점심 드시고 잠시 걷기운동하시니 좋아하심 / 아침 체조시간에 의자에 앉아 함께 체조하심 (신체활동지원 특이사항)
+    · 2024.01.29 — 식사 후 잠시 걸으심 / 속이 답답하다고 호소하셔 정서적으로 지지함 (신체활동지원 특이사항)
 
 상담 횟수: 분기 1회 이상, 최대 3회 이하. 마지막 회차는 분기 전체 종합상담.
 보호자 상담이 필요한 경우(건강 이상·신체적 이상·가정 생활환경 확인 필요 등) 별도 보호자 상담일지 추가 작성.
@@ -6259,6 +6927,30 @@ S·O·A·P 레이블은 절대 사용 금지. 단락 구분은 빈 줄로만 처
 · 주요 사안 : (선정 기준 항목명)
 · 근거 : (기록지 날짜 및 구체적 내용 한 줄)
 
+■ 사례관리 회의록 급여제공반영 작성 기준 (삽교 실제 양식 기준)
+사례관리 회의록 선택 시 '급여제공반영' 섹션을 반드시 포함할 것.
+
+작성 방식: 아래 11개 항목 중 실제 해당되는 항목만 골라 작성. 항목명을 괄호 안에 명시하고, 각 항목 아래 근거기록 배치.
+  선택 가능 항목: 신체활동지원 / 인지활동지원 / 인지관리지원 / 정서지원 / 개인활동지원 / 지역사회연계 / 건강관리 / 간호처치 / 기능회복훈련 / 응급지원 / 생활 및 환경관리
+각 묶음마다 ① 해당 서비스 내용 서술 → ② 근거기록(날짜 — 내용) 바로 아래 배치.
+반영일과 급여제공계획변경 여부는 마지막에 별도 표기.
+
+실제 삽교 양식 예시 (이 수준·구조로 작성):
+  (간호·투약) 아침에는 관절약, 저녁에는 정신과약을 중심으로 어르신이 수용 가능한 약물부터 선택적으로 지원하는 방식으로 복약 지원을 진행하되, 보호자 구두 동의 내용을 상담일지에 기록하여 책임 소재를 명확히 함.
+  2026.05.29 — 아침 관절약·저녁 정신과약으로 선택적 복용 시작, 보호자(딸) 구두 동의 확인 (건강 및 간호관리 특이사항)
+  2026.06.01 — 선택적 복약 방식 적용 후 거부감 없이 복용 확인 (건강 및 간호관리 특이사항)
+
+  (간호·투약) 각 약물의 역할과 필요성을 구분하여 설명하는 방향의 복약 교육을 지속적으로 제공함.
+  2026.05.18 — 각 약물의 부작용을 호소하심. 복용법 안내 및 보호자 의견 확인 (건강 및 간호관리 특이사항)
+  2026.05.19 — 복약 거부 강하게 표출, 복약 필요성 안내 및 복용 확인 (건강 및 간호관리 특이사항)
+
+  (요양급여) 복약 지원 과정에서 어르신의 심리적 부담을 최소화하고, 등원 시 긍정적 경험을 강화하는 방향으로 서비스를 제공함.
+  2026.05.29 — 보호자 구두 동의 이후 선택적 복약 방식 전환, 심리적 부담 최소화 방향으로 접근 (건강 및 간호관리 특이사항)
+  2026.06.04 — 친한 어르신들과 담소, 걷기 운동 참여, 거부감 없이 복약 (신체활동지원 특이사항)
+
+  반영일: YYYY.MM.DD (회의일로부터 30일 이내)
+  급여제공계획변경: 수급자명 / 작성일 YYYY.MM.DD / 적용기간 YYYY.MM.DD~YYYY.MM.DD / 작성자 이름 (계획 변경이 없는 경우 생략)
+
 ${opinion ? `[작성자 현장 의견 — 반영 필수]\n${opinion}\n` : ''}
 
 [작성할 문서 — 선택된 항목만 작성]
@@ -6268,36 +6960,147 @@ ${docList.join('\n')}
 각 문서는 별도 <div class="page">로 구분.
 
 ■ 분기별 상담일지 HTML 구조
-doc-title-main(제목) → info-tbl(기본정보 표) → 각 회차별:
+<div class="doc-title-new">분기별 상담일지 <span>YYYY년 N분기 (M월 ~ M월)</span></div>
+<div class="meta-grid">
+  수급자명/생년월일/성별/등급/인정번호/본인부담률/기관명/기관기호/담당자 — 각각 meta-cell(meta-label + meta-value)
+</div>
+각 회차별 session-card:
+<div class="session-card">
+  <div class="session-header"><span class="session-num">N회</span><span class="session-title">회차 제목</span><span class="session-date">YYYY.MM.DD (요일)</span></div>
+  <table class="meta-table"><tr><th>상담일시</th><td colspan="3">...</td></tr><tr><th>상담구분</th><td>...</td><th>상담대상</th><td>...</td></tr><tr><th>상담형태</th><td>...</td><th>상담자 성명</th><td>...</td></tr></table>
 ${counselStyle === 'soap'
-  ? `  session-hd("N회차 상담") → meta-tbl(상담일시·구분·대상·형태·상담자 표) → content-hd("상담 내용") → content-box(S/O/A/P 각 단락: <p class="soap-para"><span class="soap-label">S</span><br>내용</p>) → action-hd("조치내용") → action-body(▶ 항목들, 날짜는 <span class="dt">(YYYY.MM.DD)</span>) → benefit-hd("[ 급여제공반영 ]") → benefit-body(반영일·급여구분·급여내용·반영사유 각각 <div class="b-row"><span class="blabel">항목명</span> 내용</div>)`
-  : `  session-hd("N회차 상담") → meta-tbl(상담일시·구분·대상·형태·상담자 표) → content-hd("상담 내용") → content-box(서술형 문단: S/O/A/P 레이블 없이 흐르는 서술. 단락 구분은 <p> 태그로. 첫 단락=상담 경위, 이어서 내용·판단·계획 자연스럽게 서술) → action-hd("조치내용") → action-body(▶ 항목들, 날짜는 <span class="dt">(YYYY.MM.DD)</span>) → benefit-hd("[ 급여제공반영 ]") → benefit-body(반영일·급여구분·급여내용·반영사유 각각 <div class="b-row"><span class="blabel">항목명</span> 내용</div>)`
+  ? `  S/O/A/P 각각 soap-box로 구성:
+  <div class="soap-box soap-s"><span class="soap-label">S　상담 계기</span><div class="soap-text">서술 텍스트 (상담하게 된 경위, 어르신 행동·말씀 관찰 내용)</div></div>
+  <div class="soap-box soap-o"><span class="soap-label">O　면담 내용</span><div class="soap-text"><ul><li>어르신이 직접 하신 말씀을 큰따옴표로 인용하여 bullet 항목으로</li><li>담당자 관찰 내용도 bullet 항목으로</li></ul></div></div>
+  <div class="soap-box soap-a"><span class="soap-label">A　상담자 판단</span><div class="soap-text">서술 텍스트 (종합 판단 2~3문장)</div></div>
+  <div class="soap-box soap-p" style="border-bottom:none"><span class="soap-label">P　조치 및 계획</span><div class="soap-text"><ul><li>조치·계획 각 항목</li></ul></div></div>`
+  : `  <div class="soap-box" style="border-bottom:none"><span class="soap-label" style="border-left:3px solid #3d5a80;color:#3d5a80">상담 내용</span><div class="soap-text">서술형 — S/O/A/P 레이블 없이 상담 경위 → 면담 내용(어르신 말씀 인용 포함) → 판단 → 계획 자연스럽게 흐르는 서술. <p> 태그로 단락 구분.</div></div>`
 }
+  <div class="action-box"><div class="action-title">조치내용</div>
+    <div class="action-item"><span class="action-arrow">▶</span><span>조치내용.<span class="action-date">YYYY.MM.DD</span></span></div>...
+  </div>
+  <div class="benefit-box">
+    <div class="benefit-title">[ 급여제공반영 ]</div>
+    <div class="benefit-row"><span class="benefit-key">반영일</span><span class="benefit-val">YYYY.MM.DD</span></div>
+    <div class="benefit-row"><span class="benefit-key">급여구분</span><span class="benefit-val">신체활동지원, 정서지원 등</span></div>
+    <div class="benefit-row"><span class="benefit-key">급여내용</span></div>
+    <ul class="benefit-sub"><li>제공 서비스 항목 1</li><li>제공 서비스 항목 2</li></ul>
+    <div class="benefit-row" style="margin-top:8px"><span class="benefit-key">반영사유</span></div>
+    <div style="padding-left:8px;margin-top:4px;font-size:11.5px;line-height:1.9;color:#333">맥락 있는 서술 (어르신 상태 → 변경 방향 → 반응)</div>
+    <div class="benefit-row" style="margin-top:8px"><span class="benefit-key">근거기록</span></div>
+    <ul class="benefit-sub"><li>YYYY.MM.DD — 실제 기록지 내용</li></ul>
+  </div>
+</div>
 
 ■ 보호자 상담일지 HTML 구조 (회차별 반복)
-doc-title-guardian("보호자 상담일지") → info-tbl(수급자명·생년월일·등급·인정번호·기관명 기본정보 표) → 각 회차별:
-  <div class="session-hd-guardian">N회차 — [회차 제목]</div>
-  <table class="meta-tbl meta-tbl-g"><tr><th>상담일시</th><td>YYYY.MM.DD (요일) / HH:MM~HH:MM</td><th>상담방법</th><td>유선/대면</td></tr><tr><th>상담대상자명(관계)</th><td>이름 (관계)</td><th>상담직원명</th><td>이름</td></tr></table>
-  <div class="content-hd-g">상담 내용</div>
-  <div class="content-box-g">상담 내용 서술 (공문서 어미, 단락 구분)</div>
-  <div class="action-hd">조치내용</div>
-  <div class="action-body"><div class="item">▶ 조치 내용. <span class="dt">(YYYY.MM.DD)</span></div> ... </div>
+<div class="guardian-divider"></div>
+<div class="doc-title-guardian-new">보호자 상담일지 <span>YYYY년 N분기</span></div>
+각 회차별:
+<div class="session-card" style="border-color:#8abf92">
+  <div class="session-header-g"><span class="session-num">N회</span><span class="session-title">회차 제목</span><span class="session-date">YYYY.MM.DD (요일)</span></div>
+  <table class="meta-table meta-table-g"><tr><th>상담일시</th><td colspan="3">...</td></tr><tr><th>상담구분</th><td>보호자 상담</td><th>상담대상</th><td>이름 (관계)</td></tr><tr><th>상담형태</th><td>대면/전화</td><th>상담자 성명</th><td>...</td></tr></table>
+  S/O/A/P 각각: <div class="soap-box soap-g"><span class="soap-label">S/O/A/P　레이블</span><div class="soap-text">내용 (O는 ul/li 목록)</div></div>
+  마지막 soap-box에 style="border-bottom:none" 추가
+  <div class="action-box-g"><div class="action-title-g">조치내용</div><div class="action-item"><span class="action-arrow-g">▶</span><span>내용<span class="action-date-g">YYYY.MM.DD</span></span></div></div>
+  <div class="benefit-box">
+    <div class="benefit-title">[ 급여제공반영 ]</div>
+    <div class="benefit-row"><span class="benefit-key">반영일</span><span class="benefit-val">YYYY.MM.DD</span></div>
+    <div class="benefit-row"><span class="benefit-key">급여구분</span><span class="benefit-val">상담관리 등</span></div>
+    <div class="benefit-row"><span class="benefit-key">급여내용</span></div>
+    <ul class="benefit-sub"><li>보호자 상담 내용 요약</li></ul>
+    <div class="benefit-row" style="margin-top:8px"><span class="benefit-key">반영사유</span></div>
+    <div style="padding-left:8px;margin-top:4px;font-size:11.5px;line-height:1.9;color:#333">맥락 있는 서술</div>
+    <div class="benefit-row" style="margin-top:8px"><span class="benefit-key">근거기록</span></div>
+    <ul class="benefit-sub"><li>YYYY.MM.DD — 실제 기록지 내용</li></ul>
+  </div>
+</div>
 ※ 마크다운(**, --, ##) 절대 사용 금지. 모든 강조는 <strong> 태그 사용.
 
-■ 사례관리 회의록 HTML 구조
-<div class="case-draft-notice">※ 이 사례관리 회의록은 AI(Day:음)가 작성한 초안입니다. 채택 여부는 담당자가 결정하시고, 실제 회의 내용을 반영하여 수정해 주세요.</div>
-그 다음부터 항목별로:
-  <div class="case-hd-bar">1. 선정사유 (문제점 및 욕구 파악)</div>
-  <div class="case-box"><div class="crow">내용</div></div>
-  <div class="case-hd-bar">2. 증상의 발견</div>
-  <div class="case-box">...</div>
-  <div class="case-hd-bar">3. 회의내용</div>
-  <div class="case-box">회의일시·참석자 먼저, 이후 참석자별 발언을 <div class="crow"><span class="clabel">[직책]</span> 발언내용</div> 형식으로</div>
-  <div class="case-hd-bar">4. 사례관리 계획</div>
-  <div class="case-box"><div class="cbasis"><p>계획 1. 내용 (담당: 이름 / 기한: YYYY.MM.DD)</p><p>계획 2. ...</p></div></div>
-  <div class="case-hd-bar">사례관리 회의 평가</div>
-  <div class="case-box"><div class="crow"><span class="clabel">평가일자</span> YYYY.MM.DD</div><div class="crow"><span class="clabel">반영내용</span> ...</div><div class="crow"><span class="clabel">해결여부</span> 미해결/해결</div>내용...</div>
-  마지막: <p style="font-size:9.5pt;color:#888;margin-top:16px">※ 사례관리 회의 후 급여 등에 반영하고, 급여 등에 반영일로부터 30일 이내에 사례관리 회의를 평가합니다.</p>
+■ 사례관리 회의록 HTML 구조 (삽교주간보호센터 실제 양식 기준)
+
+상단 기본정보 표:
+<table class="info-tbl">
+  <tr><th>회의일</th><td>YYYY.MM.DD 요일 (HH:MM ~ HH:MM)</td><th>작성자</th><td>이름</td></tr>
+  <tr><th>수급자명</th><td colspan="3">이름(생년월일, 등급)</td></tr>
+  <tr><th>참가 직원명</th><td colspan="3">이름(직책), 이름(직책), ...</td></tr>
+</table>
+
+그 다음 항목별로 case-hd-bar + case-box 패턴으로 작성:
+
+<div class="case-hd-bar">선정사유</div>
+<div class="case-box">
+  <div class="cbasis">
+    <p><strong>1. 선정사유 (문제점 및 욕구 파악)</strong></p>
+    <p>- 항목 1</p><p>- 항목 2</p>
+    <p style="margin-top:10px"><strong>2. 증상의 발견</strong></p>
+    <p>- 항목 1</p>
+    <p style="margin-top:10px"><strong>3. 대상자의 배경 및 환경</strong></p>
+    <p>- 항목 1</p>
+  </div>
+</div>
+
+<div class="case-hd-bar">회의내용</div>
+<div class="case-box">
+  참석자별 발언을 순서대로:
+  <div class="crow"><span class="clabel">이름 직책</span> 발언 내용</div>
+  마지막에 사례관리 계획 결정사항을 bullet으로:
+  <div class="cbasis"><p>- 계획 1 내용</p><p>- 계획 2 내용</p></div>
+</div>
+
+<div class="case-hd-bar">사례관리 계획</div>
+<div class="case-box">
+  <div class="cbasis">
+    <p>- 계획명 : 구체적 내용</p>
+    <p>- 계획명 : 구체적 내용</p>
+    <p style="margin-top:8px">* 평가 및 추후 계획 : 개입 후에도 문제 지속 시 향후 조치 방향</p>
+  </div>
+</div>
+
+<div class="case-hd-bar">급여제공반영</div>
+<div class="case-box">
+  아래 10개 항목 중 실제로 해당되는 항목만 선택하여 작성. 해당 없는 항목은 생략.
+  각 항목마다: ① 제공 내용 서술 → ② 날짜별 근거기록 바로 아래 배치.
+  마지막에 반영일 표기.
+
+  [선택 가능한 급여 항목 — 해당되는 것만]
+  □ 신체활동지원  □ 인지활동지원  □ 인지관리지원
+  □ 정서지원      □ 개인활동지원  □ 지역사회연계
+  □ 건강관리      □ 간호처치      □ 기능회복훈련
+  □ 응급지원      □ 생활 및 환경관리
+
+  <div class="cbasis">
+    <p><strong>(해당 항목명 예: 건강관리, 간호처치)</strong> 제공한 서비스 내용 서술.</p>
+    <p>YYYY.MM.DD — 근거기록 내용 (출처)</p>
+    <p>YYYY.MM.DD — 근거기록 내용 (출처)</p>
+    <br>
+    <p><strong>(해당 항목명 예: 신체활동지원)</strong> 제공한 서비스 내용 서술.</p>
+    <p>YYYY.MM.DD — 근거기록 내용 (출처)</p>
+  </div>
+  <div class="crow" style="margin-top:12px"><span class="clabel">반영일</span> YYYY.MM.DD (회의일로부터 30일 이내)</div>
+  <div class="crow"><span class="clabel">급여제공계획변경</span> 수급자명 / 작성일 YYYY.MM.DD / 적용기간 YYYY.MM.DD~YYYY.MM.DD / 작성자 이름 (계획 변경 없으면 생략)</div>
+  실제 예시 (이 수준으로 작성):
+    (건강관리, 간호처치) 아침에는 관절약, 저녁에는 정신과약을 중심으로 어르신이 수용 가능한 약물부터 선택적으로 지원하는 방식으로 복약 지원을 진행하되, 보호자 구두 동의 내용을 상담일지에 기록하여 책임 소재를 명확히 함.
+    2026.05.29 — 아침 관절약·저녁 정신과약으로 선택적 복용 시작, 보호자(딸) 구두 동의 확인 (건강 및 간호관리 특이사항)
+    2026.06.01 — 선택적 복약 방식 적용 후 거부감 없이 복용 확인 (건강 및 간호관리 특이사항)
+    (신체활동지원, 정서지원) 복약 지원 과정에서 어르신의 심리적 부담을 최소화하고, 등원 시 긍정적 경험을 강화하는 방향으로 서비스를 제공함.
+    2026.06.04 — 친한 어르신들과 담소, 걷기 운동 참여, 거부감 없이 복약 (신체활동지원 특이사항)
+</div>
+
+<div class="case-hd-bar">사례관리 회의 평가</div>
+<div class="case-box">
+  <div class="crow"><span class="clabel">평가일자</span> YYYY.MM.DD</div>
+  <div class="crow"><span class="clabel">작성자</span> 이름</div>
+  <div class="crow" style="margin-top:8px"><span class="clabel">반영내용</span></div>
+  <div class="cbasis">반영 내용 서술 (서비스 유형별로 어떻게 반영했는지 + 날짜별 근거기록)</div>
+  <div class="crow" style="margin-top:8px"><span class="clabel">선정사유의 해결여부</span> 해결 / 미해결</div>
+  <div class="crow"><span class="clabel">선정사유의 해결 내용</span></div>
+  <div class="cbasis">
+    <p>- 해결 내용 1</p>
+    <p>- 해결 내용 2</p>
+  </div>
+</div>
+<p style="font-size:9.5pt;color:#888;margin-top:16px">※ 사례관리 회의 후 급여 등에 반영하고, 급여 등에 반영일로부터 30일 이내에 사례관리 회의를 평가합니다.</p>
+<div class="case-draft-notice" style="margin-top:16px">※ 이 사례관리 회의록은 AI(Day:음)가 작성한 초안입니다. 채택 여부는 담당자가 결정하시고, 실제 회의 내용을 반영하여 수정해 주세요.</div>
 
 마지막: <div class="source-report"><strong>📋 출처 보고</strong><br>[사용 날짜]...[혈압]...[주요사건]...[제외내용]...</div>`;
 }
@@ -6352,13 +7155,99 @@ function buildPeriodicPrompt(opinion) {
   - 선택: <span class="sel">● 항목명</span> (진하게)
 - 판단근거 및 총평은 서술 텍스트로 작성 (표 형식 금지)
 
-## HTML 스타일
-.sel { color: #000; font-weight: bold; }
-.unsel { color: #999; }
-섹션 제목: 검정 배경 흰 글씨 (.sec-title { background: #1a1a1a; color: #fff; })
-판단근거: 연회색 배경 좌측 테두리 박스 (.judge-box { background: #f5f5f5; border-left: 4px solid #888; })
-위험도 평가 선택 셀: 하늘색 배경 (.sel-cell { background: #bde0ff })
-총평: 연노랑 배경 박스 (.summary-box { background: #fffbe6 })
+## HTML 스타일 및 고정 구조
+
+CSS 클래스 (DOC_CSS에 이미 로드됨 — 재정의 금지):
+.sel { color:#000; font-weight:bold } / .unsel { color:#999 }
+.sec-title { background:#1a1a1a; color:#fff; padding:7px 14px; margin-top:28px }
+.judge-box { background:#f5f5f5; border-left:4px solid #888; padding:12px 16px; margin-top:10px }
+.sel-cell { background:#bde0ff }
+.summary-box { background:#fffbe6; border:1px solid #e0c840; padding:14px 18px }
+.change-badge { background:#e53935; color:#fff; border-radius:3px; padding:1px 6px; font-size:11px }
+.maint-badge { background:#1565c0; color:#fff; border-radius:3px; padding:1px 6px; font-size:11px }
+.label { background:#f0f0f0; font-weight:bold; text-align:center; width:80px }
+.center-sub { text-align:right; font-size:12px; color:#555; margin-bottom:4px }
+.check-section { margin:14px 0 }
+.check-row { display:flex; gap:16px; flex-wrap:wrap; margin:6px 0 }
+.checked { background:#1a1a1a; color:#fff; padding:2px 10px; border-radius:3px; font-size:13px }
+.unchecked { background:#eee; color:#999; padding:2px 10px; border-radius:3px; font-size:13px }
+.checked-circle { background:#1a1a1a; color:#fff; padding:2px 12px; border-radius:12px; font-size:13px }
+.unchecked-circle { background:#eee; color:#999; padding:2px 12px; border-radius:12px; font-size:13px }
+.note { font-size:12px; color:#555; margin:6px 0 0 4px; line-height:1.7 }
+
+■ 기본 정보 표 고정 구조 (모든 문서 공통 — 반드시 이 구조 사용):
+<div class="center-sub">기관명</div>
+<table class="info" style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">
+  <tr>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">수급자</td><td style="border:1px solid #555;padding:6px 8px">이름</td>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">생년월일(성별)</td><td style="border:1px solid #555;padding:6px 8px">YYYY.MM.DD (남/여)</td>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">본인부담률</td><td style="border:1px solid #555;padding:6px 8px">일반15% / 감경9% / 감경6%</td>
+  </tr>
+  <tr>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">인정번호</td><td style="border:1px solid #555;padding:6px 8px">L번호</td>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">급여개시일</td><td style="border:1px solid #555;padding:6px 8px">YYYY.MM.DD</td>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">등급</td><td style="border:1px solid #555;padding:6px 8px">등급</td>
+  </tr>
+  <tr>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">수급자상태</td>
+    <td colspan="5" style="border:1px solid #555;padding:6px 8px">○ 와상 &nbsp; ○ 준와상 &nbsp; ○ 생활자립 &nbsp; ○ 정상</td>
+  </tr>
+  <tr>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">키/체중</td><td style="border:1px solid #555;padding:6px 8px"></td>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">작성일</td><td style="border:1px solid #555;padding:6px 8px">YYYY.MM.DD</td>
+    <td class="label" style="border:1px solid #555;padding:6px 8px">작성자</td><td style="border:1px solid #555;padding:6px 8px">이름 &nbsp;<span style="font-size:11px;color:#888">(면허번호: 수기 입력 필요)</span></td>
+  </tr>
+</table>
+
+■ 이전 평가 비교표 (이전 평가 파일 있는 경우만 포함):
+<div class="sec-title">▶ 이전 평가 대비 주요 변화 비교 (YYYY.MM.DD → YYYY.MM.DD)</div>
+<table class="compare-table" style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px">
+  <tr style="background:#f0f0f0">
+    <th style="border:1px solid #bbb;padding:5px 10px;width:15%">영역</th>
+    <th style="border:1px solid #bbb;padding:5px 10px;width:35%">이전 평가</th>
+    <th style="border:1px solid #bbb;padding:5px 10px;width:35%">현재 평가</th>
+    <th style="border:1px solid #bbb;padding:5px 10px;width:15%">변화</th>
+  </tr>
+  <!-- 각 영역별 행: 변화 있으면 change-badge, 유지면 maint-badge -->
+</table>
+
+■ 결과평가 체크사항 고정 구조:
+<div class="sec-title">급여제공결과평가 체크사항</div>
+<div class="check-section">
+  <div class="q" style="font-weight:600;margin-bottom:6px">① 수급자의 기능상태에 맞는 급여제공계획으로 진행된 급여 서비스</div>
+  <div class="check-row">
+    <span class="checked 또는 unchecked">신체활동지원</span>
+    <span class="checked 또는 unchecked">인지관리지원, 정서지원</span>
+    <span class="checked 또는 unchecked">건강관리, 간호처치</span>
+    <span class="checked 또는 unchecked">기능회복훈련</span>
+  </div>
+</div>
+<div class="check-section">
+  <div class="q" style="font-weight:600;margin-bottom:6px">② 수급자나 보호자의 욕구가 반영되었는지 여부</div>
+  <div class="check-row">
+    <span class="checked-circle 또는 unchecked-circle">반영</span>
+    <span class="unchecked-circle 또는 checked-circle">미반영</span>
+  </div>
+</div>
+<div class="check-section">
+  <div class="q" style="font-weight:600;margin-bottom:6px">③ 급여제공계획 이후 어르신의 상태 변화 여부</div>
+  <div class="check-row">
+    <span class="checked-circle 또는 unchecked-circle">상태변화</span>
+    <span class="unchecked-circle 또는 checked-circle">기능유지</span>
+  </div>
+  <p class="note">판단 근거 한 줄 서술</p>
+</div>
+<div class="check-section">
+  <div class="q" style="font-weight:600;margin-bottom:6px">④ 평가결과에 따라 급여제공계획서 재작성 필요 여부</div>
+  <div class="check-row">
+    <span class="checked-circle 또는 unchecked-circle">30일 이내 재작성</span>
+    <span class="unchecked-circle 또는 checked-circle">필요없음(급여계획유지)</span>
+  </div>
+  <p class="note">사유 한 줄 서술</p>
+</div>
+<div class="sec-title">총평</div>
+<div class="summary-box">서술 텍스트</div>
+
 이전 비교표: 변화 있는 영역 → <span class="change-badge">변화</span> (빨간 배지), 유지 → <span class="maint-badge">유지</span> (파란 배지)
 
 ---
@@ -6428,16 +7317,67 @@ function buildPeriodicPrompt(opinion) {
 
 ## 욕구사정 양식 구조 — 10개 영역
 
-### 1. 영양상태
-영양상태: ○ 양호 / ○ 적당 / ○ 부족 / ○ 매우 나쁨
-식사형태: □ 일반식 / □ 다진식 / □ 죽식 / □ 미음 / □ 유동식(경관식) / □ 연하식 / □ 갈은식 / □ 기타 / □ 치료식이(□당뇨식 □저염식 □고단백식 □체중조절식)
-식사 시 문제점: □ 양호 / □ 저작곤란 / □ 소화불량 / □ 오심·구토 / □ 연하곤란 / □ 기타
-기피식품: ○ 없음 / ○ 있음
-- 기피식품 없음 → 간단 서술
-- 기피식품 있음 → 해당 식재료 포함 메뉴 제공 시 대체 식품과 영양 보완 방법 서술 (2026 지표20 신설)
-소변상태: □ 양호 / □ 요실금 / □ 배뇨곤란 / □ 유치도뇨관 / □ 방광루 / □ 요루 / □ 기타
-대변상태: □ 양호 / □ 지속적인 설사 / □ 변비 / □ 장루 / □ 기타
-기저귀여부: □ 기저귀
+### 1. 영양상태 + 배설양상 (한 섹션, rowspan으로 분리 표시)
+
+⚠ 중요: 영양과 배설양상은 1번 섹션 안에 함께 있지만 반드시 rowspan HTML로 구분하여 표시할 것.
+
+고정 HTML 구조:
+<div class="sec-title">1. 영양상태</div>
+<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:4px">
+  <tr>
+    <td rowspan="4" style="border:1px solid #ccc;padding:6px 10px;background:#f8f8f8;font-weight:bold;text-align:center;width:70px;vertical-align:middle">영양</td>
+    <td style="border:1px solid #ccc;padding:5px 10px;background:#f0f0f0;font-weight:bold;width:90px">영양상태</td>
+    <td style="border:1px solid #ccc;padding:5px 10px">
+      <span class="sel/unsel">● 양호</span> <span class="unsel">○ 적당</span> <span class="unsel">○ 부족</span> <span class="unsel">○ 매우 나쁨</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ccc;padding:5px 10px;background:#f0f0f0;font-weight:bold">식사형태</td>
+    <td style="border:1px solid #ccc;padding:5px 10px">
+      <span class="sel/unsel">■ 일반식</span> <span>□ 다진식</span> ... (해당 항목 sel, 나머지 unsel)
+    </td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ccc;padding:5px 10px;background:#f0f0f0;font-weight:bold">식사 시<br>문제점</td>
+    <td style="border:1px solid #ccc;padding:5px 10px">
+      <span class="sel/unsel">■ 양호</span> <span>□ 저작곤란</span> ... (해당 항목 sel, 나머지 unsel)
+    </td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ccc;padding:5px 10px;background:#f0f0f0;font-weight:bold">기피식품</td>
+    <td style="border:1px solid #ccc;padding:5px 10px">
+      <span class="sel/unsel">● 없음</span> <span>○ 있음</span>
+      <!-- 있음인 경우: 해당 식재료·대체식품 서술 -->
+    </td>
+  </tr>
+  <tr>
+    <td rowspan="3" style="border:1px solid #ccc;padding:6px 10px;background:#f8f8f8;font-weight:bold;text-align:center;vertical-align:middle">배설<br>양상</td>
+    <td style="border:1px solid #ccc;padding:5px 10px;background:#f0f0f0;font-weight:bold">소변상태</td>
+    <td style="border:1px solid #ccc;padding:5px 10px">
+      <span class="sel/unsel">■ 양호</span> <span>□ 요실금</span> <span>□ 배뇨곤란</span> <span>□ 유치도뇨관</span> <span>□ 방광루</span> <span>□ 요루</span> <span>□ 기타</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ccc;padding:5px 10px;background:#f0f0f0;font-weight:bold">대변상태</td>
+    <td style="border:1px solid #ccc;padding:5px 10px">
+      <span class="sel/unsel">■ 양호</span> <span>□ 지속적인 설사</span> <span>□ 변비</span> <span>□ 장루</span> <span>□ 기타</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="border:1px solid #ccc;padding:5px 10px;background:#f0f0f0;font-weight:bold">기저귀<br>여부</td>
+    <td style="border:1px solid #ccc;padding:5px 10px">
+      <span class="sel/unsel">□ 기저귀</span>
+    </td>
+  </tr>
+</table>
+<div class="judge-box">
+  <p><b>① 현상 명명 및 임상적 해석</b></p><p>서술</p>
+  <p><b>② 변화 분석</b></p><p>서술</p>
+</div>
+
+기피식품 처리:
+- 없음 → 간단 서술
+- 있음 → 해당 식재료 포함 메뉴 제공 시 대체 식품과 영양 보완 방법 서술 (2026 지표20 신설)
 판단근거: ①현상 명명 및 임상적 해석 ②변화 분석 (2단 구조)
 
 ### 2. 구강상태 (2026 지표20 신설 — 구강상태 및 기피식품 반드시 파악)
@@ -10725,7 +11665,7 @@ function initAdminTab() {
 
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.17.83
+  Day:음 · v2026.06.17.94
 </div>
 </body>
 </html>
