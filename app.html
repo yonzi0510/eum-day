@@ -520,6 +520,8 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .style-slider-labels{display:flex;justify-content:space-between;font-size:9px;color:#999;width:120px}
 .style-bubble{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#1F3864;color:#fff;font-size:10px;line-height:1.6;padding:8px 11px;border-radius:10px;white-space:normal;width:200px;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:200;box-shadow:0 3px 12px rgba(0,0,0,0.22)}
 .style-bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#1F3864}
+.correct-need-btn{padding:6px 12px;font-size:12px;border:1.5px solid #C5B8E8;border-radius:20px;background:#fff;color:#5C3489;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
+.correct-need-btn.active{background:#5C3489;color:#fff;border-color:#5C3489}
 .style-bubble.visible{opacity:1}
 </style>
 <script>
@@ -570,7 +572,6 @@ if (typeof CENTERS === 'undefined') {
   <button class="tab-btn active" onclick="switchTab('tab-docs',this)">📄 문서 만들기</button>
   <button class="tab-btn" onclick="switchTab('tab-results',this)">📋 문서 결과 보기</button>
   <button class="tab-btn" onclick="switchTab('tab-verify',this)">🔍 문서검증</button>
-  <button class="tab-btn" onclick="switchTab('tab-qa',this)">🤖 AI질의</button>
   <button class="tab-btn" onclick="switchTab('tab-pricing',this)">💳 요금제</button>
   <button class="tab-btn" onclick="switchTab('tab-contact',this)">💬 문의</button>
   <button class="tab-btn" onclick="switchTab('tab-admin',this)" id="admin-tab-btn" style="display:none">🔐 관리자</button>
@@ -2004,7 +2005,19 @@ if (typeof CENTERS === 'undefined') {
 <div class="tab-content" id="tab-verify">
 <div class="main">
 
-  <!-- 문서검증 내용 -->
+  <!-- 서브탭 버튼 -->
+  <div style="display:flex;gap:4px;margin-bottom:18px;border-bottom:2px solid #E8EAF0;padding-bottom:0">
+    <button id="vsub-btn-verify" onclick="switchVerifySub('verify',this)"
+      style="padding:8px 18px;font-size:13px;font-weight:600;border:none;background:none;cursor:pointer;color:#5C3489;border-bottom:2.5px solid #5C3489;margin-bottom:-2px;font-family:inherit">
+      🔍 평가지표 검증
+    </button>
+    <button id="vsub-btn-correct" onclick="switchVerifySub('correct',this)"
+      style="padding:8px 18px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:#888;border-bottom:2.5px solid transparent;margin-bottom:-2px;font-family:inherit">
+      ✏️ 문서 교정
+    </button>
+  </div>
+
+  <!-- 평가지표 검증 -->
   <div id="eval-sub-verify">
 
   <div id="eval-input">
@@ -2136,54 +2149,113 @@ if (typeof CENTERS === 'undefined') {
 
   </div><!-- /eval-sub-verify -->
 
-</div>
-</div>
-
-<!-- AI질의 탭 -->
-<div class="tab-content" id="tab-qa">
-<div class="main">
-  <div id="eval-sub-qa">
-  <div class="qa-wrap" style="margin-top:0">
-    <div class="qa-head">
-      <span class="qa-head-icon">🤖</span>
-      <span class="qa-head-title">평가지표 AI 질의</span>
-      <span class="qa-head-badge">2026 주야간보호 기준</span>
-      <button onclick="clearQaChat()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:2px 9px;font-size:11px;cursor:pointer;font-family:inherit">초기화</button>
-    </div>
-
-    <!-- 예시 질문 -->
-    <div class="qa-examples">
-      <span style="font-size:10px;color:#999;align-self:center;white-space:nowrap">빠른 질문 →</span>
-      <button class="qa-ex-btn" onclick="qaAsk('지표 27 기능회복훈련 판단 기준과 필요 서류 알려줘')">지표 27 기능회복훈련</button>
-      <button class="qa-ex-btn" onclick="qaAsk('지표 20 구강상태·기피식품 신설 기준 설명해줘')">지표 20 구강상태</button>
-      <button class="qa-ex-btn" onclick="qaAsk('지표 34 급여제공기록지 작성 기준 알려줘')">지표 34 기록지</button>
-      <button class="qa-ex-btn" onclick="qaAsk('인지지원등급 K01 인지활동형 프로그램 기준이 뭐야?')">인지지원등급 K01</button>
-      <button class="qa-ex-btn" onclick="qaAsk('2026년에 신설되거나 변경된 지표 목록 알려줘')">2026 변경 지표</button>
-    </div>
-
-    <!-- 대화창 -->
-    <div class="qa-msgs" id="qa-msgs">
-      <div class="qa-msg">
-        <div class="qa-avatar ai">AI</div>
-        <div class="qa-bubble ai">
-          안녕하세요! <strong>2026년 주야간보호 평가지표</strong> 안내 도구입니다.<br>
-          지표의 기준·배점·필요서류를 있는 그대로 안내해 드려요.<br>
-          <span class="qa-tag">지표 원문 기준</span> 만 안내하며, AI의 판단이나 권유는 제공하지 않습니다.
+  <!-- 문서교정 서브탭 -->
+  <div id="eval-sub-correct" style="display:none">
+    <div id="correct-input">
+      <!-- 1. 문서 업로드 -->
+      <div class="card">
+        <div class="card-title"><div class="num">1</div> 문서 업로드</div>
+        <div class="upload-zone" id="correct-upload"
+             onclick="document.getElementById('correct-file').click()"
+             ondragover="event.preventDefault();this.style.borderColor='#5C3489';this.style.background='#F5F0FF'"
+             ondragleave="this.style.borderColor='';this.style.background=''"
+             ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';handleCorrectFile({files:event.dataTransfer.files})">
+          <div style="font-size:28px;margin-bottom:6px">📂</div>
+          <div style="font-size:13px;color:#555;margin-bottom:3px">교정할 문서를 업로드해주세요</div>
+          <div style="font-size:11px;color:#999">PDF · 이미지(JPG·PNG) 가능</div>
+          <div id="correct-fname" style="display:none"><span class="file-tag">✓ <span id="correct-fn"></span></span></div>
         </div>
+        <input type="file" id="correct-file" style="display:none" accept=".pdf,.png,.jpg,.jpeg,.txt" onchange="handleCorrectFile(this)">
+      </div>
+
+      <!-- 2. 교정 요청사항 -->
+      <div class="card">
+        <div class="card-title"><div class="num">2</div> 교정 요청사항</div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:12px;color:#666;margin-bottom:8px">어떤 부분을 교정받고 싶으신가요? (복수 선택 가능)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px" id="correct-needs-btns">
+            <button class="correct-need-btn" onclick="toggleCorrectNeed(this,'보완')">📝 내용 보완</button>
+            <button class="correct-need-btn" onclick="toggleCorrectNeed(this,'수정제안')">✏️ 수정 제안</button>
+            <button class="correct-need-btn" onclick="toggleCorrectNeed(this,'표현정돈')">💬 표현 정돈</button>
+            <button class="correct-need-btn" onclick="toggleCorrectNeed(this,'구조개선')">🗂️ 구조 개선</button>
+            <button class="correct-need-btn" onclick="toggleCorrectNeed(this,'맞춤법')">🔤 맞춤법·문법</button>
+          </div>
+        </div>
+        <div class="opinion-box" style="margin-top:10px">
+          <div class="opinion-label">✏️ 추가로 원하는 내용을 자유롭게 적어주세요 <span style="font-size:11px;color:#aaa">(선택)</span></div>
+          <textarea id="correct-opinion" placeholder="예) 보호자 설명용 문서라 쉬운 표현으로 바꿔줘&#10;예) 공문 형식에 맞게 격식체로 통일해줘&#10;예) 3페이지 목표 부분이 너무 추상적인 것 같아"></textarea>
+        </div>
+      </div>
+
+      <button class="gen-btn" style="background:#5C3489" onclick="startCorrect()">✏️ 문서 교정 시작하기</button>
+    </div>
+
+    <!-- 진행 표시 -->
+    <div class="prog-area" id="correct-prog">
+      <div style="font-size:14px;font-weight:600;color:#5C3489;margin-bottom:12px">✏️ 교정 중...</div>
+      <div class="prog-bar-wrap"><div class="prog-bar" id="correct-progress-bar" style="width:0%"></div></div>
+      <div style="text-align:center;font-size:12px;color:#888;margin-top:6px" id="correct-progress-pct">0%</div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px">
+        <div class="prog-step" id="cp1"><span class="picon">○</span> 문서 읽는 중...</div>
+        <div class="prog-step" id="cp2"><span class="picon">○</span> 요청사항 파악 중...</div>
+        <div class="prog-step" id="cp3"><span class="picon">○</span> 교정본 작성 중...</div>
       </div>
     </div>
 
-    <!-- 입력창 -->
-    <div class="qa-input-row">
-      <textarea class="qa-input" id="qa-input" rows="1"
-        placeholder="예) 지표 22 계획서 재작성 주기가 어떻게 돼?"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQa()}"></textarea>
-      <button class="qa-send" id="qa-send-btn" onclick="sendQa()">전송 ↑</button>
+    <!-- 결과 -->
+    <div class="eval-result" id="correct-result">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:700;color:#5C3489">✏️ 교정 결과</div>
+        <button class="revised-copy" onclick="copyResult('correct-body')">복사</button>
+      </div>
+      <div id="correct-body" style="font-size:13px;line-height:1.9;color:#222"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+        <button class="dl-btn primary" style="background:#5C3489;border-color:#5C3489" onclick="downloadCorrect()">📄 교정 문서 다운로드</button>
+        <button class="dl-btn" onclick="resetCorrect()">↩ 다시 교정하기</button>
+      </div>
     </div>
-  </div>
-  </div><!-- /eval-sub-qa -->
+  </div><!-- /eval-sub-correct -->
 
 </div>
+</div>
+
+<!-- AI질의 플로팅 위젯 -->
+<div id="qa-float-btn" onclick="toggleQaFloat()"
+  style="position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#5C3489,#3C3489);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(92,52,137,.5);z-index:9000;transition:transform .2s;user-select:none"
+  title="평가지표 AI 질의">🤖</div>
+
+<div id="qa-float-panel"
+  style="display:none;position:fixed;bottom:90px;right:28px;width:360px;max-height:520px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:8999;overflow:hidden;flex-direction:column">
+  <div class="qa-head" style="flex-shrink:0">
+    <span class="qa-head-icon">🤖</span>
+    <span class="qa-head-title">평가지표 AI 질의</span>
+    <span class="qa-head-badge">2026 주야간보호</span>
+    <button onclick="clearQaChat()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:2px 9px;font-size:11px;cursor:pointer;font-family:inherit">초기화</button>
+    <button onclick="toggleQaFloat()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 0 0 6px;line-height:1">×</button>
+  </div>
+  <!-- 예시 질문 -->
+  <div class="qa-examples" style="flex-shrink:0;padding:8px 10px;gap:5px;border-bottom:1px solid #F0EBF8">
+    <button class="qa-ex-btn" onclick="qaAsk('지표 27 기능회복훈련 기준과 필요 서류')">지표 27 기능회복훈련</button>
+    <button class="qa-ex-btn" onclick="qaAsk('지표 34 급여제공기록지 작성 기준')">지표 34 기록지</button>
+    <button class="qa-ex-btn" onclick="qaAsk('2026년 신설·변경된 지표 목록')">2026 변경 지표</button>
+  </div>
+  <!-- 대화창 -->
+  <div class="qa-msgs" id="qa-msgs" style="flex:1;min-height:0;height:280px">
+    <div class="qa-msg">
+      <div class="qa-avatar ai">AI</div>
+      <div class="qa-bubble ai">
+        안녕하세요! <strong>2026년 주야간보호 평가지표</strong> 안내 도구입니다.<br>
+        지표의 기준·배점·확인방법을 매뉴얼 원문 기준으로 안내해 드려요.
+      </div>
+    </div>
+  </div>
+  <!-- 입력창 -->
+  <div class="qa-input-row" style="flex-shrink:0;border-top:1px solid #F0EBF8">
+    <textarea class="qa-input" id="qa-input" rows="1"
+      placeholder="예) 지표 22 계획서 재작성 주기가 어떻게 돼?"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendQa()}"></textarea>
+    <button class="qa-send" id="qa-send-btn" onclick="sendQa()">↑</button>
+  </div>
 </div>
 
 
@@ -9399,6 +9471,187 @@ function downloadEvalReport() {
 }
 
 // ────── 모의평가 ──────
+// ── 플로팅 AI질의 ──
+function toggleQaFloat() {
+  const panel = document.getElementById('qa-float-panel');
+  const btn = document.getElementById('qa-float-btn');
+  const isOpen = panel.style.display === 'flex';
+  panel.style.display = isOpen ? 'none' : 'flex';
+  btn.style.transform = isOpen ? '' : 'scale(0.9)';
+}
+
+// ── 문서검증 서브탭 전환 ──
+function switchVerifySub(sub, el) {
+  document.getElementById('eval-sub-verify').style.display = sub === 'verify' ? 'block' : 'none';
+  document.getElementById('eval-sub-correct').style.display = sub === 'correct' ? 'block' : 'none';
+  document.querySelectorAll('#tab-verify [id^="vsub-btn-"]').forEach(b => {
+    b.style.color = '#888';
+    b.style.borderBottomColor = 'transparent';
+    b.style.fontWeight = '500';
+  });
+  if (el) {
+    el.style.color = '#5C3489';
+    el.style.borderBottomColor = '#5C3489';
+    el.style.fontWeight = '600';
+  }
+}
+
+// ── 문서교정 needs 토글 ──
+function toggleCorrectNeed(btn, val) {
+  btn.classList.toggle('active');
+}
+
+function getCorrectNeeds() {
+  return [...document.querySelectorAll('.correct-need-btn.active')].map(b => b.textContent.trim());
+}
+
+// ── 문서교정 파일 핸들러 ──
+window._correctFileData = null;
+function handleCorrectFile(input) {
+  const file = (input.files || input)[0];
+  if (!file) return;
+  document.getElementById('correct-upload').classList.add('has-file');
+  document.getElementById('correct-fname').style.display = 'block';
+  document.getElementById('correct-fn').textContent = file.name;
+  fileToBase64(file).then(b64 => { window._correctFileData = { name: file.name, type: file.type, data: b64 }; });
+}
+
+// ── 문서교정 시작 ──
+async function startCorrect() {
+  if (!window._correctFileData) { alert('문서를 업로드해주세요.'); return; }
+  const needs = getCorrectNeeds();
+  const opinion = document.getElementById('correct-opinion').value.trim();
+
+  if (needs.length === 0 && !opinion) {
+    alert('교정 요청사항을 선택하거나 직접 입력해주세요.'); return;
+  }
+
+  document.getElementById('correct-input').style.display = 'none';
+  const prog = document.getElementById('correct-prog');
+  prog.classList.add('show');
+  document.getElementById('correct-result').classList.remove('show');
+
+  function setCorrectProg(pct) {
+    document.getElementById('correct-progress-bar').style.width = pct + '%';
+    document.getElementById('correct-progress-pct').textContent = pct + '%';
+  }
+  function cpStep(idx, pct) {
+    if (idx > 0) {
+      const prev = document.getElementById('cp' + idx);
+      prev.classList.remove('running'); prev.classList.add('complete'); prev.querySelector('.picon').textContent = '✓';
+    }
+    document.getElementById('cp' + (idx+1)).classList.add('running');
+    setCorrectProg(pct);
+  }
+
+  cpStep(0, 15);
+
+  const needsText = needs.length > 0 ? needs.join(', ') : '';
+  const requestText = [needsText, opinion].filter(Boolean).join(' / ');
+
+  const fd = window._correctFileData;
+  const isPdf = fd.type === 'application/pdf';
+  const isImg = fd.type.startsWith('image/');
+  let userContent;
+  if (isPdf) {
+    userContent = [
+      { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: fd.data } },
+      { type: 'text', text: `[교정 요청사항]
+${requestText}
+
+위 문서를 요청사항에 맞게 교정해주세요.` }
+    ];
+  } else if (isImg) {
+    userContent = [
+      { type: 'image', source: { type: 'base64', media_type: fd.type, data: fd.data } },
+      { type: 'text', text: `[교정 요청사항]
+${requestText}
+
+위 문서를 요청사항에 맞게 교정해주세요.` }
+    ];
+  } else {
+    userContent = `[교정 요청사항]
+${requestText}
+
+위 문서를 요청사항에 맞게 교정해주세요.`;
+  }
+
+  cpStep(1, 40);
+
+  const result = await callClaude(
+    `당신은 사회복지 현장 문서 전문 교정사입니다.
+업로드된 문서를 교정 요청사항에 맞게 정돈·수정·보완하여 완성된 문서를 작성해주세요.
+
+[교정 원칙]
+- 원본 내용과 사실은 그대로 유지합니다
+- 요청사항에 명시된 부분만 수정합니다
+- 수정·보완된 부분은 <span style="color:#C00000;font-weight:600">빨간색</span>으로 표시합니다
+- 원본 그대로인 부분은 검정색으로 유지합니다
+
+[출력 형식 — HTML로 출력, 코드블록 절대 사용 금지]
+1. 상단: 교정 요약 박스
+   - 요청사항 기반으로 교정한 항목 N건 요약
+
+2. 교정된 문서 본문
+   - 원본 구조 그대로 유지하되 수정 부분만 빨간색으로 표시
+
+3. 하단: 교정 요약표
+   | 구분 | 교정 내용 | 위치 |
+
+스타일:
+- 수정 안내 박스: background:#FFF0F0, border:2px solid #C00000
+- 수정 텍스트: color:#C00000, font-weight:600
+- font-family:'맑은 고딕', font-size:10pt, print-color-adjust:exact`,
+    userContent,
+    '문서교정'
+  );
+
+  cpStep(2, 90);
+  setCorrectProg(100);
+  document.getElementById('cp3').classList.remove('running');
+  document.getElementById('cp3').classList.add('complete');
+  document.getElementById('cp3').querySelector('.picon').textContent = '✓';
+
+  setTimeout(() => {
+    prog.classList.remove('show');
+    document.getElementById('correct-result').classList.add('show');
+    document.getElementById('correct-body').innerHTML = result;
+    window._correctResult = result;
+  }, 400);
+}
+
+// ── 문서교정 다운로드 ──
+function downloadCorrect() {
+  let html = window._correctResult || '';
+  if (!html) { alert('교정 결과가 없습니다.'); return; }
+  html = html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) html = bodyMatch[1].trim();
+  const now = new Date();
+  const dateStr = now.getFullYear()+''+String(now.getMonth()+1).padStart(2,'0')+''+String(now.getDate()).padStart(2,'0');
+  const full = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>교정 문서</title>
+<style>body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;max-width:900px;margin:0 auto;padding:32px;line-height:1.9;font-size:13px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:7px 10px}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style>
+</head><body>${html}</body></html>`;
+  const blob = new Blob([full], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = dateStr + '_교정문서.html'; a.click();
+}
+
+// ── 문서교정 초기화 ──
+function resetCorrect() {
+  document.getElementById('correct-input').style.display = 'block';
+  document.getElementById('correct-result').classList.remove('show');
+  document.getElementById('correct-prog').classList.remove('show');
+  document.getElementById('correct-upload').classList.remove('has-file');
+  document.getElementById('correct-fname').style.display = 'none';
+  document.getElementById('correct-opinion').value = '';
+  document.querySelectorAll('.correct-need-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#correct-prog .prog-step').forEach(el => {
+    el.classList.remove('running','complete'); el.querySelector('.picon').textContent = '○';
+  });
+  window._correctFileData = null; window._correctResult = null;
+}
+
 function initIndicatorList() {
   const wrap = document.getElementById('ev-indicator-list');
   if (!wrap || wrap.children.length > 0) return;
@@ -18004,7 +18257,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.108
+  Day:음 · v2026.06.19.01
 </div>
 </body>
 </html>
