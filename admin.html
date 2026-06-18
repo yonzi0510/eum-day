@@ -201,10 +201,10 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           </div>
         </div>
 
-        <!-- KPI 카드 4개 -->
+        <!-- KPI 카드 3개 -->
         <div class="kpi-grid">
           <div class="kpi-card">
-            <div class="kpi-label">총 API 호출</div>
+            <div class="kpi-label">문서 생성 건수</div>
             <div class="kpi-val" style="color:#7AAEE8" id="kpi-calls">-</div>
             <div class="kpi-sub" id="kpi-calls-sub"></div>
           </div>
@@ -217,16 +217,6 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             <div class="kpi-label">청구금액 (기관)</div>
             <div class="kpi-val" style="color:#4ECFA0" id="kpi-cost">-</div>
             <div class="kpi-sub" id="kpi-cost-sub"></div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">입력 토큰</div>
-            <div class="kpi-val" style="color:#A07AE8" id="kpi-input">-</div>
-            <div class="kpi-sub">tokens</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">출력 토큰</div>
-            <div class="kpi-val" style="color:#C8A040" id="kpi-output">-</div>
-            <div class="kpi-sub">tokens</div>
           </div>
         </div>
 
@@ -582,8 +572,7 @@ function renderKPI(logs) {
   const calls  = logs.length;
   const cost   = logs.reduce((s,l) => s + (l.cost_krw || 0), 0);
   const raw    = logs.reduce((s,l) => s + (l.cost_raw_krw || Math.round((l.cost_krw||0) / 3)), 0);
-  const input  = logs.reduce((s,l) => s + (l.input_tokens || 0), 0);
-  const output = logs.reduce((s,l) => s + (l.output_tokens || 0), 0);
+
   const allCost = _allLogs.reduce((s,l) => s + (l.cost_krw || 0), 0);
   const pct = allCost > 0 ? Math.round(cost / allCost * 100) : 100;
 
@@ -601,8 +590,7 @@ function renderKPI(logs) {
   set('kpi-raw-sub', rangeStr);
   set('kpi-cost',   '₩' + cost.toLocaleString());
   set('kpi-cost-sub', rangeStr);
-  set('kpi-input',  input >= 1000 ? (input/1000).toFixed(1)+'K' : input+'');
-  set('kpi-output', output >= 1000 ? (output/1000).toFixed(1)+'K' : output+'');
+
 }
 
 function renderCenterTable(logs) {
@@ -632,10 +620,8 @@ function renderCenterTable(logs) {
       <thead><tr>
         <th>센터</th>
         <th>비율</th>
-        <th class="right">호출</th>
+        <th class="right">문서 생성</th>
         <th class="right">API 비용</th>
-        <th class="right">입력 토큰</th>
-        <th class="right">출력 토큰</th>
       </tr></thead>
       <tbody>
         ${sorted.map(([name, d]) => {
@@ -651,15 +637,12 @@ function renderCenterTable(logs) {
             </td>
             <td class="right">${d.calls}건</td>
             <td class="right" style="color:#4ECFA0;font-weight:600">₩${d.cost.toLocaleString()}</td>
-            <td class="right">${(d.input/1000).toFixed(1)}K</td>
-            <td class="right">${(d.output/1000).toFixed(1)}K</td>
           </tr>`;
         }).join('')}
         <tr style="border-top:1.5px solid #2A3A50">
-          <td colspan="3" style="font-weight:700;color:#C8D4E0">합계</td>
+          <td colspan="2" style="font-weight:700;color:#C8D4E0">합계</td>
+          <td class="right">${logs.length}건</td>
           <td class="right" style="color:#4ECFA0;font-weight:800">₩${totalCost.toLocaleString()}</td>
-          <td class="right">${(_allLogs.reduce((s,l)=>s+(l.input_tokens||0),0)/1000).toFixed(1)}K</td>
-          <td class="right">${(_allLogs.reduce((s,l)=>s+(l.output_tokens||0),0)/1000).toFixed(1)}K</td>
         </tr>
       </tbody>
     </table>`;
@@ -777,7 +760,7 @@ function renderLogs() {
       <span class="log-ctr" style="background:${clr}20;color:${clr};border:1px solid ${clr}40">${ctr || '?'}</span>
       <span class="log-doc">${l.doc_label || '?'}</span>
       <span class="log-time">${dateStr}</span>
-      <span style="font-size:10px;color:#405060;white-space:nowrap;margin-right:4px">in:${(l.input_tokens||0).toLocaleString()} out:${(l.output_tokens||0).toLocaleString()}</span>
+
       <span class="log-cost">₩${(l.cost_krw||0).toLocaleString()}</span>
     </div>`;
   }).join('') + (filtered.length === 100 ? '<div style="text-align:center;font-size:11px;color:#405060;padding:6px">최근 100건만 표시</div>' : '');
