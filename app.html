@@ -9720,17 +9720,45 @@ async function startEvalCheck() {
       setEvalProgress(90);
       revisedContent = await callClaude(
         `당신은 2026년 주야간보호 장기요양기관 평가 전문가입니다.
-아래 점검 결과를 바탕으로, 미충족·부분충족 항목이 모두 충족될 수 있도록 문서 내용을 수정·보완하여 완성된 문서를 작성해주세요.
+아래 점검 결과를 바탕으로, 원본 문서에 수정 내용을 반영한 완성본을 작성해주세요.
 
-규칙:
-- 충족 항목은 원문 그대로 유지
-- 미충족/부분충족 항목만 구체적으로 수정·보완
-- 실제 제출 가능한 완성된 문서 형태로 출력
-- HTML 형식으로 출력 (인쇄 가능한 문서 스타일)`,
+[핵심 원칙]
+- 원본 문서의 구조와 내용은 최대한 그대로 유지합니다
+- 미충족·부분충족 항목에 대해서만 최소한으로 보완합니다
+- 새로 추가하거나 수정한 텍스트는 반드시 빨간색으로 표시합니다
+  예: <span style="color:#C00000;font-weight:600">추가된 내용</span>
+- 원본 그대로인 부분은 검정색으로 유지합니다
+- 실무자가 빨간 부분만 확인하면 변경사항을 바로 파악할 수 있도록 합니다
+
+[출력 형식 — HTML로 출력]
+전체를 아래 구조로 작성해주세요:
+
+1. 상단: 수정 안내 박스
+   - "수정된 부분은 빨간색으로 표시되어 있습니다" 안내
+   - 수정 항목 N건 요약 (지표번호 + 한 줄 요약)
+
+2. 수정 반영된 문서 본문
+   - 원본 문서의 전체 내용을 재현하되, 추가/수정된 부분만 빨간색으로 표시
+   - 원본에 없던 새 항목·문구 추가 시: <span style="color:#C00000;font-weight:600">추가 내용</span>
+   - 기존 내용을 수정한 경우: 기존 내용 삭제 표시 + 빨간색 수정 내용
+   - 표 구조가 있는 경우 표 형태 그대로 유지
+   - 인쇄 시 빨간색이 보이도록 print-color-adjust:exact 적용
+
+3. 하단: 수정 요약표
+   | 지표번호 | 수정 내용 | 위치 |
+   형태로 수정 사항 정리
+
+스타일:
+- 수정 안내 박스: background:#FFF0F0, border:2px solid #C00000, padding:12px, border-radius:8px
+- 수정된 텍스트: color:#C00000, font-weight:600
+- 원본 텍스트: color:#000000
+- 표: border-collapse:collapse, 셀 border:1px solid #aaa
+- 인쇄 가능한 A4 스타일, font-family:'맑은 고딕', font-size:10pt
+- body에 print-color-adjust:exact; -webkit-print-color-adjust:exact 적용`,
         `[점검 결과]
 ${result}
 
-위 결과를 바탕으로 수정된 완성 문서를 작성해주세요.`,
+위 점검 결과를 바탕으로, 미충족·부분충족 항목에 대한 보완 방법과 예시 문구를 제시해주세요.`,
         '문서검증_수정본'
       );
       window._evalRevisedContent = revisedContent;
@@ -12255,7 +12283,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.18.100
+  Day:음 · v2026.06.18.102
 </div>
 </body>
 </html>
