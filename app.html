@@ -11959,6 +11959,91 @@ function journalSetProgress(pct, msg) {
   if (msgEl) msgEl.textContent = msg;
 }
 
+// AI 원문에서 파트별로 텍스트 분리
+function journalSplitParts(raw) {
+  const lines = raw.split('\n');
+  const part1 = []; // 신체 + 인지
+  const part2 = []; // 기능
+  const part3 = []; // 건강
+  let currentDate = '';
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    // 날짜 헤더
+    if (/^\d{2}\/\d{2}\s*\([월화수목금토일]\)/.test(trimmed)) {
+      currentDate = trimmed;
+      continue;
+    }
+    if (trimmed.startsWith('[신체]') || trimmed.startsWith('[인지]')) {
+      if (currentDate) { part1.push(currentDate); currentDate = ''; }
+      part1.push(trimmed);
+    } else if (trimmed.startsWith('[기능]')) {
+      if (currentDate) { part2.push(currentDate); currentDate = ''; }
+      part2.push(trimmed);
+    } else if (trimmed.startsWith('[건강]')) {
+      if (currentDate) { part3.push(currentDate); currentDate = ''; }
+      part3.push(trimmed);
+    }
+  }
+  return {
+    part1: part1.join('\n'),
+    part2: part2.join('\n'),
+    part3: part3.join('\n')
+  };
+}
+
+function journalRenderParts(clientName, parts) {
+  const uid = clientName.replace(/[^가-힣a-zA-Z0-9]/g, '');
+  const TABS = [
+    { key: 'part1', label: '요양', color: '#1F3864', active: true },
+    { key: 'part2', label: '프로그램', color: '#2D6A4F', active: false },
+    { key: 'part3', label: '간호', color: '#7B3F00', active: false },
+  ];
+
+  const tabBtns = TABS.map((t, i) => `
+    <button onclick="journalSwitchPartTab('${uid}', '${t.key}', this)"
+      id="jptab-${uid}-${t.key}"
+      style="padding:6px 16px;border:none;background:${t.active ? '#fff' : 'transparent'};
+      border-bottom:${t.active ? '2.5px solid '+t.color : '2.5px solid transparent'};
+      color:${t.active ? t.color : '#aaa'};font-size:12px;font-weight:700;
+      cursor:pointer;font-family:inherit;transition:all .15s"
+    >${t.label}</button>`).join('');
+
+  const tabContents = TABS.map(t => `
+    <div id="jpcontent-${uid}-${t.key}" style="display:${t.active ? 'block' : 'none'};padding:14px">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button onclick="journalCopyText(this)" data-text="${encodeURIComponent(parts[t.key])}"
+          style="font-size:11px;padding:3px 10px;border:1px solid #C9C5BC;border-radius:5px;background:#fff;cursor:pointer">⎘ 복사</button>
+      </div>
+      <div style="font-size:12px;line-height:2.2;color:#1C1B18;white-space:pre-wrap;word-break:keep-all">${parts[t.key]}</div>
+    </div>`).join('');
+
+  return `
+    <div style="border:1px solid #E0E6F0;border-radius:8px;overflow:hidden">
+      <div style="display:flex;border-bottom:1px solid #E0E6F0;background:#F7F6F2;padding:0 8px">
+        ${tabBtns}
+      </div>
+      ${tabContents}
+    </div>`;
+}
+
+function journalSwitchPartTab(uid, key, btn) {
+  // 탭 버튼 스타일
+  const keys = ['part1','part2','part3'];
+  const colors = { part1:'#1F3864', part2:'#2D6A4F', part3:'#7B3F00' };
+  keys.forEach(k => {
+    const b = document.getElementById('jptab-'+uid+'-'+k);
+    const c = document.getElementById('jpcontent-'+uid+'-'+k);
+    if (!b || !c) return;
+    const isActive = k === key;
+    b.style.background = isActive ? '#fff' : 'transparent';
+    b.style.borderBottom = isActive ? '2.5px solid '+colors[k] : '2.5px solid transparent';
+    b.style.color = isActive ? colors[k] : '#aaa';
+    c.style.display = isActive ? 'block' : 'none';
+  });
+}
+
 async function journalGenerate() {
   const noNote = journalClients.find(c => !c.notes?.trim());
   if (noNote) {
@@ -12008,24 +12093,23 @@ ${client.notes}
 위 모든 날짜에 대해 [신체] [인지] [기능] [건강] 4개 섹션으로 작성해주세요.`;
 
     try {
-      const raw = await callClaude(system, userPrompt, 1500);
-      allResults.push({ name: client.name, text: raw });
+      const raw = await callClaude(system, userPrompt, 2000);
+      const parts = journalSplitParts(raw);
+      allResults.push({ name: client.name, raw, parts });
 
-      // 결과 카드 렌더링
-      const card = document.createElement('div');
-      card.style.cssText = 'border:1px solid #E0E6F0;border-radius:8px;margin-bottom:12px;overflow:hidden';
-      card.innerHTML = `
+      // 어르신 카드 (파트 3개로 분리)
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'border:1.5px solid #E0E6F0;border-radius:10px;margin-bottom:16px;overflow:hidden';
+      wrap.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F0EEE9;border-bottom:1px solid #E0E6F0">
-          <span style="font-size:13px;font-weight:600">${client.name} 어르신</span>
-          <div style="display:flex;gap:6px">
-            <button onclick="journalCopyClient(this)" data-text="${encodeURIComponent(raw)}"
-              style="font-size:12px;padding:4px 10px;border:1px solid #C9C5BC;border-radius:5px;background:#fff;cursor:pointer">⎘ 복사</button>
-            <button onclick="journalDownloadClient('${client.name}', this)" data-text="${encodeURIComponent(raw)}"
-              style="font-size:12px;padding:4px 10px;border:1px solid #2D6A4F;border-radius:5px;background:#E8F4EE;color:#1B4332;cursor:pointer;font-weight:600">↓ 다운로드</button>
-          </div>
+          <span style="font-size:13px;font-weight:700">${client.name} 어르신</span>
+          <button onclick="journalDownloadClient('${client.name}', this)" data-text="${encodeURIComponent(raw)}"
+            style="font-size:12px;padding:4px 11px;border:1px solid #2D6A4F;border-radius:5px;background:#E8F4EE;color:#1B4332;cursor:pointer;font-weight:600">↓ 전체 다운로드</button>
         </div>
-        <div style="padding:14px;font-size:13px;line-height:2;color:#1C1B18;white-space:pre-wrap;word-break:keep-all;max-height:400px;overflow-y:auto;background:#fff">${raw}</div>`;
-      resultBody.appendChild(card);
+        <div style="padding:12px 14px">
+          ${journalRenderParts(client.name, parts)}
+        </div>`;
+      resultBody.appendChild(wrap);
     } catch(e) {
       const errCard = document.createElement('div');
       errCard.style.cssText = 'border:1px solid #F5C6C2;border-radius:8px;margin-bottom:12px;padding:12px;background:#FCF0EF;font-size:12px;color:#C0392B';
@@ -12045,6 +12129,14 @@ ${client.notes}
 }
 
 function journalCopyClient(btn) {
+  const text = decodeURIComponent(btn.dataset.text);
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ 복사됨';
+    setTimeout(() => { btn.textContent = '⎘ 복사'; }, 1500);
+  });
+}
+
+function journalCopyText(btn) {
   const text = decodeURIComponent(btn.dataset.text);
   navigator.clipboard.writeText(text).then(() => {
     btn.textContent = '✓ 복사됨';
@@ -12091,7 +12183,7 @@ async function callClaude(system, userPrompt, maxTokens) {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.17.96
+  Day:음 · v2026.06.17.97.y
 </div>
 </body>
 </html>
