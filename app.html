@@ -12093,7 +12093,7 @@ ${client.notes}
 위 모든 날짜에 대해 [신체] [인지] [기능] [건강] 4개 섹션으로 작성해주세요.`;
 
     try {
-      const raw = await callClaude(system, userPrompt, 2000);
+      const raw = await callClaude(system, userPrompt, '요양일지', 2000);
       const parts = journalSplitParts(raw);
       allResults.push({ name: client.name, raw, parts });
 
@@ -12164,26 +12164,10 @@ function journalDownloadAll() {
   a.click();
 }
 
-// callClaude 래퍼 (app.html 기존 함수 재사용, 없으면 직접 호출)
-async function callClaude(system, userPrompt, maxTokens) {
-  maxTokens = maxTokens || 1000;
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: maxTokens,
-      system: system,
-      messages: [{ role: 'user', content: userPrompt }]
-    })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.content?.[0]?.text || '';
-}
+// callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.17.97.y
+  Day:음 · v2026.06.18.98
 </div>
 </body>
 </html>
