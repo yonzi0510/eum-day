@@ -560,9 +560,10 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <button class="tab-btn active" onclick="switchTab('tab-docs',this)">📄 문서 만들기</button>
   <button class="tab-btn" onclick="switchTab('tab-results',this)">📋 문서 결과 보기</button>
   <button class="tab-btn" onclick="switchTab('tab-overview',this)">👤 어르신 현황</button>
-  <button class="tab-btn" onclick="switchTab('tab-eval',this)">📋 평가준비</button>
+  <button class="tab-btn" onclick="switchTab('tab-verify',this)">🔍 문서검증</button>
+  <button class="tab-btn" onclick="switchTab('tab-qa',this)">🤖 AI질의</button>
   <button class="tab-btn" onclick="switchTab('tab-pricing',this)">💳 요금제</button>
-  <button class="tab-btn" onclick="switchTab('tab-feedback',this)">💬 피드백</button>
+  <button class="tab-btn" onclick="switchTab('tab-contact',this)">💬 문의</button>
   <button class="tab-btn" onclick="switchTab('tab-admin',this)" id="admin-tab-btn" style="display:none">🔐 관리자</button>
 </div>
 
@@ -2172,25 +2173,24 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 <!-- ══════════════════════════════════════
      탭4: 모의평가
 ══════════════════════════════════════ -->
-<div class="tab-content" id="tab-eval">
+<!-- 문서검증 탭 -->
+<div class="tab-content" id="tab-verify">
 <div class="main">
 
-  <!-- 평가준비 서브탭 네비 -->
-  <div class="sub-tabs">
-    <button class="sub-tab active" onclick="switchSub('eval-sub-verify',this)">🔍 문서검증</button>
-    <button class="sub-tab" onclick="switchSub('eval-sub-qa',this)">🤖 AI질의</button>
-  </div>
-
-  <!-- ── 서브탭1: 문서검증 ── -->
-  <div class="sub-content active" id="eval-sub-verify">
+  <!-- 문서검증 내용 -->
+  <div id="eval-sub-verify">
 
   <div id="eval-input">
 
     <div class="card">
       <div class="card-title"><div class="num">1</div> 문서 업로드</div>
-      <div class="upload-zone" id="ev-upload" onclick="document.getElementById('ev-file').click()">
+      <div class="upload-zone" id="ev-upload"
+           onclick="document.getElementById('ev-file').click()"
+           ondragover="event.preventDefault();this.style.borderColor='#5C3489';this.style.background='#F5F0FF'"
+           ondragleave="this.style.borderColor='';this.style.background=''"
+           ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';handleEvFile({files:event.dataTransfer.files})">
         <div style="font-size:28px;margin-bottom:6px">📂</div>
-        <div style="font-size:13px;color:#555;margin-bottom:3px">평가받고 싶은 문서를 업로드해주세요</div>
+        <div style="font-size:13px;color:#555;margin-bottom:3px">문서를 여기에 드래그하거나 클릭해서 업로드</div>
         <div style="font-size:11px;color:#999;line-height:1.8">
           PDF 선호 · 이미지(JPG·PNG) 가능<br>
           운영규정 · 사업계획서 · 상담일지 · 회의록 · 계획서 등
@@ -2215,12 +2215,17 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
   <div class="prog-wrap" id="eval-prog">
     <div class="card">
       <div class="card-title"><div class="num" style="background:#5C3489">⚡</div> AI 분석 중...</div>
+      <!-- 진행률 바 -->
+      <div style="background:#F0EDF8;border-radius:8px;height:8px;margin-bottom:14px;overflow:hidden">
+        <div id="eval-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#5C3489,#9B59B6);border-radius:8px;transition:width 0.6s ease"></div>
+      </div>
+      <div id="eval-progress-pct" style="text-align:center;font-size:12px;color:#5C3489;font-weight:600;margin-bottom:10px">0%</div>
       <div class="prog-steps">
-        <div class="prog-step" id="ep1"><div class="picon">📄</div>문서 전체 읽는 중...</div>
-        <div class="prog-step" id="ep2"><div class="picon">📋</div>관련 평가지표 파악 중...</div>
-        <div class="prog-step" id="ep3"><div class="picon">🔍</div>지표별 충족 여부 판정 중...</div>
-        <div class="prog-step" id="ep4"><div class="picon">💡</div>미충족 항목 개선방안 도출 중...</div>
-        <div class="prog-step" id="ep5"><div class="picon">✅</div>점검 결과 리포트 생성 중...</div>
+        <div class="prog-step" id="ep1"><div class="picon">📄</div>문서 전체 읽는 중... (20%)</div>
+        <div class="prog-step" id="ep2"><div class="picon">📋</div>관련 평가지표 파악 중... (40%)</div>
+        <div class="prog-step" id="ep3"><div class="picon">🔍</div>지표별 충족 여부 판정 중... (60%)</div>
+        <div class="prog-step" id="ep4"><div class="picon">💡</div>개선방안 및 수정 문서 작성 중... (80%)</div>
+        <div class="prog-step" id="ep5"><div class="picon">✅</div>점검 결과 리포트 생성 중... (100%)</div>
       </div>
     </div>
   </div>
@@ -2274,15 +2279,21 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
     </div>
 
     <div class="dl-row">
-      <button class="dl-btn primary" style="background:#5C3489;border-color:#5C3489" onclick="downloadEvalReport()">📄 리포트 다운로드</button>
+      <button class="dl-btn primary" style="background:#5C3489;border-color:#5C3489" onclick="downloadEvalReport()">📄 점검 리포트 다운로드</button>
+      <button class="dl-btn primary" style="background:#1D9E75;border-color:#1D9E75" id="ev-revised-dl-btn" onclick="downloadEvalRevised()" style="display:none">📝 수정 문서 다운로드</button>
       <button class="dl-btn" style="color:#5C3489;border-color:#5C3489" onclick="resetEval()">↩ 다시 점검하기</button>
     </div>
   </div>
 
   </div><!-- /eval-sub-verify -->
 
-  <!-- ── 서브탭2: AI질의 ── -->
-  <div class="sub-content" id="eval-sub-qa">
+</div>
+</div>
+
+<!-- AI질의 탭 -->
+<div class="tab-content" id="tab-qa">
+<div class="main">
+  <div id="eval-sub-qa">
   <div class="qa-wrap" style="margin-top:0">
     <div class="qa-head">
       <span class="qa-head-icon">🤖</span>
@@ -3951,11 +3962,29 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 </div>
 </div>
 
-<!-- ══════════ 탭: 사용평 ══════════ -->
-<div class="tab-content" id="tab-feedback">
+<!-- ══════════ 탭: 문의 ══════════ -->
+<div class="tab-content" id="tab-contact">
 <div class="main">
 
-  <!-- 후기 작성 카드 -->
+  <div class="card" style="text-align:center;padding:36px 24px">
+    <div style="font-size:40px;margin-bottom:12px">💬</div>
+    <div style="font-size:18px;font-weight:700;color:#1F3864;margin-bottom:8px">카카오톡 오픈채팅 문의</div>
+    <div style="font-size:13px;color:#666;line-height:1.8;margin-bottom:24px">
+      사용 중 궁금한 점, 오류 신고, 개선 요청 등<br>
+      편하게 카카오톡으로 문의해 주세요 😊<br>
+      <span style="font-size:12px;color:#999">평일 오전 9시 ~ 오후 6시 운영</span>
+    </div>
+    <a href="https://open.kakao.com/o/sUOZVNzi" target="_blank"
+       style="display:inline-flex;align-items:center;gap:10px;background:#FEE500;color:#3A1D1D;font-size:15px;font-weight:700;padding:14px 32px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.12)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="11" rx="10" ry="8.5" fill="#3A1D1D"/><path d="M7 11c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm6 0c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z" fill="#FEE500"/><path d="M8.5 15.5c.5 1 1.8 1.5 3.5 1.5s3-.5 3.5-1.5" stroke="#FEE500" stroke-width="1.2" stroke-linecap="round"/></svg>
+      카카오톡 오픈채팅 바로가기
+    </a>
+    <div style="margin-top:20px;font-size:11px;color:#aaa">
+      채팅방 링크: open.kakao.com/o/sUOZVNzi
+    </div>
+  </div>
+
+  <!-- 기존 후기/피드백 카드 아래 배치 -->
   <div class="review-form-card">
     <div class="review-form-title">⭐ 도입 기관 후기 남기기</div>
 
@@ -6454,7 +6483,7 @@ function switchTab(id, btn) {
     if (f && centerCode) f.value = centerCode;
     loadResultsDocs();
   }
-  if(id==='tab-feedback') {
+  if(id==='tab-contact') {
     initFeedbackTab();
     // 관리자 카드 항상 표시 (코드 입력은 카드 내부에서)
     const usageCard = document.getElementById('usage-card');
@@ -9438,7 +9467,7 @@ async function sendQa() {
       ? `${QA_SYSTEM}\n\n[이전 대화 기록]\n${historyContext}`
       : QA_SYSTEM;
 
-    const answer = await callClaude(systemWithHistory, q);
+    const answer = await callClaude(systemWithHistory, q, 'AI질의');
 
     qaRemoveTyping();
     qaHistory.push({ role: 'assistant', content: answer });
@@ -9578,12 +9607,6 @@ async function startEvalCheck() {
   document.getElementById('eval-prog').classList.add('show');
 
   const steps = ['ep1','ep2','ep3','ep4','ep5'];
-  steps.forEach((id,i) => {
-    setTimeout(()=>{
-      if(i>0){ const p=document.getElementById(steps[i-1]); p.classList.remove('running'); p.classList.add('complete'); p.querySelector('.picon').textContent='✓'; }
-      document.getElementById(id).classList.add('running');
-    }, i*900);
-  });
 
   const opinion = document.getElementById('ev-opinion').value.trim();
   const fileInput = document.getElementById('ev-file');
@@ -9642,6 +9665,24 @@ async function startEvalCheck() {
       return;
     }
 
+    // 진행% 업데이트 함수
+    function setEvalProgress(pct) {
+      const bar = document.getElementById('eval-progress-bar');
+      const txt = document.getElementById('eval-progress-pct');
+      if(bar) bar.style.width = pct + '%';
+      if(txt) txt.textContent = pct + '%';
+    }
+
+    // 단계별 진행 애니메이션 + % 동시 진행
+    const pcts = [20, 40, 60, 80, 100];
+    steps.forEach((id,i) => {
+      setTimeout(()=>{
+        if(i>0){ const p=document.getElementById(steps[i-1]); p.classList.remove('running'); p.classList.add('complete'); p.querySelector('.picon').textContent='✓'; }
+        document.getElementById(id).classList.add('running');
+        setEvalProgress(pcts[i]);
+      }, i*900);
+    });
+
     const result = await callClaude(
       `당신은 2026년 주야간보호 장기요양기관 평가 전문가입니다.
 업로드된 문서를 읽고, 이 문서와 관련된 평가지표를 스스로 파악한 뒤 점검 결과를 작성해주세요.
@@ -9650,10 +9691,13 @@ async function startEvalCheck() {
 각 지표마다 아래 HTML 구조로 출력:
 <div style="padding:12px 0;border-bottom:0.5px solid #F0F0F0">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-    [충족 뱃지] <strong style="font-size:13px">지표번호 — 지표명 (배점)</strong>
+    [충족 뱃지] <strong style="font-size:13px">지표번호 — 지표명 — 한줄설명 (배점)</strong>
   </div>
-  <div style="font-size:12px;color:#444;line-height:1.8">판정 근거</div>
-  미충족/부분충족 시: <div style="background:#FFF8E1;border-left:3px solid #FFB300;padding:6px 10px;border-radius:0 6px 6px 0;font-size:12px;color:#5D4037;margin-top:4px">💡 개선방안: 구체적 조치</div>
+  <div style="font-size:12px;color:#444;line-height:1.8">판정 근거 (문서의 어느 부분을 근거로 판단했는지 명시)</div>
+  미충족/부분충족 시:
+  <div style="background:#FFF8E1;border-left:3px solid #FFB300;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#5D4037;margin-top:6px;line-height:1.8">
+    💡 개선방안: 구체적으로 어떻게 수정해야 하는지 단계별로 안내
+  </div>
 </div>
 
 충족 뱃지:
@@ -9661,9 +9705,38 @@ async function startEvalCheck() {
 - 미충족: <span style="background:#FCEBEB;color:#791F1F;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px">⚠ 미충족</span>
 - 부분충족: <span style="background:#FFF3E0;color:#854F0B;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px">△ 부분충족</span>
 
+지표번호 표기 예시: "지표 9-1 — 급여제공계획서 작성 — 수급자 개별 계획 수립 여부 (3점)"
+이처럼 지표번호 + 지표명 + 한줄설명을 함께 표기할 것.
+
 마지막에 총평 한 문단 추가. 문체: 실용적이고 친근하게.`,
-      userContent
+      userContent,
+      '문서검증'
     );
+
+    // 미충족 항목이 있으면 수정 문서도 생성
+    const failCount = (result.match(/⚠ 미충족/g)||[]).length + (result.match(/△ 부분충족/g)||[]).length;
+    let revisedContent = '';
+    if (failCount > 0) {
+      setEvalProgress(90);
+      revisedContent = await callClaude(
+        `당신은 2026년 주야간보호 장기요양기관 평가 전문가입니다.
+아래 점검 결과를 바탕으로, 미충족·부분충족 항목이 모두 충족될 수 있도록 문서 내용을 수정·보완하여 완성된 문서를 작성해주세요.
+
+규칙:
+- 충족 항목은 원문 그대로 유지
+- 미충족/부분충족 항목만 구체적으로 수정·보완
+- 실제 제출 가능한 완성된 문서 형태로 출력
+- HTML 형식으로 출력 (인쇄 가능한 문서 스타일)`,
+        `[점검 결과]
+${result}
+
+위 결과를 바탕으로 수정된 완성 문서를 작성해주세요.`,
+        '문서검증_수정본'
+      );
+      window._evalRevisedContent = revisedContent;
+      document.getElementById('ev-revised-dl-btn').style.display = 'inline-flex';
+    }
+    setEvalProgress(100);
 
     setTimeout(()=>{
       const last = document.getElementById('ep5');
@@ -9679,13 +9752,28 @@ async function startEvalCheck() {
         document.getElementById('er-fail').textContent = fail + part;
         document.getElementById('er-total').textContent = (ok+fail+part)+'개';
       }, 400);
-    }, steps.length*900);
+    }, 600);
 
   } catch(err) {
     document.getElementById('eval-prog').classList.remove('show');
     document.getElementById('eval-input').style.display = 'block';
     alert('점검 중 오류가 발생했습니다.\n'+err.message);
   }
+}
+
+function downloadEvalRevised() {
+  const html = window._evalRevisedContent || '';
+  if (!html) { alert('수정 문서가 없습니다.'); return; }
+  const now = new Date();
+  const dateStr = now.getFullYear()+''+String(now.getMonth()+1).padStart(2,'0')+''+String(now.getDate()).padStart(2,'0');
+  const full = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>수정 문서</title>
+<style>body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;max-width:900px;margin:0 auto;padding:28px;line-height:1.8;font-size:13px}@media print{button{display:none}}</style>
+</head><body>${html}</body></html>`;
+  const blob = new Blob([full], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = dateStr + '_수정문서.html';
+  a.click();
 }
 
 function resetEval() {
@@ -12167,7 +12255,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.18.98
+  Day:음 · v2026.06.18.100
 </div>
 </body>
 </html>
