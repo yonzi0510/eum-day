@@ -2032,9 +2032,18 @@ if (typeof CENTERS === 'undefined') {
     <div class="card">
       <div class="card-title"><div class="num">2</div> 검증 기준 지표 선택 <span style="font-size:11px;font-weight:400;color:#888;margin-left:4px">(2026년 주야간보호 평가지표 기준)</span></div>
       <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <span id="ev-selected-count" style="font-size:11px;color:#5C3489;font-weight:600"></span>
+        <div style="position:relative;flex:1;min-width:180px">
+          <input id="ev-indicator-search" type="text" placeholder="🔍 지표 검색 (예: 프로그램, 상담, 욕구사정...)"
+            oninput="filterIndicators(this.value)"
+            style="width:100%;padding:7px 32px 7px 10px;border:1.5px solid #C5B8E8;border-radius:8px;font-size:12px;font-family:inherit;outline:none;color:#333"
+            onfocus="this.style.borderColor='#5C3489'" onblur="this.style.borderColor='#C5B8E8'">
+          <button onclick="document.getElementById('ev-indicator-search').value='';filterIndicators('')"
+            style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#aaa;font-size:14px;padding:0">✕</button>
+        </div>
+        <span id="ev-selected-count" style="font-size:11px;color:#5C3489;font-weight:600;white-space:nowrap"></span>
       </div>
-      <div id="ev-indicator-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px;max-height:320px;overflow-y:auto;padding:2px"></div>
+      <div id="ev-indicator-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px;max-height:300px;overflow-y:auto;padding:2px"></div>
+      <div id="ev-indicator-empty" style="display:none;text-align:center;padding:20px;color:#aaa;font-size:12px">검색 결과가 없어요</div>
       <!-- 선택된 지표 상세 내용 -->
       <div id="ev-indicator-detail" style="display:none;margin-top:12px;border-top:1px solid #E8EAF0;padding-top:12px"></div>
     </div>
@@ -9406,7 +9415,21 @@ function initIndicatorList() {
 function updateIndicatorCount() {
   const checked = document.querySelectorAll('#ev-indicator-list input[type=checkbox]:checked').length;
   const el = document.getElementById('ev-selected-count');
-  if (el) el.textContent = checked > 0 ? `${checked}개 선택됨` : '선택 없음 — 지표를 선택하면 상세 기준이 표시됩니다';
+  if (el) el.textContent = checked > 0 ? `${checked}개 선택됨` : '';
+}
+
+function filterIndicators(keyword) {
+  const kw = keyword.trim().toLowerCase();
+  const items = document.querySelectorAll('#ev-indicator-list label');
+  const empty = document.getElementById('ev-indicator-empty');
+  let visible = 0;
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    const match = !kw || text.includes(kw);
+    item.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
 }
 
 function renderIndicatorDetail() {
@@ -9432,17 +9455,37 @@ function renderIndicatorDetail() {
       if (nextIdx > idx) { end = nextIdx; break; }
     }
     const raw = MANUAL_2026.slice(idx, Math.min(end, idx + 3000));
-    const html = raw
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/▣ (평가방향|평가기준|확인방법|관련근거|지표적용기간)/g,
-        '<strong style="color:#5C3489">▣ $1</strong>')
-      .replace(/★/g,'<span style="color:#E24B4A">★</span>')
-      .replace(/\n/g,'<br>');
-    return `<div style="margin-bottom:16px;padding:12px;background:#FAFAFA;border:1px solid #E8EAF0;border-radius:8px;border-left:3px solid #5C3489">
-      <div style="font-size:13px;font-weight:700;color:#5C3489;margin-bottom:8px">
+    // 매뉴얼 텍스트 → HTML 포맷 변환
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    let htmlLines = [];
+    for (const line of lines) {
+      if (/^▣ (평가방향|평가기준|확인방법|관련근거|지표적용기간)/.test(line)) {
+        // 섹션 헤더
+        htmlLines.push(`<div style="margin-top:12px;margin-bottom:4px;font-weight:700;color:#5C3489;font-size:12px;border-bottom:1px solid #E8EAF0;padding-bottom:3px">${line.replace(/★/g,'<span style="color:#E24B4A">★</span>').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/▣/g,'▣')}</div>`);
+      } else if (/^[①②③④⑤⑥⑦⑧⑨]|^기 관|^직 원|^수급자/.test(line)) {
+        // 평가기준 항목
+        htmlLines.push(`<div style="padding:3px 0 3px 10px;border-left:2px solid #C5B8E8;margin:3px 0;font-size:11.5px;line-height:1.7;color:#444">${line.replace(/&/g,'&amp;')}</div>`);
+      } else if (/^[•·￭\-]\s/.test(line) || /^￭/.test(line)) {
+        // 불릿 항목
+        htmlLines.push(`<div style="padding:2px 0 2px 14px;font-size:11.5px;line-height:1.7;color:#555;position:relative"><span style="position:absolute;left:4px;color:#5C3489">•</span>${line.replace(/^[•·￭\-]\s*/,'').replace(/&/g,'&amp;')}</div>`);
+      } else if (/^[우수|양호|보통|미흡]/.test(line) || /^\d+(\.\d+)?\s+평가기준/.test(line)) {
+        // 척도/배점
+        htmlLines.push(`<div style="padding:2px 0;font-size:11px;color:#777;font-style:italic">${line.replace(/&/g,'&amp;')}</div>`);
+      } else if (/^- \d{2,4}/.test(line) || /^주야간보호\d+/.test(line)) {
+        // 지표 코드나 날짜 참조 — 작게 표시
+        htmlLines.push(`<div style="font-size:10px;color:#aaa;padding:1px 0">${line.replace(/&/g,'&amp;')}</div>`);
+      } else if (/^\d+\s*[-–]\s*\d+\s*-$/.test(line)) {
+        // 페이지 번호 — 숨김
+      } else {
+        htmlLines.push(`<div style="font-size:12px;line-height:1.75;color:#333;padding:1px 0">${line.replace(/★/g,'<span style="color:#E24B4A">★</span>').replace(/&/g,'&amp;')}</div>`);
+      }
+    }
+    const html = htmlLines.join('');
+    return `<div style="margin-bottom:16px;padding:14px;background:#FAFAFA;border:1px solid #E8EAF0;border-radius:8px;border-left:3px solid #5C3489">
+      <div style="font-size:13px;font-weight:700;color:#5C3489;margin-bottom:10px">
         지표 ${num} — ${ind.name}
       </div>
-      <div style="font-size:12px;line-height:1.9;color:#333">${html}</div>
+      <div>${html}</div>
     </div>`;
   }).join('');
 
@@ -9467,55 +9510,44 @@ function handleEvFile(input) {
 }
 // ────── 2026년 주야간보호 평가지표 (매뉴얼 원문 기준) ──────
 const INDICATORS_2026 = [
-  { num: 1,  name: "운영규정",                desc: "기관운영에 필요한 운영규정을 갖추고, 그에 따라 기관을 운영합니다." },
-  { num: 2,  name: "운영계획 및 평가",         desc: "연도별 사업계획에 따라 기관을 운영하고 평가 후 차기연도 계획에 반영합니다." },
-  { num: 3,  name: "지역사회자원활용",          desc: "지역사회자원 활용을 통해 수급자에게 다양한 서비스가 이루어지도록 노력합니다." },
-  { num: 4,  name: "인력기준",                desc: "인력기준을 준수합니다." },
-  { num: 5,  name: "인력추가배치",             desc: "인력을 법적기준보다 추가 배치하여 운영합니다." },
-  { num: 6,  name: "경력직",                  desc: "기관에 2년 이상 근무한 직원의 비율이 높습니다." },
-  { num: 7,  name: "건강검진",                desc: "직원은 정기적으로 건강검진을 실시합니다." },
-  { num: 8,  name: "보수",                    desc: "직원은 기관과 근로계약을 체결하고 이에 따른 보수(임금)를 지급 받습니다." },
-  { num: 9,  name: "★5대 보험 및 퇴직금",      desc: "5대 보험에 가입하고 퇴직금을 지급합니다." },
-  { num: 10, name: "직원복지향상",             desc: "직원의 복지향상을 위해 노력합니다." },
-  { num: 11, name: "★직원권익보호",            desc: "직원의 권익을 보호하기 위해 노력합니다." },
-  { num: 12, name: "개인정보보호",             desc: "개인정보를 보호하기 위해 노력합니다." },
-  { num: 13, name: "위생적 급여제공",           desc: "위생적으로 급여를 제공합니다." },
-  { num: 14, name: "식품위생관리",             desc: "식품, 식당, 조리실 등을 위생적으로 관리합니다." },
-  { num: 15, name: "감염관리활동",             desc: "수급자와 직원의 안전을 위해 감염관리 활동을 실시합니다." },
-  { num: 16, name: "★감염병관리",             desc: "감염병 유행 및 발생 시 적절한 조치를 합니다." },
-  { num: 17, name: "시설기준",                desc: "시설기준을 준수합니다." },
-  { num: 18, name: "안전하고 쾌적한 환경조성",   desc: "수급자가 안전하고 쾌적한 생활을 할 수 있도록 실내환경을 조성합니다." },
-  { num: 19, name: "낙상예방 환경조성",         desc: "수급자의 낙상을 방지하기 위하여 실내환경을 조성합니다." },
-  { num: 20, name: "위험도평가",               desc: "수급자의 낙상 및 욕창 위험도, 인지기능 상태를 정기적으로 평가합니다." },
-  { num: 21, name: "응급체계",                desc: "응급상황에 대처할 수 있는 체계를 갖추고 있습니다." },
-  { num: 22, name: "소방시설",                desc: "소방시설을 갖추고 정기적으로 점검하고 있습니다." },
-  { num: 23, name: "재난상황 대응훈련",         desc: "재난상황 대응훈련을 정기적으로 실시합니다." },
-  { num: 24, name: "수급자 존중서비스",         desc: "수급자를 존중하여 급여를 제공합니다." },
-  { num: 25, name: "수급자상담관리",            desc: "정기적으로 상담을 실시하고 수급자 상태를 관리합니다." },
-  { num: 26, name: "급여제공 역량관리",         desc: "수급자에게 보다 나은 서비스를 제공하도록 직원의 역량관리를 위해 노력합니다." },
-  { num: 27, name: "가족과의 소통",            desc: "수급자 가족과 소통하기 위해 노력합니다." },
-  { num: 28, name: "수급자 알권리 보장",        desc: "수급자에게 급여이용에 대한 정보를 제공하여 급여선택권 보장을 위해 노력합니다." },
-  { num: 29, name: "계약체결 및 통보",          desc: "개인별장기요양이용계획서를 반영하여 급여계약을 체결하고 급여계약통보서를 적기 통보합니다." },
-  { num: 30, name: "욕구사정",                desc: "수급자의 욕구사정을 정기적으로 실시합니다." },
-  { num: 31, name: "급여제공계획",             desc: "수급자별 급여제공계획을 세우고 수급자(보호자)에게 동의를 받습니다." },
-  { num: 32, name: "급여제공적절성",            desc: "수급자별 급여제공계획에 따라 급여를 제공하고 변경된 경우 그 사유를 기록합니다." },
-  { num: 33, name: "욕구반영",                desc: "수급자의 개별적인 욕구를 반영하여 급여를 제공합니다." },
-  { num: 34, name: "급식영양관리",             desc: "균형 있는 식단을 작성하여 적정한 상태로 제공합니다." },
-  { num: 35, name: "투약 및 약품관리",          desc: "의약품을 안전하게 관리하고 정확하게 투약합니다." },
-  { num: 36, name: "구강관리도움",             desc: "수급자는 식사 후 구강관리의 도움을 받습니다." },
-  { num: 37, name: "수급자안전관리",            desc: "수급자의 안전을 위해 노력합니다." },
-  { num: 38, name: "프로그램",                desc: "정기적으로 프로그램을 제공합니다." },
-  { num: 39, name: "의료기관연계",             desc: "응급 및 의료적인 조치가 필요한 경우 의료기관에 연계합니다." },
-  { num: 40, name: "연계기록지제공",            desc: "수급자의 전원·퇴소 시 연계기록지를 제공합니다." },
-  { num: 41, name: "이동서비스수칙",            desc: "이동서비스 수칙을 마련하여 수급자(보호자)에게 알립니다." },
-  { num: 42, name: "이동서비스",               desc: "편리하고 안전한 이동서비스를 제공합니다." },
-  { num: 43, name: "사례관리",                desc: "사례관리 회의를 정기적으로 실시합니다." },
-  { num: 44, name: "★급여제공 결과평가",        desc: "수급자별 급여제공계획에 따른 급여제공 결과를 정기적으로 평가하여 기록합니다." },
-  { num: 45, name: "노인인권보호",             desc: "노인인권보호를 위해 노력합니다." },
-  { num: 46, name: "등급현황",                desc: "기관의 급여를 제공받은 수급자의 등급이 유지·호전 되었습니다." },
-  { num: 47, name: "서비스 만족도 조사(유선)",   desc: "수급자는 기관의 급여에 대해 만족합니다." },
-  { num: 48, name: "질향상 노력",              desc: "수급자에게 최상의 서비스 제공을 위해 노력합니다." },
+  { num: 1,  name: "운영규정",              desc: "운영규정을 직원이 열람 가능한 장소에 비치하고 내용이 충실합니다." },
+  { num: 2,  name: "사업계획",              desc: "연도별 사업계획이 수립되어 있습니다." },
+  { num: 3,  name: "인력기준",              desc: "인력기준을 준수하고, 인력을 법적기준보다 추가 배치합니다." },
+  { num: 4,  name: "경력직",               desc: "2년 이상/미만 운영기관에 따른 직원비율 기준을 충족합니다." },
+  { num: 5,  name: "★보수교육",            desc: "요양보호사 보수교육 대상자가 보수교육에 참여합니다." },
+  { num: 6,  name: "직원교육",             desc: "급여제공지침 등 12개 항목을 마련하고 직원 교육을 실시합니다." },
+  { num: 7,  name: "직원인권보호",           desc: "직원의 인권보호를 위해 노력하고 폭언·폭행 예방 내용을 안내합니다." },
+  { num: 8,  name: "직원권익향상",           desc: "5대 보험 가입, 복지 제공, 고충처리, 퇴직금 제도를 운영합니다." },
+  { num: 9,  name: "안전하고 쾌적한 환경조성", desc: "안전한 실내 환경을 조성하고 개인정보 자료 보관함에 잠금장치를 갖춥니다." },
+  { num: 10, name: "낙상예방 환경조성",       desc: "안전손잡이 설치, 미끄럼방지, 낙상주의 안내표지를 갖춥니다." },
+  { num: 11, name: "재난상황 대응훈련",       desc: "재난상황 대응방법 매뉴얼을 갖추고 반기별 1회 이상 훈련을 실시합니다." },
+  { num: 12, name: "응급상황대응",           desc: "응급상황 매뉴얼·비상연락체계·응급 알림장치를 갖추고 있습니다." },
+  { num: 13, name: "시설안전",              desc: "소화설비·경보설비를 갖추고 매월 점검하며 화재위험 요인을 제거합니다." },
+  { num: 14, name: "질향상 노력",           desc: "연간 인건비 지출비율을 준수하고 제도발전 사업에 참여합니다." },
+  { num: 15, name: "건강검진",              desc: "모든 직원은 결핵검진을 포함한 건강검진을 매년 실시합니다." },
+  { num: 16, name: "감염관리",              desc: "비품 소독, 분기별 전문소독, 감염병 대응체계를 갖춥니다." },
+  { num: 17, name: "소통노력",              desc: "수급자(보호자)와 분기별 1회 이상 상담하고 월 1회 이상 정보를 제공합니다." },
+  { num: 18, name: "정보제공",              desc: "노인장기요양보험 홈페이지에 기관 정보를 게시하고 변경 시 수정합니다." },
+  { num: 19, name: "노인인권보호",           desc: "모든 직원에게 노인인권교육을 반기별 1회 이상 실시하고 학대예방 활동을 합니다." },
+  { num: 20, name: "욕구사정",              desc: "모든 수급자의 종합적인 욕구사정을 연 1회 이상 정기적으로 실시합니다." },
+  { num: 21, name: "위험도평가",            desc: "낙상·욕창 위험도, 인지기능 평가를 반기별 1회 이상 실시합니다." },
+  { num: 22, name: "급여제공계획 수립 및 제공", desc: "욕구사정 결과를 반영한 수급자별 급여제공계획을 연 1회 이상 수립하고 공단에 통보합니다." },
+  { num: 23, name: "투약 및 약품관리",       desc: "약품보관함 잠금장치, 분기별 점검, 적정 투약을 실시합니다." },
+  { num: 24, name: "신체기능 프로그램",       desc: "신체기능 프로그램 연간계획 수립, 주 3회 이상 실시, 수급자 의견 반기별 수렴 및 연 1회 반영." },
+  { num: 25, name: "인지기능 프로그램",       desc: "인지기능 프로그램 연간계획 수립, 주 3회 이상 실시, 수급자 의견 반기별 수렴 및 연 1회 반영." },
+  { num: 26, name: "사회적응 프로그램",       desc: "사회적응 프로그램 연간계획 수립, 월 1회 이상 실시, 수급자 의견 반기별 수렴 및 연 1회 반영." },
+  { num: 27, name: "★기능회복훈련",         desc: "수급자별 맞춤형 기능회복훈련 계획을 연 1회 이상 수립하고 실시합니다." },
+  { num: 28, name: "이동서비스수칙",         desc: "이동서비스 수칙, 차량운행표 제공, 자동차종합보험 가입을 갖춥니다." },
+  { num: 29, name: "사례관리",              desc: "사례관리 회의를 반기별 1회 이상 실시하고 30일 이내 급여에 반영합니다." },
+  { num: 30, name: "외부기관연계",           desc: "의료기관 진료 내용을 기록하고 퇴소 시 연계기록지를 제공합니다." },
+  { num: 31, name: "등급현황",              desc: "기관에서 급여제공 후 수급자 등급이 유지·호전되었습니다." },
+  { num: 32, name: "★백신접종률",           desc: "환절기 건강관리를 위한 인플루엔자(독감) 예방접종을 매년 실시합니다." },
+  { num: 33, name: "식사(간식) 제공결과",    desc: "기피식품 파악·대체 식품 제공, 식사 만족도 조사, 식단표 게시를 합니다." },
+  { num: 34, name: "급여제공 결과평가",      desc: "급여제공결과를 반기별 1회 이상 평가하고 30일 이내 급여제공계획을 재작성합니다." },
+  { num: 35, name: "★제도안내",            desc: "보호자(수급자)를 대상으로 연명의료결정 제도에 대해 안내합니다." },
+  { num: 36, name: "★급여만족도",          desc: "수급자는 식사, 프로그램, 이동서비스에 대해 만족합니다." },
 ];
+
 
 const MANUAL_2026 = ` 2026년 장기요양기관 
 재가급여(주야간보호) 평가 매뉴얼
@@ -17925,7 +17957,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.18.105
+  Day:음 · v2026.06.18.107
 </div>
 </body>
 </html>
