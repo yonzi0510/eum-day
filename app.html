@@ -9440,52 +9440,36 @@ function renderIndicatorDetail() {
 
   const nums = checked.map(cb => parseInt(cb.dataset.num));
 
-  // 매뉴얼에서 해당 지표 내용 추출
   const sections = nums.map(num => {
     const ind = INDICATORS_2026.find(i => i.num === num);
+    const summ = INDICATOR_SUMMARY[num];
     if (!ind) return '';
-    // 매뉴얼 텍스트에서 해당 지표 섹션 찾기
-    const marker = `주야간보호${num}\n`;
-    const idx = MANUAL_2026.indexOf(marker);
-    if (idx === -1) return `<div style="padding:10px;color:#888;font-size:12px">지표 ${num} — ${ind.name}: 매뉴얼 상세 내용을 찾을 수 없습니다.</div>`;
-    // 다음 지표 시작 전까지 추출 (최대 3000자)
-    let end = MANUAL_2026.length;
-    for (let n = num + 1; n <= num + 3; n++) {
-      const nextIdx = MANUAL_2026.indexOf(`주야간보호${n}\n`, idx + 1);
-      if (nextIdx > idx) { end = nextIdx; break; }
-    }
-    const raw = MANUAL_2026.slice(idx, Math.min(end, idx + 3000));
-    // 매뉴얼 텍스트 → HTML 포맷 변환
-    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    let htmlLines = [];
-    for (const line of lines) {
-      if (/^▣ (평가방향|평가기준|확인방법|관련근거|지표적용기간)/.test(line)) {
-        // 섹션 헤더
-        htmlLines.push(`<div style="margin-top:12px;margin-bottom:4px;font-weight:700;color:#5C3489;font-size:12px;border-bottom:1px solid #E8EAF0;padding-bottom:3px">${line.replace(/★/g,'<span style="color:#E24B4A">★</span>').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/▣/g,'▣')}</div>`);
-      } else if (/^[①②③④⑤⑥⑦⑧⑨]|^기 관|^직 원|^수급자/.test(line)) {
-        // 평가기준 항목
-        htmlLines.push(`<div style="padding:3px 0 3px 10px;border-left:2px solid #C5B8E8;margin:3px 0;font-size:11.5px;line-height:1.7;color:#444">${line.replace(/&/g,'&amp;')}</div>`);
-      } else if (/^[•·￭\-]\s/.test(line) || /^￭/.test(line)) {
-        // 불릿 항목
-        htmlLines.push(`<div style="padding:2px 0 2px 14px;font-size:11.5px;line-height:1.7;color:#555;position:relative"><span style="position:absolute;left:4px;color:#5C3489">•</span>${line.replace(/^[•·￭\-]\s*/,'').replace(/&/g,'&amp;')}</div>`);
-      } else if (/^[우수|양호|보통|미흡]/.test(line) || /^\d+(\.\d+)?\s+평가기준/.test(line)) {
-        // 척도/배점
-        htmlLines.push(`<div style="padding:2px 0;font-size:11px;color:#777;font-style:italic">${line.replace(/&/g,'&amp;')}</div>`);
-      } else if (/^- \d{2,4}/.test(line) || /^주야간보호\d+/.test(line)) {
-        // 지표 코드나 날짜 참조 — 작게 표시
-        htmlLines.push(`<div style="font-size:10px;color:#aaa;padding:1px 0">${line.replace(/&/g,'&amp;')}</div>`);
-      } else if (/^\d+\s*[-–]\s*\d+\s*-$/.test(line)) {
-        // 페이지 번호 — 숨김
-      } else {
-        htmlLines.push(`<div style="font-size:12px;line-height:1.75;color:#333;padding:1px 0">${line.replace(/★/g,'<span style="color:#E24B4A">★</span>').replace(/&/g,'&amp;')}</div>`);
-      }
-    }
-    const html = htmlLines.join('');
-    return `<div style="margin-bottom:16px;padding:14px;background:#FAFAFA;border:1px solid #E8EAF0;border-radius:8px;border-left:3px solid #5C3489">
-      <div style="font-size:13px;font-weight:700;color:#5C3489;margin-bottom:10px">
-        지표 ${num} — ${ind.name}
+
+    const criteriaHtml = summ
+      ? summ.criteria.map((c,i) => `<div style="display:flex;gap:6px;align-items:flex-start;padding:3px 0">
+          <span style="min-width:18px;height:18px;background:#5C3489;color:#fff;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px">${i+1}</span>
+          <span style="font-size:12px;color:#333;line-height:1.6">${c}</span>
+        </div>`).join('')
+      : `<div style="font-size:12px;color:#888">기준 정보 없음</div>`;
+
+    const scoreHtml = summ
+      ? `<span style="background:#5C3489;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px">${summ.score}점</span>`
+      : '';
+
+    const metaHtml = summ ? `
+      <div style="display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px dashed #E0D8F0;flex-wrap:wrap">
+        <div style="font-size:11px;color:#666"><span style="color:#5C3489;font-weight:600">📅 적용기간</span> ${summ.period}</div>
+        <div style="font-size:11px;color:#666"><span style="color:#5C3489;font-weight:600">🔍 확인방법</span> ${summ.check}</div>
+      </div>` : '';
+
+    return `<div style="margin-bottom:12px;padding:14px;background:#fff;border:1px solid #E0D8F0;border-radius:10px;border-left:4px solid #5C3489">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        ${scoreHtml}
+        <span style="font-size:13px;font-weight:700;color:#3A1F6E">지표 ${num} — ${ind.name.replace('★','<span style="color:#E24B4A">★</span>')}</span>
       </div>
-      <div>${html}</div>
+      <div style="font-size:11px;font-weight:600;color:#5C3489;margin-bottom:6px">📋 평가기준</div>
+      ${criteriaHtml}
+      ${metaHtml}
     </div>`;
   }).join('');
 
@@ -9547,6 +9531,45 @@ const INDICATORS_2026 = [
   { num: 35, name: "★제도안내",            desc: "보호자(수급자)를 대상으로 연명의료결정 제도에 대해 안내합니다." },
   { num: 36, name: "★급여만족도",          desc: "수급자는 식사, 프로그램, 이동서비스에 대해 만족합니다." },
 ];
+
+const INDICATOR_SUMMARY = {
+  1:  { score:1, criteria:["운영규정을 직원이 열람 가능한 장소에 비치","내용이 충실"], period:"평가일", check:"현장 확인" },
+  2:  { score:1, criteria:["연도별 사업계획이 수립되어 있음"], period:"2024.1월~평가일", check:"기록 확인" },
+  3:  { score:1, criteria:["인력기준 준수","법적기준보다 추가 배치"], period:"평가일", check:"전산 확인" },
+  4:  { score:1, criteria:["2년 이상 근무 직원비율 기준 충족"], period:"평가일", check:"전산 확인" },
+  5:  { score:1, criteria:["요양보호사 보수교육 대상자 참여"], period:"2024.1월~평가일", check:"기록 확인" },
+  6:  { score:2, criteria:["급여제공지침 10개 항목 비치","연 1회 이상 운영규정 교육","급여제공지침 교육 이수"], period:"2024.1월~평가일", check:"기록·면담" },
+  7:  { score:2, criteria:["직원 인권보호 노력 확인","폭언·폭행 예방 내용 연 1회 안내","직원 인권침해대응지침 숙지"], period:"2024.1월~평가일", check:"기록·면담" },
+  8:  { score:4, criteria:["5대 보험 가입·완납","가산금 직원 처우개선 사용","분기별 복지(포상 등) 제공","고충처리절차 운영","퇴직금 제도 운영"], period:"2021.1월~평가일", check:"기록·면담" },
+  9:  { score:2, criteria:["안전한 실내 환경 조성","환기수칙 준수·일일 점검표 비치","수급자 쾌적한 환경","개인정보 보관함 잠금장치"], period:"2024.1월~평가일", check:"현장·면담" },
+  10: { score:4, criteria:["안전손잡이 설치","미끄럼방지 처리 및 낙상주의 안내표지","턱·적재물 제거","낙상 고위험 기준 숙지","보조도구 사용방법 안내"], period:"2021.1월~평가일", check:"현장·면담" },
+  11: { score:2, criteria:["재난대응 매뉴얼 보유","반기별 1회 이상 대응훈련 실시","화재·지진 대응방법 직원 숙지"], period:"2021.1월~평가일", check:"기록·면담" },
+  12: { score:3, criteria:["응급상황 매뉴얼·비상연락체계 보유","응급 알림장치 설치·정상작동","응급상황 종류 숙지","응급 대응방법 숙지"], period:"2021.1월~평가일", check:"현장·면담" },
+  13: { score:2, criteria:["소화·경보설비 매월 점검","화재위험 요인 제거","피난안내도 부착"], period:"2021.1월~평가일", check:"현장" },
+  14: { score:1, criteria:["연간 인건비 지출비율 준수","제도발전 사업 참여","경영실태조사 참여"], period:"2024.1월~평가일", check:"기록·전산" },
+  15: { score:3, criteria:["모든 직원 결핵검진 포함 건강검진 매년 실시"], period:"2021.1월~평가일", check:"기록 확인" },
+  16: { score:4, criteria:["간호비품 소독·청결 관리","분기별 전문소독 실시","감염병 대응체계 수립 및 적절한 조치","식품·식당·조리실 위생관리"], period:"2021.1월~평가일", check:"기록·현장" },
+  17: { score:4, criteria:["수급자(보호자) 분기별 1회 이상 상담","상담결과 연 1회 이상 급여 반영","월 1회 이상 프로그램계획·식단표·소식 제공"], period:"2024.1월~평가일", check:"기록 확인" },
+  18: { score:1, criteria:["노인장기요양보험 홈페이지 기관정보 게시","변경 시 즉시 수정"], period:"평가일", check:"전산 확인" },
+  19: { score:6, criteria:["모든 직원 노인인권교육 반기별 1회 이상","직원 주요내용 숙지","학대예방 활동 실시","8가지 지침 수급자에게 연 1회 설명","수급자 모든 과정에서 존중받음"], period:"2021.1월~평가일", check:"기록·면담" },
+  20: { score:2, criteria:["모든 수급자 욕구사정 연 1회 이상 실시"], period:"2024.1월~평가일", check:"기록 확인" },
+  21: { score:6, criteria:["낙상위험도 평가 반기별 1회 이상","욕창위험도 평가 반기별 1회 이상","인지기능 평가 반기별 1회 이상"], period:"2024.1월~평가일", check:"기록 확인" },
+  22: { score:4, criteria:["욕구사정 결과 반영 급여제공계획 연 1회 이상 수립","수급자(보호자) 설명·서명 후 공단 통보","계획에 따라 급여 제공·기록","변경 시 사유 기록"], period:"2024.1월~평가일", check:"기록·전산" },
+  23: { score:2, criteria:["약품보관함 잠금장치","분기별 1회 이상 유통기한·보관 점검","수급자별 적정 투약"], period:"2021.1월~평가일", check:"현장·면담" },
+  24: { score:4, criteria:["신체기능 프로그램 연간계획 수립","주 3회 이상 실시","수급자 의견 반기별 수렴 + 연 1회 이상 프로그램 반영"], period:"2024.1월~평가일", check:"기록 확인 (변경 전·후 계획서 비교)" },
+  25: { score:4, criteria:["인지기능 프로그램 연간계획 수립","주 3회 이상 실시","수급자 의견 반기별 수렴 + 연 1회 이상 프로그램 반영"], period:"2024.1월~평가일", check:"기록 확인 (변경 전·후 계획서 비교)" },
+  26: { score:4, criteria:["사회적응 프로그램 연간계획 수립","월 1회 이상 실시","수급자 의견 반기별 수렴 + 연 1회 이상 프로그램 반영"], period:"2024.1월~평가일", check:"기록 확인 (변경 전·후 계획서 비교)" },
+  27: { score:3, criteria:["모든 수급자 개인별 맞춤형 기능회복훈련 계획 연 1회 이상 수립","직원 수급자별 기능회복훈련 내용 숙지"], period:"2026.1월~평가일", check:"기록·면담 (신설 지표)" },
+  28: { score:4, criteria:["이동서비스 수칙 보유","차량운행표 수급자(보호자)에게 제공","자동차종합보험 유효","수칙 준수 및 안전 서비스 제공"], period:"2021.1월~평가일", check:"기록·현장·면담" },
+  29: { score:4, criteria:["사례관리 회의 반기별 1회 이상","다음날부터 30일 이내 급여 반영·평가"], period:"2024.1월~평가일", check:"기록 확인" },
+  30: { score:1, criteria:["의료기관 진료내용 기록","퇴소 시 연계기록지 작성·제공"], period:"2021.1월~평가일", check:"기록 확인" },
+  31: { score:1, criteria:["급여제공 후 수급자 등급 유지·호전"], period:"2021.1월~평가일", check:"전산 확인" },
+  32: { score:1, criteria:["인플루엔자(독감) 예방접종 매년 실시"], period:"2021.1월~평가일", check:"기록 확인" },
+  33: { score:4, criteria:["신규 수급자 기피식품 파악·대체 식품 제공","식사 만족도 반기별 1회 이상 파악","욕구 반영 식사 월 1회 이상 제공","수급자 식사 만족도 향상 노력","영양사 작성 1식 4찬 이상 식단표 게시"], period:"2021.1월~평가일", check:"기록·현장·면담" },
+  34: { score:7, criteria:["급여제공결과 반기별 1회 이상 평가","결과평가 반영 급여제공계획 30일 이내 재작성","급여제공기록지 월 1회 이상 수급자(보호자)에게 제공","수급자 상태변화 주 1회 이상 충실히 기록"], period:"2024.1월~평가일", check:"기록 확인" },
+  35: { score:1, criteria:["보호자(수급자) 대상 연명의료결정 제도 안내"], period:"2026.1월~평가일", check:"기록·면담 (신설 지표)" },
+  36: { score:3, criteria:["수급자 식사 만족","수급자 프로그램 만족","수급자 이동서비스 만족"], period:"평가일", check:"면담 (유선)" },
+};
 
 
 const MANUAL_2026 = ` 2026년 장기요양기관 
@@ -15525,28 +15548,36 @@ ${targetInds}
 - 동일 문서를 반복 분석해도 동일한 결과를 내야 합니다
 - 문서에 해당 내용이 있으면 충족, 없으면 미충족으로 명확히 판정합니다
 
-[출력 규칙]
-각 지표마다 아래 HTML 구조로 출력:
-<div style="padding:12px 0;border-bottom:0.5px solid #F0F0F0">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-    [충족 뱃지] <strong style="font-size:13px">지표번호 — 지표명 — 한줄설명 (배점)</strong>
+[출력 규칙 — 반드시 아래 HTML 형식 그대로 출력, 마크다운 절대 사용 금지]
+
+각 지표마다 아래 HTML 블록으로 출력:
+<div style="padding:14px 0;border-bottom:1px solid #F0F0F0">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    [충족뱃지] <strong style="font-size:13px;color:#1a1a2e">지표 N — 지표명 (N점)</strong>
   </div>
-  <div style="font-size:12px;color:#444;line-height:1.8">판정 근거 (문서의 어느 부분을 근거로 판단했는지 명시)</div>
-  미충족/부분충족 시:
-  <div style="background:#FFF8E1;border-left:3px solid #FFB300;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#5D4037;margin-top:6px;line-height:1.8">
-    💡 개선방안: 구체적으로 어떻게 수정해야 하는지 단계별로 안내
+  <div style="font-size:12px;color:#444;line-height:1.9;padding:8px 12px;background:#F8F9FC;border-radius:6px">
+    판정 근거를 항목별로 구체적으로 작성:<br>
+    • 기준①: 문서의 어느 부분에서 확인/미확인됐는지<br>
+    • 기준②: 동일하게 근거 명시
+  </div>
+  미충족/부분충족인 경우에만 추가:
+  <div style="background:#FFF8E1;border-left:3px solid #FFB300;padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;color:#5D4037;margin-top:8px;line-height:1.9">
+    💡 <strong>개선방안</strong><br>
+    ① 구체적 개선 내용 1<br>
+    ② 구체적 개선 내용 2
   </div>
 </div>
 
-충족 뱃지:
-- 충족: <span style="background:#E1F5EE;color:#085041;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px">✅ 충족</span>
-- 미충족: <span style="background:#FCEBEB;color:#791F1F;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px">⚠ 미충족</span>
-- 부분충족: <span style="background:#FFF3E0;color:#854F0B;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px">△ 부분충족</span>
+충족뱃지 HTML:
+- 충족: <span style="background:#E1F5EE;color:#085041;font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px">✅ 충족</span>
+- 미충족: <span style="background:#FCEBEB;color:#791F1F;font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px">⚠ 미충족</span>
+- 부분충족: <span style="background:#FFF3E0;color:#854F0B;font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px">△ 부분충족</span>
 
-지표번호 표기 예시: "지표 9-1 — 급여제공계획서 작성 — 수급자 개별 계획 수립 여부 (3점)"
-이처럼 지표번호 + 지표명 + 한줄설명을 함께 표기할 것.
-
-마지막에 총평 한 문단 추가. 문체: 실용적이고 친근하게.`,
+마지막에 총평:
+<div style="margin-top:20px;padding:14px;background:#F5F0FF;border-radius:8px;border-left:4px solid #5C3489;font-size:12px;color:#3A1F6E;line-height:1.9">
+  <strong>📊 종합 총평</strong><br>
+  총평 내용 (친근하고 실용적인 문체)
+</div>`,
       userContent,
       '문서검증'
     );
@@ -15594,7 +15625,10 @@ ${targetInds}
 - 원본 텍스트: color:#000000
 - 표: border-collapse:collapse, 셀 border:1px solid #aaa
 - 인쇄 가능한 A4 스타일, font-family:'맑은 고딕', font-size:10pt
-- body에 print-color-adjust:exact; -webkit-print-color-adjust:exact 적용`,
+- body에 print-color-adjust:exact; -webkit-print-color-adjust:exact 적용
+- 절대로 마크다운 코드블록(\`\`\`html 등)을 사용하지 말 것
+- <!DOCTYPE>, <html>, <head>, <body> 태그 없이 본문 HTML만 출력할 것
+- 출력 시작은 반드시 <div 또는 <!-- 로 시작할 것`,
         `[점검 결과]
 ${result}
 
@@ -15628,12 +15662,25 @@ ${result}
 }
 
 function downloadEvalRevised() {
-  const html = window._evalRevisedContent || '';
+  let html = window._evalRevisedContent || '';
   if (!html) { alert('수정 문서가 없습니다.'); return; }
+  // 코드블록 제거
+  html = html.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/i,'').trim();
+  // DOCTYPE/html/head/body 태그 제거 (본문만 추출)
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  if (bodyMatch) html = bodyMatch[1].trim();
   const now = new Date();
   const dateStr = now.getFullYear()+''+String(now.getMonth()+1).padStart(2,'0')+''+String(now.getDate()).padStart(2,'0');
   const full = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>수정 문서</title>
-<style>body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;max-width:900px;margin:0 auto;padding:28px;line-height:1.8;font-size:13px}@media print{button{display:none}}</style>
+<style>
+  body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;max-width:960px;margin:0 auto;padding:32px;line-height:1.9;font-size:13px;color:#222}
+  h2,h3{color:#3A1F6E}
+  table{border-collapse:collapse;width:100%}
+  td,th{border:1px solid #ccc;padding:7px 10px;font-size:12px}
+  th{background:#F0EBF8;font-weight:600}
+  .red{color:#C00000;font-weight:600}
+  @media print{button{display:none};body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
 </head><body>${html}</body></html>`;
   const blob = new Blob([full], {type:'text/html;charset=utf-8'});
   const a = document.createElement('a');
@@ -17957,7 +18004,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.18.107
+  Day:음 · v2026.06.19.108
 </div>
 </body>
 </html>
