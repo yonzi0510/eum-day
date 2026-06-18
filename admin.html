@@ -216,7 +216,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
                 <span id="kpi-periodic">-</span>
               </div>
               <div style="display:flex;justify-content:space-between;font-size:10px">
-                <span style="color:#A07AE8">📓 기타</span>
+                <span style="color:#5C3489">🔍 문서검증·AI질의</span>
                 <span id="kpi-other">-</span>
               </div>
             </div>
@@ -582,10 +582,12 @@ function renderOverview() {
 }
 
 function renderKPI(logs) {
-  // doc_type 기준 분류
+  // doc_type + doc_label 기준 분류
   const monthly  = logs.filter(l => l.doc_type === 'monthly').length;
   const periodic = logs.filter(l => l.doc_type === 'periodic').length;
-  const other    = logs.filter(l => l.doc_type !== 'monthly' && l.doc_type !== 'periodic').length;
+  const verifyLabels = new Set(['문서검증','문서검증_수정본','AI질의']);
+  const verify   = logs.filter(l => verifyLabels.has(l.doc_label)).length;
+  const other    = logs.filter(l => l.doc_type !== 'monthly' && l.doc_type !== 'periodic' && !verifyLabels.has(l.doc_label)).length;
   const calls    = logs.length;
 
   const cost = logs.reduce((s,l) => s + (l.cost_krw || 0), 0);
@@ -602,7 +604,7 @@ function renderKPI(logs) {
   set('kpi-calls',    calls.toLocaleString() + '건');
   set('kpi-monthly',  monthly + '건');
   set('kpi-periodic', periodic + '건');
-  set('kpi-other',    other + '건');
+  set('kpi-other',    (verify + other) + '건');
   set('kpi-raw',    '₩' + raw.toLocaleString());
   set('kpi-raw-sub', rangeStr);
   set('kpi-cost',   '₩' + cost.toLocaleString());
