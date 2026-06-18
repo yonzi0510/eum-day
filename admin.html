@@ -587,12 +587,20 @@ function renderKPI(logs) {
   const allCost = _allLogs.reduce((s,l) => s + (l.cost_krw || 0), 0);
   const pct = allCost > 0 ? Math.round(cost / allCost * 100) : 100;
 
+  // 기간 범위 계산
+  const dates = logs.map(l => l.logged_at).filter(Boolean).sort();
+  const fmt = iso => iso ? iso.slice(0,10).replace(/-/g,'.') : '';
+  const rangeStr = dates.length === 0 ? '데이터 없음'
+    : dates[0].slice(0,10) === dates[dates.length-1].slice(0,10)
+      ? fmt(dates[0])
+      : `${fmt(dates[0])} ~ ${fmt(dates[dates.length-1])}`;
+
   set('kpi-calls',  calls.toLocaleString() + '건');
   set('kpi-calls-sub', `전체 ${_allLogs.length}건`);
   set('kpi-raw',    '₩' + raw.toLocaleString());
-  set('kpi-raw-sub', 'Anthropic 청구액');
+  set('kpi-raw-sub', rangeStr);
   set('kpi-cost',   '₩' + cost.toLocaleString());
-  set('kpi-cost-sub', `전체 대비 ${pct}%`);
+  set('kpi-cost-sub', rangeStr);
   set('kpi-input',  input >= 1000 ? (input/1000).toFixed(1)+'K' : input+'');
   set('kpi-output', output >= 1000 ? (output/1000).toFixed(1)+'K' : output+'');
 }
