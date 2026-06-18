@@ -561,7 +561,14 @@ function setPeriod(days, btn) {
 function filterByPeriod(logs) {
   if (_periodDays >= 9999) return logs;
   const cutoff = _periodDays === 0
-    ? new Date(new Date().setHours(0,0,0,0)).toISOString()
+    ? (() => {
+        // KST(UTC+9) 기준 오늘 자정
+        const now = new Date();
+        const kstOffset = 9 * 60 * 60 * 1000;
+        const kstNow = new Date(now.getTime() + kstOffset);
+        const kstMidnight = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()) - kstOffset);
+        return kstMidnight.toISOString();
+      })()
     : new Date(Date.now() - _periodDays * 86400000).toISOString();
   return logs.filter(l => (l.logged_at || '') >= cutoff);
 }
