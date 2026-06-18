@@ -206,7 +206,20 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           <div class="kpi-card">
             <div class="kpi-label">문서 생성 건수</div>
             <div class="kpi-val" style="color:#7AAEE8" id="kpi-calls">-</div>
-            <div class="kpi-sub" id="kpi-calls-sub"></div>
+            <div class="kpi-sub" style="margin-top:8px;display:flex;flex-direction:column;gap:3px">
+              <div style="display:flex;justify-content:space-between;font-size:10px">
+                <span style="color:#7AAEE8">📅 월간문서</span>
+                <span id="kpi-monthly">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px">
+                <span style="color:#4ECFA0">📋 정기문서</span>
+                <span id="kpi-periodic">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px">
+                <span style="color:#A07AE8">📓 기타</span>
+                <span id="kpi-other">-</span>
+              </div>
+            </div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">원가 (실지불)</div>
@@ -569,12 +582,14 @@ function renderOverview() {
 }
 
 function renderKPI(logs) {
-  const calls  = logs.length;
-  const cost   = logs.reduce((s,l) => s + (l.cost_krw || 0), 0);
-  const raw    = logs.reduce((s,l) => s + (l.cost_raw_krw || Math.round((l.cost_krw||0) / 3)), 0);
+  // doc_type 기준 분류
+  const monthly  = logs.filter(l => l.doc_type === 'monthly').length;
+  const periodic = logs.filter(l => l.doc_type === 'periodic').length;
+  const other    = logs.filter(l => l.doc_type !== 'monthly' && l.doc_type !== 'periodic').length;
+  const calls    = logs.length;
 
-  const allCost = _allLogs.reduce((s,l) => s + (l.cost_krw || 0), 0);
-  const pct = allCost > 0 ? Math.round(cost / allCost * 100) : 100;
+  const cost = logs.reduce((s,l) => s + (l.cost_krw || 0), 0);
+  const raw  = logs.reduce((s,l) => s + (l.cost_raw_krw || Math.round((l.cost_krw||0) / 3)), 0);
 
   // 기간 범위 계산
   const dates = logs.map(l => l.logged_at).filter(Boolean).sort();
@@ -584,13 +599,14 @@ function renderKPI(logs) {
       ? fmt(dates[0])
       : `${fmt(dates[0])} ~ ${fmt(dates[dates.length-1])}`;
 
-  set('kpi-calls',  calls.toLocaleString() + '건');
-  set('kpi-calls-sub', `전체 ${_allLogs.length}건`);
+  set('kpi-calls',    calls.toLocaleString() + '건');
+  set('kpi-monthly',  monthly + '건');
+  set('kpi-periodic', periodic + '건');
+  set('kpi-other',    other + '건');
   set('kpi-raw',    '₩' + raw.toLocaleString());
   set('kpi-raw-sub', rangeStr);
   set('kpi-cost',   '₩' + cost.toLocaleString());
   set('kpi-cost-sub', rangeStr);
-
 }
 
 function renderCenterTable(logs) {
