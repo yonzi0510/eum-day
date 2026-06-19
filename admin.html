@@ -1022,16 +1022,19 @@ function renderDocHistory() {
     return;
   }
 
-  // 수급자별 그룹핑
+  // 센터+이름 조합으로 그룹핑
   const residents = {};
   filtered.forEach((d, origIdx) => {
     const name = d.resident_name || '이름 없음';
-    if (!residents[name]) residents[name] = [];
-    residents[name].push({ ...d, _origIdx: origIdx });
+    const ctrCode = d.center_code || '';
+    const groupKey = ctrCode + '__' + name;
+    if (!residents[groupKey]) residents[groupKey] = { name, ctrCode, docs: [] };
+    residents[groupKey].docs.push({ ...d, _origIdx: origIdx });
   });
 
   let html = '';
-  Object.entries(residents).forEach(([name, list]) => {
+  Object.entries(residents).forEach(([, group]) => {
+    const { name, docs: list } = group;
     // 카테고리별 재분류
     const bycat = {};
     list.forEach(d => {
