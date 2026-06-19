@@ -6102,10 +6102,13 @@ function registerSessionDoc(label, html, residentName, category) {
   // 빈 내용 무시
   if (!html || !html.trim()) return;
   const now = new Date();
+  const _ctr = CENTERS[centerCode] || {};
   window._sessionDocs.push({
     _isSession: true,
     doc_type: label,
     resident_name: residentName || window.currentLinkedName || '—',
+    center_name: _ctr.name || centerCode || '',
+    center_code: centerCode || '',
     doc_content: html,
     created_at: now.toISOString(),
     _category: category || '기타',
@@ -18426,7 +18429,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.06
+  Day:음 · v2026.06.19.09
 </div>
 </body>
 </html>
