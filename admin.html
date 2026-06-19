@@ -1032,11 +1032,9 @@ function renderDocHistory() {
     const docColor = info.color;
     const ctrName = d.center_name || d.center_code || '';
     const badgeCls = CTR_BADGES[ctrName] || 'badge-gray';
-    const resName = d.resident_name && d.resident_name !== '수급자' && d.resident_name !== '—' ? `<span style="font-size:11px;color:#C8D4E0;white-space:nowrap;flex-shrink:0">${d.resident_name}</span>` : '';
     html += `<div style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:#141E2B;border-radius:8px;border:1px solid #2A3A50">
       <span class="badge ${badgeCls}" style="flex-shrink:0;font-size:10px;white-space:nowrap">${ctrName}</span>
       <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${docColor}25;color:${docColor};border:1px solid ${docColor}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type || '—'}</span>
-      ${resName}
       <span style="font-size:10px;color:#405060;flex:1">${dateStr}</span>
       <button class="doc-view-btn" onclick="openDoc(${allIdx})">보기</button>
     </div>`;
