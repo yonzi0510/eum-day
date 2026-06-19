@@ -6283,13 +6283,9 @@ function renderDocList(docs, noticeBanner, container, showAll) {
     const remainStr = remainMs > 0
       ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#aaa'}">${remainH}시간 ${remainM}분 후 삭제</span>`
       : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
-    const resName = d.resident_name && !['수급자','—','빈칸','본인','확인','모두',''].includes(d.resident_name)
-      ? `<span style="font-size:11px;color:#333;font-weight:600;white-space:nowrap;flex-shrink:0">${d.resident_name}</span>` : '';
     html += `
       <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#FAFBFF;border-radius:10px;border:1px solid #E8EAF0">
         <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${docColor}18;color:${docColor};border:1px solid ${docColor}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
-        ${d._isSession ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#1D9E7520;color:#0D6E55;border:1px solid #1D9E7560;font-weight:700;white-space:nowrap;flex-shrink:0">세션</span>' : ''}
-        ${resName}
         <span style="font-size:10px;color:#888;flex:1;min-width:0">${dateStr}${d._isSession ? '' : '<br>' + remainStr}</span>
         <button onclick="openResultDoc(${i})"
           style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;flex-shrink:0"
@@ -18439,7 +18435,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.25
+  Day:음 · v2026.06.19.30
 </div>
 </body>
 </html>
