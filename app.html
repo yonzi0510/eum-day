@@ -6127,6 +6127,7 @@ function registerSessionDoc(label, html, residentName, category) {
 // ────── 문서 결과 보기 탭 ──────
 // doc_type → 카테고리 분류 매핑
 const DOC_CATEGORY_MAP = {
+  '상담일지': { cat: '월간문서', color: '#1F3864' },
   '분기별 상담일지': { cat: '월간문서', color: '#1F3864' },
   '보호자 상담일지': { cat: '월간문서', color: '#1F3864' },
   '사례관리 회의록': { cat: '월간문서', color: '#1F3864' },
@@ -6681,8 +6682,8 @@ const AI_DRAFT_NOTICE = `<div class="ai-draft-notice"><span style="font-size:16p
 function buildMonthlyPrompt(opinion) {
   // 선택된 문서 확인
   const docs = {
-    m1: document.getElementById('m1')?.checked, // 분기별 상담일지
-    m2: document.getElementById('m2')?.checked, // 보호자 상담일지
+    m1: document.getElementById('m1')?.checked, // 상담일지
+    m2: document.getElementById('m2')?.checked, // 보호자 상담 (자동)
     m3: document.getElementById('m3')?.checked, // 사례관리 회의록
     m4: document.getElementById('m4')?.checked, // 월간 현황 요약
     m5: document.getElementById('m5')?.checked, // 프로그램업무수행일지
@@ -6691,12 +6692,12 @@ function buildMonthlyPrompt(opinion) {
   const docList = [];
   if (docs.m1) {
     if (counselStyle === 'narrative') {
-      docList.push('1. 분기별 상담일지 (최대 3회차) — 서술형 형식, 급여제공반영 포함');
+      docList.push('1. 상담일지 (최대 3회차) — 서술형 형식, 급여제공반영 포함');
     } else {
-      docList.push('1. 분기별 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
+      docList.push('1. 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
     }
   }
-  if (docs.m2) docList.push('2. 보호자 상담일지 — 이슈 발생 시');
+  if (docs.m2) docList.push('2. 보호자 상담 — 이슈 발생 시 자동 추가');
   if (docs.m3) docList.push('3. 사례관리 회의록 — 반드시 초안 제시, 상단에 "※ 사례관리 회의록 초안입니다. 채택 여부는 담당자가 결정하세요." 안내 포함, 상담일지 P항목과 연계하여 작성');
   if (docs.m4) docList.push('4. 월간 현황 요약 — 이용일수·혈압·식사·프로그램 한 페이지');
   if (docs.m5) docList.push(`5. 인지활동형 프로그램관리자 업무수행일지 [별지 제24호의2서식]
@@ -6871,7 +6872,7 @@ function buildMonthlyPrompt(opinion) {
    </table>
    </div>`);
 
-  if (docList.length === 0) docList.push('1. 분기별 상담일지 (기본)');
+  if (docList.length === 0) docList.push('1. 상담일지 (기본)');
 
   return `${getStylePrompt('m')}파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
 파악할 항목: 수급자명 / 생년월일 / 장기요양등급 / 장기요양인정번호 / 기관명 / 기관기호 / 기록지에 기재된 작성자(담당자) 성명 / 기록 대상 연월(시작월~종료월).
@@ -8001,8 +8002,8 @@ async function startGenerate(type) {
   // 월간 문서: 선택된 항목 기반으로 프로그레스 스텝 텍스트 업데이트
   if (type === 'monthly') {
     const stepLabels = [
-      { id: 'mp4', checked: 'm1', icon: '📝', text: '분기별 상담일지 작성 중...' },
-      { id: 'mp5', checked: 'm2', icon: '📞', text: '보호자 상담일지 작성 중...' },
+      { id: 'mp4', checked: 'm1', icon: '📝', text: '상담일지 작성 중...' },
+      { id: 'mp5', checked: 'm2', icon: '📞', text: '보호자 상담 확인 중...' },
       { id: 'mp6', checked: 'm3', icon: '👥', text: '사례관리 회의록 작성 중...' },
     ];
     // m4(월간요약), m5(프로그램일지) 선택시 덮어씀
@@ -8401,7 +8402,7 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       await saveResidentFromResult(type, window._monthlyHtml || '');
       const resName = window.currentLinkedName || '수급자';
       const docMap = {
-        m1: { checked: document.getElementById('m1')?.checked, label: '본인·보호자 상담일지' },
+        m1: { checked: document.getElementById('m1')?.checked, label: '상담일지' },
         m3: { checked: document.getElementById('m3')?.checked, label: '사례관리 회의록' },
         m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
       };
@@ -18428,7 +18429,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.10
+  Day:음 · v2026.06.19.11
 </div>
 </body>
 </html>
