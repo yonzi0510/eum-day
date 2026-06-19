@@ -268,7 +268,13 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           <div class="card-title">
             <div class="card-title-left">📋 API 호출 로그</div>
           </div>
-          <div class="filter-row">
+          <div class="filter-row" style="flex-wrap:wrap;gap:6px">
+            <div style="display:flex;gap:4px;align-items:center">
+              <button class="period-btn active" id="lp-btn-0" onclick="setLogPeriod(0,this)">오늘</button>
+              <button class="period-btn" id="lp-btn-7" onclick="setLogPeriod(7,this)">이번 주</button>
+              <button class="period-btn" id="lp-btn-30" onclick="setLogPeriod(30,this)">이번 달</button>
+              <button class="period-btn" id="lp-btn-9999" onclick="setLogPeriod(9999,this)">전체</button>
+            </div>
             <select class="filter-select" id="log-center-filter" onchange="renderLogs()">
               <option value="">전체 센터</option>
               <option value="삽교">삽교</option>
@@ -279,7 +285,10 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
               <option value="">전체 문서</option>
             </select>
             <button class="sm-btn" onclick="clearLocalLogs()">로컬 로그 초기화</button>
-            <span style="margin-left:auto;font-size:11px;color:#405060" id="log-count"></span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:#4ECFA0;font-weight:600" id="log-range"></span>
+              <span style="font-size:11px;color:#405060" id="log-count"></span>
+            </div>
           </div>
           <div id="log-body">
             <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
@@ -293,14 +302,35 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           <div class="card-title">
             <div class="card-title-left">🗂 생성 문서 이력</div>
           </div>
+          <!-- 기간 필터 -->
+          <div class="filter-row" style="margin-bottom:6px">
+            <div style="display:flex;gap:4px;align-items:center">
+              <button class="period-btn active" id="dp-btn-0"   onclick="setDocPeriod(0,this)">오늘</button>
+              <button class="period-btn"        id="dp-btn-7"   onclick="setDocPeriod(7,this)">이번 주</button>
+              <button class="period-btn"        id="dp-btn-30"  onclick="setDocPeriod(30,this)">이번 달</button>
+              <button class="period-btn"        id="dp-btn-9999" onclick="setDocPeriod(9999,this)">전체</button>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:#4ECFA0;font-weight:600" id="doc-range"></span>
+              <span style="font-size:11px;color:#405060" id="doc-count"></span>
+            </div>
+          </div>
+          <!-- 센터·문서유형 필터 -->
           <div class="filter-row">
-            <select class="filter-select" id="doc-center-filter" onchange="loadDocHistory()">
+            <select class="filter-select" id="doc-center-filter" onchange="renderDocHistory()">
               <option value="">전체 센터</option>
-              <option value="sapgyo">삽교주간보호센터</option>
-              <option value="center2">덕산주간보호센터</option>
-              <option value="center3">내포소망주간보호센터</option>
+              <option value="sapgyo">삽교</option>
+              <option value="center2">덕산</option>
+              <option value="center3">내포소망</option>
             </select>
-            <span style="margin-left:auto;font-size:11px;color:#405060" id="doc-count"></span>
+            <select class="filter-select" id="doc-cat-filter" onchange="renderDocHistory()">
+              <option value="">전체 유형</option>
+              <option value="정기문서">정기문서</option>
+              <option value="월간문서">월간문서</option>
+              <option value="수시문서">수시문서</option>
+              <option value="조사문서">조사문서</option>
+              <option value="검증/교정">검증/교정</option>
+            </select>
           </div>
           <div id="doc-history-body">
             <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
@@ -418,9 +448,31 @@ var CENTERS = {
 const CTR_COLORS = { '삽교':'#1F3864','덕산':'#0D6E55','내포소망':'#5C3489' };
 const CTR_BADGES = { '삽교주간보호센터':'badge-blue','덕산주간보호센터':'badge-teal','내포소망주간보호센터':'badge-purple' };
 
+const DOC_CAT_MAP = {
+  '기초평가(낙상·욕창·인지)': { cat:'정기문서', color:'#0D6E55' },
+  '욕구사정':                  { cat:'정기문서', color:'#0D6E55' },
+  '급여제공결과평가':          { cat:'정기문서', color:'#0D6E55' },
+  '급여제공계획서':            { cat:'정기문서', color:'#0D6E55' },
+  '분기별 상담일지':           { cat:'월간문서', color:'#1F3864' },
+  '보호자 상담일지':           { cat:'월간문서', color:'#1F3864' },
+  '사례관리 회의록':           { cat:'월간문서', color:'#1F3864' },
+  '프로그램업무수행일지':      { cat:'월간문서', color:'#1F3864' },
+  '월간문서':                  { cat:'월간문서', color:'#1F3864' },
+  '퇴소 연계기록지':           { cat:'수시문서', color:'#BA7517' },
+  '문서검증결과':              { cat:'검증/교정', color:'#5C3489' },
+  '문서검증_수정본':           { cat:'검증/교정', color:'#5C3489' },
+  '문서교정결과':              { cat:'검증/교정', color:'#5C3489' },
+  '프로그램 의견수렴':         { cat:'조사문서', color:'#0C5A8A' },
+  '식사만족도조사':            { cat:'조사문서', color:'#0C5A8A' },
+};
+const DOC_CAT_ORDER = ['정기문서','월간문서','수시문서','조사문서','검증/교정','기타'];
+const DOC_CAT_COLOR = { '정기문서':'#0D6E55','월간문서':'#1F3864','수시문서':'#BA7517','조사문서':'#0C5A8A','검증/교정':'#5C3489','기타':'#607080' };
+
 let _allLogs    = [];
 let _periodDays = 0;
+let _logPeriodDays = 0; // 로그 탭 전용 기간 필터
 let _allDocs    = [];
+let _docPeriodDays = 9999; // 문서 이력 기간 필터 (기본: 전체)
 
 // ─── 시계 ───
 function updateClock() {
@@ -481,7 +533,14 @@ function showSec(id, btn) {
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
   if (id === 'sec-logs')    renderLogs();
-  if (id === 'sec-docs')    loadDocHistory();
+  if (id === 'sec-docs') {
+    // 기간 버튼 초기값(전체) 활성화
+    document.querySelectorAll('#dp-btn-0,#dp-btn-7,#dp-btn-30,#dp-btn-9999').forEach(b => b.classList.remove('active'));
+    const initBtn = document.getElementById('dp-btn-9999');
+    if (initBtn) initBtn.classList.add('active');
+    _docPeriodDays = 9999;
+    loadDocHistory();
+  }
   if (id === 'sec-centers') renderCenterManage();
 }
 
@@ -556,6 +615,27 @@ function setPeriod(days, btn) {
   document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderOverview();
+}
+
+function setLogPeriod(days, btn) {
+  _logPeriodDays = days;
+  document.querySelectorAll('#lp-btn-0,#lp-btn-7,#lp-btn-30,#lp-btn-9999').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderLogs();
+}
+
+function filterLogsByPeriod(logs) {
+  if (_logPeriodDays >= 9999) return logs;
+  const cutoff = _logPeriodDays === 0
+    ? (() => {
+        const now = new Date();
+        const kstOffset = 9 * 60 * 60 * 1000;
+        const kstNow = new Date(now.getTime() + kstOffset);
+        const kstMidnight = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()) - kstOffset);
+        return kstMidnight.toISOString();
+      })()
+    : new Date(Date.now() - _logPeriodDays * 86400000).toISOString();
+  return logs.filter(l => (l.logged_at || '') >= cutoff);
 }
 
 function filterByPeriod(logs) {
@@ -762,13 +842,38 @@ function renderLogs() {
   const ctrFilter = document.getElementById('log-center-filter')?.value || '';
   const docFilter = document.getElementById('log-doc-filter')?.value || '';
 
-  const filtered = filterByPeriod(_allLogs)
+  const periodFiltered = filterLogsByPeriod(_allLogs);
+  const filtered = periodFiltered
     .filter(l => !ctrFilter || (l.center_short || '').includes(ctrFilter))
     .filter(l => !docFilter || (l.doc_label || '') === docFilter)
     .slice(0, 100);
 
   const countEl = document.getElementById('log-count');
   if (countEl) countEl.textContent = `${filtered.length}건 표시`;
+
+  // 범위 표시
+  const rangeEl = document.getElementById('log-range');
+  if (rangeEl) {
+    if (_logPeriodDays === 0) {
+      const today = new Date();
+      const kst = new Date(today.getTime() + 9*60*60*1000);
+      const d = `${kst.getUTCFullYear()}.${String(kst.getUTCMonth()+1).padStart(2,'0')}.${String(kst.getUTCDate()).padStart(2,'0')}`;
+      rangeEl.textContent = `📅 ${d} 당일`;
+    } else if (_logPeriodDays >= 9999) {
+      if (filtered.length > 0) {
+        const dates = filtered.map(l => l.logged_at).filter(Boolean).sort();
+        const fmt = iso => { const d = new Date(iso); return `${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`; };
+        rangeEl.textContent = `📅 ${fmt(dates[0])} ~ ${fmt(dates[dates.length-1])}`;
+      } else {
+        rangeEl.textContent = '📅 전체';
+      }
+    } else {
+      const now = new Date();
+      const from = new Date(now.getTime() - _logPeriodDays * 86400000);
+      const fmt = d => `${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`;
+      rangeEl.textContent = `📅 ${fmt(from)} ~ ${fmt(now)}`;
+    }
+  }
 
   if (!filtered.length) {
     el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">로그 없음</div>';
@@ -786,7 +891,7 @@ function renderLogs() {
       <span class="log-doc">${l.doc_label || '?'}</span>
       <span class="log-time">${dateStr}</span>
 
-      <span class="log-cost">₩${(l.cost_krw||0).toLocaleString()}</span>
+      <span class="log-cost">₩${(l.cost_raw_krw || Math.round((l.cost_krw||0)/3)).toLocaleString()}</span>
     </div>`;
   }).join('') + (filtered.length === 100 ? '<div style="text-align:center;font-size:11px;color:#405060;padding:6px">최근 100건만 표시</div>' : '');
 }
@@ -802,43 +907,139 @@ function clearLocalLogs() {
 // ═══════════════════════════════════════════
 //  문서 이력
 // ═══════════════════════════════════════════
+function setDocPeriod(days, btn) {
+  _docPeriodDays = days;
+  document.querySelectorAll('#dp-btn-0,#dp-btn-7,#dp-btn-30,#dp-btn-9999').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // 전체 선택 시 Supabase 재조회 (더 많은 데이터)
+  if (days >= 9999 && _allDocs.length < 201) loadDocHistory();
+  else renderDocHistory();
+}
+
 async function loadDocHistory() {
   const el = document.getElementById('doc-history-body');
   if (!el) return;
   el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>';
 
-  const filterCode = document.getElementById('doc-center-filter')?.value || '';
-  let url = `/rest/v1/documents?doc_type=neq.__residents__&order=created_at.desc&limit=200`;
-  if (filterCode) url += `&center_code=eq.${filterCode}`;
-
+  let url = `/rest/v1/documents?doc_type=neq.__residents__&order=created_at.desc&limit=500`;
   const docs = await fetchSupabase(url);
   if (!docs) {
     el.innerHTML = '<div style="color:#E24B4A;font-size:12px;padding:8px">조회 오류</div>';
     return;
   }
   _allDocs = docs;
+  renderDocHistory();
+}
+
+function filterDocsByPeriod(docs) {
+  if (_docPeriodDays >= 9999) return docs;
+  const cutoff = _docPeriodDays === 0
+    ? (() => {
+        const now = new Date();
+        const kstOffset = 9 * 60 * 60 * 1000;
+        const kstNow = new Date(now.getTime() + kstOffset);
+        const kstMidnight = new Date(Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate()) - kstOffset);
+        return kstMidnight.toISOString();
+      })()
+    : new Date(Date.now() - _docPeriodDays * 86400000).toISOString();
+  return docs.filter(d => (d.created_at || '') >= cutoff);
+}
+
+function renderDocHistory() {
+  const el = document.getElementById('doc-history-body');
+  if (!el) return;
+
+  const ctrFilter = document.getElementById('doc-center-filter')?.value || '';
+  const catFilter = document.getElementById('doc-cat-filter')?.value || '';
+
+  let filtered = filterDocsByPeriod(_allDocs)
+    .filter(d => !ctrFilter || (d.center_code || '') === ctrFilter)
+    .filter(d => {
+      if (!catFilter) return true;
+      const info = DOC_CAT_MAP[d.doc_type] || { cat: '기타' };
+      return info.cat === catFilter;
+    });
+
+  // 범위 표시
+  const rangeEl = document.getElementById('doc-range');
+  if (rangeEl) {
+    if (_docPeriodDays === 0) {
+      const today = new Date();
+      const kst = new Date(today.getTime() + 9*60*60*1000);
+      const d = `${kst.getUTCFullYear()}.${String(kst.getUTCMonth()+1).padStart(2,'0')}.${String(kst.getUTCDate()).padStart(2,'0')}`;
+      rangeEl.textContent = `📅 ${d} 당일`;
+    } else if (_docPeriodDays >= 9999) {
+      if (filtered.length > 0) {
+        const dates = filtered.map(d => d.created_at).filter(Boolean).sort();
+        const fmt = iso => { const d = new Date(iso); return `${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`; };
+        rangeEl.textContent = `📅 ${fmt(dates[0])} ~ ${fmt(dates[dates.length-1])}`;
+      } else { rangeEl.textContent = '📅 전체'; }
+    } else {
+      const now = new Date();
+      const from = new Date(now.getTime() - _docPeriodDays * 86400000);
+      const fmt = d => `${d.getMonth()+1}/${String(d.getDate()).padStart(2,'0')}`;
+      rangeEl.textContent = `📅 ${fmt(from)} ~ ${fmt(now)}`;
+    }
+  }
 
   const countEl = document.getElementById('doc-count');
-  if (countEl) countEl.textContent = `총 ${docs.length}건`;
+  if (countEl) countEl.textContent = `총 ${filtered.length}건`;
 
-  if (!docs.length) {
+  if (!filtered.length) {
     el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">저장된 문서 없음</div>';
     return;
   }
 
-  el.innerHTML = docs.map((d, i) => {
-    const dt  = new Date(d.created_at);
-    const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-    const ctrName = d.center_name || d.center_code || '';
+  // 수급자별 그룹핑
+  const residents = {};
+  filtered.forEach((d, origIdx) => {
+    const name = d.resident_name || '이름 없음';
+    if (!residents[name]) residents[name] = [];
+    residents[name].push({ ...d, _origIdx: origIdx });
+  });
+
+  let html = '';
+  Object.entries(residents).forEach(([name, list]) => {
+    // 카테고리별 재분류
+    const bycat = {};
+    list.forEach(d => {
+      const info = DOC_CAT_MAP[d.doc_type] || { cat: '기타', color: '#607080' };
+      if (!bycat[info.cat]) bycat[info.cat] = [];
+      bycat[info.cat].push({ ...d, _catColor: info.color });
+    });
+
+    const ctrName = list[0].center_name || list[0].center_code || '';
     const badgeCls = CTR_BADGES[ctrName] || 'badge-gray';
-    return `<div class="doc-item">
-      <span class="badge ${badgeCls}" style="flex-shrink:0">${ctrName}</span>
-      <span style="font-weight:600;color:#C8D4E0;flex-shrink:0">${d.resident_name || '-'}</span>
-      <span style="color:#607080;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.doc_type || ''}</span>
-      <span style="color:#405060;white-space:nowrap;font-size:10px">${dateStr}</span>
-      <button class="doc-view-btn" onclick="openDoc(${i})">보기</button>
-    </div>`;
-  }).join('');
+
+    html += `<div style="border:1px solid #2A3A50;border-radius:10px;overflow:hidden;margin-bottom:10px">
+      <div style="background:#1A2A3A;padding:8px 12px;display:flex;align-items:center;gap:8px">
+        <span class="badge ${badgeCls}" style="flex-shrink:0;font-size:10px">${ctrName}</span>
+        <span style="font-weight:700;color:#C8D4E0;font-size:12px">👤 ${name}</span>
+        <span style="font-size:10px;background:#2A3A50;color:#607080;padding:1px 7px;border-radius:10px;font-weight:500">${list.length}건</span>
+      </div>
+      <div style="padding:7px 10px;display:flex;flex-direction:column;gap:3px">`;
+
+    const orderedCats = [...DOC_CAT_ORDER.filter(c => bycat[c]), ...Object.keys(bycat).filter(c => !DOC_CAT_ORDER.includes(c))];
+    orderedCats.forEach(cat => {
+      const catDocs = bycat[cat];
+      if (!catDocs || !catDocs.length) return;
+      const catColor = DOC_CAT_COLOR[cat] || '#607080';
+      html += `<div style="margin-top:5px;margin-bottom:2px;font-size:10px;font-weight:700;color:${catColor};padding:2px 6px;border-left:3px solid ${catColor};letter-spacing:.5px">${cat}</div>`;
+      catDocs.forEach(d => {
+        const dt = new Date(d.created_at);
+        const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+        const docColor = d._catColor || '#607080';
+        html += `<div style="display:flex;align-items:center;gap:7px;padding:6px 9px;background:#141E2B;border-radius:7px;border:1px solid #2A3A50">
+          <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${docColor}25;color:${docColor};border:1px solid ${docColor}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type || '—'}</span>
+          <span style="font-size:10px;color:#405060;flex:1">${dateStr}</span>
+          <button class="doc-view-btn" onclick="openDoc(${d._origIdx})">보기</button>
+        </div>`;
+      });
+    });
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
 }
 
 function openDoc(idx) {
