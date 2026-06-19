@@ -5220,6 +5220,7 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;colo
     document.getElementById('report-result-title').textContent = `${cfg.label} — 완성`;
     document.getElementById('report-prog').style.display = 'none';
     document.getElementById('report-result').style.display = 'block';
+    registerSessionDoc(cfg.label || '요양일지', html, window.currentLinkedName || '—', '요양일지');
 
   } catch (e) {
     clearInterval(progTimer);
@@ -5798,6 +5799,9 @@ async function runSurveyAI(prompt, resultId, bodyId) {
     html = html.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
     bodyEl.innerHTML = html || '<p style="color:#aaa;text-align:center;padding:20px">결과를 불러오지 못했어요.</p>';
     window[resultId + '_html'] = html;
+    // 조사 문서 레지스트리 등록
+    const surveyLabel = resultId === 'pgm-survey-result' ? '프로그램 의견수렴' : '식사만족도조사';
+    registerSessionDoc(surveyLabel, html, '—', '조사문서');
   } catch(e) {
     bodyEl.innerHTML = `<p style="color:#E24B4A;padding:12px">오류: ${e.message}</p>`;
   }
@@ -6085,6 +6089,33 @@ async function loadDocHistory() {
   }
 }
 
+
+// ────── 세션 문서 레지스트리 ──────
+window._sessionDocs = [];
+
+function registerSessionDoc(label, html, residentName, category) {
+  // 빈 내용 무시
+  if (!html || !html.trim()) return;
+  const now = new Date();
+  window._sessionDocs.push({
+    _isSession: true,
+    doc_type: label,
+    resident_name: residentName || window.currentLinkedName || '—',
+    doc_content: html,
+    created_at: now.toISOString(),
+    _category: category || '기타',
+    _color: (() => {
+      if (category === '정기문서') return '#0D6E55';
+      if (category === '월간문서') return '#1F3864';
+      if (category === '수시문서') return '#BA7517';
+      if (category === '조사문서') return '#0C5A8A';
+      if (category === '검증/교정') return '#5C3489';
+      if (category === '요양일지') return '#8B4513';
+      return '#555';
+    })()
+  });
+}
+
 // ────── 문서 결과 보기 탭 ──────
 // doc_type → 카테고리 분류 매핑
 const DOC_CATEGORY_MAP = {
@@ -6160,11 +6191,34 @@ async function loadResultsDocs() {
       return;
     }
 
-    window._resultsDocs = docs;
-    renderDocList(docs, noticeBanner, body, false);
+    // 세션 문서 병합 (Supabase 저장 안 된 것)
+    const supabaseTypes = new Set(docs.map(d => d.doc_type + '|' + (d.resident_name||'')));
+    const sessionOnly = (window._sessionDocs || []).filter(s =>
+      !supabaseTypes.has(s.doc_type + '|' + (s.resident_name||''))
+    );
+    const merged = [...docs, ...sessionOnly].sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
+
+    if (!merged.length) {
+      body.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">아직 생성된 문서가 없어요.</div>';
+      return;
+    }
+
+    window._resultsDocs = merged;
+    renderDocList(merged, noticeBanner, body, false);
 
   } catch(e) {
-    body.innerHTML = noticeBanner + `<div style="color:#E24B4A;font-size:12px;padding:12px">조회 오류: ${e.message}</div>`;
+    // Supabase 오류여도 세션 문서는 표시
+    const sessionDocs = (window._sessionDocs || []).sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
+    if (sessionDocs.length) {
+      window._resultsDocs = sessionDocs;
+      renderDocList(sessionDocs, noticeBanner, body, false);
+    } else {
+      body.innerHTML = noticeBanner + `<div style="color:#E24B4A;font-size:12px;padding:12px">조회 오류: ${e.message}</div>`;
+    }
   }
 }
 
@@ -6174,14 +6228,20 @@ function renderDocList(docs, noticeBanner, container, showAll) {
   const residents = {};
   docs.forEach((d, i) => {
     const name = d.resident_name || '이름 없음';
-    const info = DOC_CATEGORY_MAP[d.doc_type] || { cat: '기타', color: '#5C3489' };
+    const info = d._isSession
+      ? { cat: d._category || '기타', color: d._color || '#555' }
+      : (DOC_CATEGORY_MAP[d.doc_type] || { cat: '기타', color: '#5C3489' });
     if (!residents[name]) residents[name] = {};
     if (!residents[name][info.cat]) residents[name][info.cat] = [];
     residents[name][info.cat].push({ ...d, _gi: i, _color: info.color });
   });
 
+  const sessionCount = docs.filter(d => d._isSession).length;
+  const supabaseCount = docs.length - sessionCount;
   let html = noticeBanner;
-  html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건 (최근 24시간)</div>`;
+  html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건`;
+  if (sessionCount > 0) html += ` · 현재 세션 <span style="color:#1D9E75;font-weight:600">${sessionCount}건</span>`;
+  html += `</div>`;
 
   Object.entries(residents).forEach(([name, catMap]) => {
     const resTotal = Object.values(catMap).reduce((s, a) => s + a.length, 0);
@@ -6211,7 +6271,8 @@ function renderDocList(docs, noticeBanner, container, showAll) {
         html += `
           <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
             <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${d._color}18;color:${d._color};border:1px solid ${d._color}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
-            <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}<br>${remainStr}</span>
+            ${d._isSession ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#1D9E7520;color:#0D6E55;border:1px solid #1D9E7560;font-weight:700;white-space:nowrap;flex-shrink:0">세션</span>' : ''}
+            <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}${d._isSession ? '' : '<br>' + remainStr}</span>
             <button onclick="openResultDoc(${d._gi})"
               style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;flex-shrink:0"
               onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
@@ -6245,6 +6306,13 @@ function openResultDoc(idx) {
     modalBody.innerHTML = '<p style="color:#aaa;padding:20px;font-size:13px;text-align:center">저장된 내용이 없습니다.<br><span style="font-size:11px">문서를 다시 생성해주세요.</span></p>';
     modal.style.display = 'block';
     return;
+  }
+
+  // 세션 문서 헤더 색상
+  const modalHead = document.querySelector('#results-doc-modal > div > div:first-child');
+  if (modalHead) {
+    const color = d._isSession ? (d._color || '#1F3864') : '#1F3864';
+    modalHead.style.background = color;
   }
 
   // body 조각 → DOC_CSS 씌워서 완전한 문서로 렌더링
@@ -7767,6 +7835,7 @@ function renderMonthlyResult(html) {
     finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${DOC_CSS}</style></head><body>${AI_DRAFT_NOTICE}${cleanHtml}</body></html>`;
   }
   window._monthlyHtml = finalHtml;
+  registerSessionDoc('월간문서', finalHtml, window.currentLinkedName || '수급자', '월간문서');
 
   // 크게보기 버튼 표시
   const viewBtn = document.getElementById('view-btn-m1');
@@ -8256,6 +8325,12 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       // Word 다운로드용 합본 - 기초평가+욕구사정+결과평가 (계획서는 엑셀)
       const combined = result1 + result2 + result3;
       window._periodicHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${combined}</body></html>`;
+      // 세션 레지스트리 등록
+      const _resN = window.currentLinkedName || '수급자';
+      if (window._periodicHtml1) registerSessionDoc('기초평가(낙상·욕창·인지)', window._periodicHtml1, _resN, '정기문서');
+      if (window._periodicHtml2) registerSessionDoc('욕구사정', window._periodicHtml2, _resN, '정기문서');
+      if (window._periodicHtml3) registerSessionDoc('급여제공결과평가', window._periodicHtml3, _resN, '정기문서');
+      if (window._periodicHtml4) registerSessionDoc('급여제공계획서', window._periodicHtml4, _resN, '정기문서');
 
       // Word 버튼 활성화 — Word로 출력 가능한 문서가 하나라도 있으면 표시
       const hasWordContent = hasEval123 || hasNeeds || hasResult;
@@ -9702,6 +9777,7 @@ ${requestText}
     document.getElementById('correct-result').classList.add('show');
     document.getElementById('correct-body').innerHTML = result;
     window._correctResult = result;
+    registerSessionDoc('문서교정결과', result, '—', '검증/교정');
   }, 400);
 }
 
@@ -15984,6 +16060,8 @@ ${result}
       document.getElementById('eval-prog').classList.remove('show');
       document.getElementById('eval-result').classList.add('show');
       document.getElementById('eval-body').innerHTML = result;
+      registerSessionDoc('문서검증결과', result, '—', '검증/교정');
+      if (revisedContent) registerSessionDoc('문서검증_수정본', revisedContent, '—', '검증/교정');
       const ok = (result.match(/✅ 충족/g)||[]).length;
       const fail = (result.match(/⚠ 미충족/g)||[]).length;
       const part = (result.match(/△ 부분충족/g)||[]).length;
@@ -16215,6 +16293,7 @@ async function startAdhocGenerate() {
 
   // 인쇄용 HTML 저장
   window.linkageDocHTML = aiResult;
+  registerSessionDoc('퇴소 연계기록지', aiResult, window.currentLinkedName || '수급자', '수시문서');
 
   // Supabase 저장
   try {
