@@ -6263,63 +6263,41 @@ async function loadResultsDocs() {
 function renderDocList(docs, noticeBanner, container, showAll) {
   window._resultsDocs = docs;
 
-  const residents = {};
-  docs.forEach((d, i) => {
-    const name = d.resident_name || '이름 없음';
-    const info = d._isSession
-      ? { cat: d._category || '기타', color: d._color || '#555' }
-      : (DOC_CATEGORY_MAP[d.doc_type] || { cat: '기타', color: '#5C3489' });
-    if (!residents[name]) residents[name] = {};
-    if (!residents[name][info.cat]) residents[name][info.cat] = [];
-    residents[name][info.cat].push({ ...d, _gi: i, _color: info.color });
-  });
-
   const sessionCount = docs.filter(d => d._isSession).length;
-  const supabaseCount = docs.length - sessionCount;
   let html = noticeBanner;
   html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건`;
   if (sessionCount > 0) html += ` · 현재 세션 <span style="color:#1D9E75;font-weight:600">${sessionCount}건</span>`;
   html += `</div>`;
 
-  Object.entries(residents).forEach(([name, catMap]) => {
-    const resTotal = Object.values(catMap).reduce((s, a) => s + a.length, 0);
+  html += '<div style="display:flex;flex-direction:column;gap:6px">';
+  docs.forEach((d, i) => {
+    const info = d._isSession
+      ? { cat: d._category || '기타', color: d._color || '#555' }
+      : (DOC_CATEGORY_MAP[d.doc_type] || { cat: '기타', color: '#5C3489' });
+    const docColor = info.color;
+    const dt = new Date(d.created_at);
+    const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const remainMs = dt.getTime() + 24*60*60*1000 - Date.now();
+    const remainH = Math.floor(remainMs / 3600000);
+    const remainM = Math.floor((remainMs % 3600000) / 60000);
+    const remainStr = remainMs > 0
+      ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#aaa'}">${remainH}시간 ${remainM}분 후 삭제</span>`
+      : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
+    const resName = d.resident_name && !['수급자','—','빈칸','본인','확인','모두',''].includes(d.resident_name)
+      ? `<span style="font-size:11px;color:#333;font-weight:600;white-space:nowrap;flex-shrink:0">${d.resident_name}</span>` : '';
     html += `
-      <div style="border:1px solid #E8EAF0;border-radius:12px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#F0F4FF;padding:10px 14px;font-size:13px;font-weight:700;color:#1F3864;display:flex;align-items:center;gap:6px">
-          👤 ${name}
-          <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 7px;border-radius:10px;font-weight:500">${resTotal}건</span>
-        </div>
-        <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">`;
-
-    const allCats = [...CAT_ORDER, ...Object.keys(catMap).filter(c => !CAT_ORDER.includes(c))];
-    allCats.forEach(cat => {
-      const list = catMap[cat];
-      if (!list || !list.length) return;
-      const catColor = CAT_COLOR[cat] || '#5C3489';
-      html += `<div style="margin-top:6px;margin-bottom:2px;font-size:10px;font-weight:700;color:${catColor};padding:2px 6px;border-left:3px solid ${catColor};letter-spacing:.5px">${cat}</div>`;
-      list.forEach(d => {
-        const dt = new Date(d.created_at);
-        const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-        const remainMs = dt.getTime() + 24*60*60*1000 - Date.now();
-        const remainH = Math.floor(remainMs / 3600000);
-        const remainM = Math.floor((remainMs % 3600000) / 60000);
-        const remainStr = remainMs > 0
-          ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#aaa'}">${remainH}시간 ${remainM}분 후 삭제</span>`
-          : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
-        html += `
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
-            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${d._color}18;color:${d._color};border:1px solid ${d._color}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
-            ${d._isSession ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#1D9E7520;color:#0D6E55;border:1px solid #1D9E7560;font-weight:700;white-space:nowrap;flex-shrink:0">세션</span>' : ''}
-            <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}${d._isSession ? '' : '<br>' + remainStr}</span>
-            <button onclick="openResultDoc(${d._gi})"
-              style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;flex-shrink:0"
-              onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
-              onmouseout="this.style.background='#fff';this.style.color='#1F3864'">📄 보기</button>
-          </div>`;
-      });
-    });
-    html += `</div></div>`;
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#FAFBFF;border-radius:10px;border:1px solid #E8EAF0">
+        <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${docColor}18;color:${docColor};border:1px solid ${docColor}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
+        ${d._isSession ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#1D9E7520;color:#0D6E55;border:1px solid #1D9E7560;font-weight:700;white-space:nowrap;flex-shrink:0">세션</span>' : ''}
+        ${resName}
+        <span style="font-size:10px;color:#888;flex:1;min-width:0">${dateStr}${d._isSession ? '' : '<br>' + remainStr}</span>
+        <button onclick="openResultDoc(${i})"
+          style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;flex-shrink:0"
+          onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
+          onmouseout="this.style.background='#fff';this.style.color='#1F3864'">📄 보기</button>
+      </div>`;
   });
+  html += '</div>';
 
   container.innerHTML = html;
 }
@@ -18461,7 +18439,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.22
+  Day:음 · v2026.06.19.25
 </div>
 </body>
 </html>
