@@ -1024,12 +1024,14 @@ function renderDocHistory() {
 
   // 센터+이름 조합으로 그룹핑
   const residents = {};
-  filtered.forEach((d, origIdx) => {
+  filtered.forEach((d) => {
     const name = d.resident_name || '이름 없음';
     const ctrCode = d.center_code || '';
     const groupKey = ctrCode + '__' + name;
     if (!residents[groupKey]) residents[groupKey] = { name, ctrCode, docs: [] };
-    residents[groupKey].docs.push({ ...d, _origIdx: origIdx });
+    // _allDocs 기준 인덱스로 저장 (id 매칭으로 필터 인덱스 불일치 방지)
+    const allIdx = _allDocs.findIndex(x => x.id === d.id);
+    residents[groupKey].docs.push({ ...d, _origIdx: allIdx });
   });
 
   let html = '';
