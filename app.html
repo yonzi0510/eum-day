@@ -5221,6 +5221,11 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;colo
     document.getElementById('report-prog').style.display = 'none';
     document.getElementById('report-result').style.display = 'block';
     registerSessionDoc(cfg.label || '요양일지', html, window.currentLinkedName || '—', '요양일지');
+    // Supabase 저장 (문서이력 조회용)
+    try {
+      const _cfgCenter = CENTERS[centerCode] || {};
+      await saveDocToSupabase(centerCode, _cfgCenter.name || centerCode, window.currentLinkedName || '—', cfg.label || '요양일지', html);
+    } catch(e) { console.warn('[요양일지 저장 오류]', e.message); }
 
   } catch (e) {
     clearInterval(progTimer);
@@ -18421,7 +18426,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.02
+  Day:음 · v2026.06.19.03
 </div>
 </body>
 </html>
