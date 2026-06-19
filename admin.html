@@ -702,12 +702,23 @@ function renderCenterTable(logs) {
   const byCtr = {};
   logs.forEach(l => {
     const k = l.center_short || Object.values(CENTERS).find(c => c.short === l.center_short)?.short || l.center_name || '기타';
-    if (!byCtr[k]) byCtr[k] = { calls:0, cost:0, raw:0, input:0, output:0 };
+    if (!byCtr[k]) byCtr[k] = { calls:0, monthly:0, periodic:0, adhoc:0, verify:0, report:0, survey:0, other:0, cost:0, raw:0, input:0, output:0 };
     byCtr[k].calls++;
     byCtr[k].cost   += l.cost_krw      || 0;
     byCtr[k].raw    += l.cost_raw_krw  || Math.round((l.cost_krw||0) / 3);
     byCtr[k].input  += l.input_tokens  || 0;
     byCtr[k].output += l.output_tokens || 0;
+    // 유형별 분류
+    const _vl = new Set(['문서검증','문서검증_수정본','AI질의','문서교정','문서교정결과','문서검증결과']);
+    const _rl = new Set(['요양일지','보고서','일일보고서','현황보고서','사례회의보고서']);
+    const _sl = new Set(['프로그램 의견수렴','식사만족도조사']);
+    if (l.doc_type === 'monthly')            byCtr[k].monthly++;
+    else if (l.doc_type === 'periodic')      byCtr[k].periodic++;
+    else if (l.doc_label === '퇴소 연계기록지') byCtr[k].adhoc++;
+    else if (_vl.has(l.doc_label))           byCtr[k].verify++;
+    else if (_rl.has(l.doc_label))           byCtr[k].report++;
+    else if (_sl.has(l.doc_label))           byCtr[k].survey++;
+    else                                     byCtr[k].other++;
   });
 
   const totalRaw  = Object.values(byCtr).reduce((s,v) => s + v.raw,  0);
@@ -723,28 +734,52 @@ function renderCenterTable(logs) {
       <thead><tr>
         <th>센터</th>
         <th>비율</th>
-        <th class="right">문서 생성</th>
+        <th class="right" style="font-size:10px">월간</th>
+        <th class="right" style="font-size:10px">정기</th>
+        <th class="right" style="font-size:10px">수시</th>
+        <th class="right" style="font-size:10px">검증·교정</th>
+        <th class="right" style="font-size:10px">요양일지</th>
+        <th class="right" style="font-size:10px">조사</th>
+        <th class="right" style="font-size:10px">기타</th>
+        <th class="right">API 호출</th>
         <th class="right">원가 (실지불)</th>
       </tr></thead>
       <tbody>
         ${sorted.map(([name, d]) => {
           const pct = totalRaw > 0 ? Math.round(d.raw / totalRaw * 100) : 0;
           const clr = CTR_COLORS[name] || '#607080';
+          const cell = (n) => n > 0
+            ? `<td class="right" style="color:#C8D4E0">${n}</td>`
+            : `<td class="right" style="color:#2A3A50">—</td>`;
           return `<tr>
-            <td><span style="font-weight:700;color:${clr}">${name}</span></td>
-            <td style="min-width:100px">
-              <div style="display:flex;align-items:center;gap:8px">
+            <td><span style="font-weight:700;color:${clr};white-space:nowrap">${name}</span></td>
+            <td style="min-width:80px">
+              <div style="display:flex;align-items:center;gap:6px">
                 <div class="bar-wrap" style="flex:1"><div class="bar-fill" style="width:${pct}%;background:${clr}"></div></div>
                 <span style="font-size:10px;color:#405060;width:28px;text-align:right">${pct}%</span>
               </div>
             </td>
-            <td class="right">${d.calls}건</td>
+            ${cell(d.monthly)}
+            ${cell(d.periodic)}
+            ${cell(d.adhoc)}
+            ${cell(d.verify)}
+            ${cell(d.report)}
+            ${cell(d.survey)}
+            ${cell(d.other)}
+            <td class="right" style="color:#607080;font-size:11px">${d.calls}</td>
             <td class="right" style="color:#4ECFA0;font-weight:600">₩${d.raw.toLocaleString()}</td>
           </tr>`;
         }).join('')}
         <tr style="border-top:1.5px solid #2A3A50">
           <td colspan="2" style="font-weight:700;color:#C8D4E0">합계</td>
-          <td class="right">${logs.length}건</td>
+          <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.monthly,0)||'—'}</td>
+          <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.periodic,0)||'—'}</td>
+          <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.adhoc,0)||'—'}</td>
+          <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.verify,0)||'—'}</td>
+          <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.report,0)||'—'}</td>
+          <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.survey,0)||'—'}</td>
+          <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.other,0)||'—'}</td>
+          <td class="right" style="color:#607080;font-size:11px">${logs.length}</td>
           <td class="right" style="color:#4ECFA0;font-weight:800">₩${totalRaw.toLocaleString()}</td>
         </tr>
       </tbody>
