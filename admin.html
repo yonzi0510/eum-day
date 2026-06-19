@@ -226,11 +226,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             <div class="kpi-val" style="color:#E8A040" id="kpi-raw">-</div>
             <div class="kpi-sub" id="kpi-raw-sub">Anthropic 청구액</div>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-label">청구금액 (기관)</div>
-            <div class="kpi-val" style="color:#4ECFA0" id="kpi-cost">-</div>
-            <div class="kpi-sub" id="kpi-cost-sub"></div>
-          </div>
+
         </div>
 
         <!-- 센터별 사용량 -->
@@ -696,8 +692,7 @@ function renderKPI(logs) {
   set('kpi-other',    (verify + other) + '건');
   set('kpi-raw',    '₩' + raw.toLocaleString());
   set('kpi-raw-sub', rangeStr);
-  set('kpi-cost',   '₩' + cost.toLocaleString());
-  set('kpi-cost-sub', rangeStr);
+
 }
 
 function renderCenterTable(logs) {
