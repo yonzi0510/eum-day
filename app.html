@@ -5221,6 +5221,7 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;colo
     document.getElementById('report-prog').style.display = 'none';
     document.getElementById('report-result').style.display = 'block';
     registerSessionDoc(cfg.label || '요양일지', html, window.currentLinkedName || '—', '요양일지');
+    updateSessionDocNames(window.currentLinkedName || '');
     // Supabase 저장 (문서이력 조회용)
     try {
       const _cfgCenter = CENTERS[centerCode] || {};
@@ -6103,10 +6104,29 @@ function registerSessionDoc(label, html, residentName, category) {
   if (!html || !html.trim()) return;
   const now = new Date();
   const _ctr = CENTERS[centerCode] || {};
+
+  // 이름 결정: 전달값 → currentLinkedName → HTML에서 추출
+  const FORBIDDEN_NAMES = new Set(['수급자','—','빈칸','본인','확인','모두','이름없음','미확인','']);
+  let _resName = residentName || window.currentLinkedName || '';
+  if (!_resName || FORBIDDEN_NAMES.has(_resName)) {
+    // HTML에서 수급자명 추출 시도
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const cells = tmp.querySelectorAll('td');
+    for (let i = 0; i < cells.length - 1; i++) {
+      const ct = cells[i].textContent.trim();
+      if (ct === '수급자' || ct === '수급자명' || ct === '수급자성명') {
+        const nv = cells[i+1]?.textContent.trim();
+        if (nv && /^[가-힣]{2,5}$/.test(nv) && !FORBIDDEN_NAMES.has(nv)) { _resName = nv; break; }
+      }
+    }
+  }
+  if (!_resName || FORBIDDEN_NAMES.has(_resName)) _resName = '—';
+
   window._sessionDocs.push({
     _isSession: true,
     doc_type: label,
-    resident_name: residentName || window.currentLinkedName || '—',
+    resident_name: _resName,
     center_name: _ctr.name || centerCode || '',
     center_code: centerCode || '',
     doc_content: html,
@@ -6124,10 +6144,19 @@ function registerSessionDoc(label, html, residentName, category) {
   });
 }
 
+// ────── 세션 문서 이름 소급 업데이트 ──────
+function updateSessionDocNames(resName) {
+  if (!resName || resName === '수급자' || resName === '—' || resName === '빈칸') return;
+  (window._sessionDocs || []).forEach(d => {
+    if (!d.resident_name || ['수급자','—','빈칸','본인','확인','모두',''].includes(d.resident_name)) {
+      d.resident_name = resName;
+    }
+  });
+}
+
 // ────── 문서 결과 보기 탭 ──────
 // doc_type → 카테고리 분류 매핑
 const DOC_CATEGORY_MAP = {
-  '상담일지': { cat: '월간문서', color: '#1F3864' },
   '분기별 상담일지': { cat: '월간문서', color: '#1F3864' },
   '보호자 상담일지': { cat: '월간문서', color: '#1F3864' },
   '사례관리 회의록': { cat: '월간문서', color: '#1F3864' },
@@ -6234,39 +6263,63 @@ async function loadResultsDocs() {
 function renderDocList(docs, noticeBanner, container, showAll) {
   window._resultsDocs = docs;
 
+  const residents = {};
+  docs.forEach((d, i) => {
+    const name = d.resident_name || '이름 없음';
+    const info = d._isSession
+      ? { cat: d._category || '기타', color: d._color || '#555' }
+      : (DOC_CATEGORY_MAP[d.doc_type] || { cat: '기타', color: '#5C3489' });
+    if (!residents[name]) residents[name] = {};
+    if (!residents[name][info.cat]) residents[name][info.cat] = [];
+    residents[name][info.cat].push({ ...d, _gi: i, _color: info.color });
+  });
+
   const sessionCount = docs.filter(d => d._isSession).length;
+  const supabaseCount = docs.length - sessionCount;
   let html = noticeBanner;
   html += `<div style="font-size:11px;color:#888;margin-bottom:10px;text-align:right">총 ${docs.length}건`;
   if (sessionCount > 0) html += ` · 현재 세션 <span style="color:#1D9E75;font-weight:600">${sessionCount}건</span>`;
   html += `</div>`;
 
-  html += `<div style="display:flex;flex-direction:column;gap:6px">`;
-  docs.forEach((d, i) => {
-    const info = d._isSession
-      ? { color: d._color || '#555' }
-      : (DOC_CATEGORY_MAP[d.doc_type] || { color: '#5C3489' });
-    const color = info.color;
-    const dt = new Date(d.created_at);
-    const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-    const remainMs = dt.getTime() + 24*60*60*1000 - Date.now();
-    const remainH = Math.floor(remainMs / 3600000);
-    const remainM = Math.floor((remainMs % 3600000) / 60000);
-    const remainStr = remainMs > 0
-      ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#aaa'}">${remainH}시간 ${remainM}분 후 삭제</span>`
-      : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
+  Object.entries(residents).forEach(([name, catMap]) => {
+    const resTotal = Object.values(catMap).reduce((s, a) => s + a.length, 0);
     html += `
-      <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
-        <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${color}18;color:${color};border:1px solid ${color}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
-        ${d._isSession ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#1D9E7520;color:#0D6E55;border:1px solid #1D9E7560;font-weight:700;white-space:nowrap;flex-shrink:0">세션</span>' : ''}
-        <span style="font-size:12px;font-weight:600;color:#333;white-space:nowrap;flex-shrink:0">${d.resident_name || '—'}</span>
-        <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}${d._isSession ? '' : '<br>' + remainStr}</span>
-        <button onclick="openResultDoc(${i})"
-          style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;flex-shrink:0"
-          onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
-          onmouseout="this.style.background='#fff';this.style.color='#1F3864'">📄 보기</button>
-      </div>`;
+      <div style="border:1px solid #E8EAF0;border-radius:12px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#F0F4FF;padding:10px 14px;font-size:13px;font-weight:700;color:#1F3864;display:flex;align-items:center;gap:6px">
+          👤 ${name}
+          <span style="font-size:10px;background:#1F3864;color:#fff;padding:1px 7px;border-radius:10px;font-weight:500">${resTotal}건</span>
+        </div>
+        <div style="padding:8px 12px;display:flex;flex-direction:column;gap:4px">`;
+
+    const allCats = [...CAT_ORDER, ...Object.keys(catMap).filter(c => !CAT_ORDER.includes(c))];
+    allCats.forEach(cat => {
+      const list = catMap[cat];
+      if (!list || !list.length) return;
+      const catColor = CAT_COLOR[cat] || '#5C3489';
+      html += `<div style="margin-top:6px;margin-bottom:2px;font-size:10px;font-weight:700;color:${catColor};padding:2px 6px;border-left:3px solid ${catColor};letter-spacing:.5px">${cat}</div>`;
+      list.forEach(d => {
+        const dt = new Date(d.created_at);
+        const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+        const remainMs = dt.getTime() + 24*60*60*1000 - Date.now();
+        const remainH = Math.floor(remainMs / 3600000);
+        const remainM = Math.floor((remainMs % 3600000) / 60000);
+        const remainStr = remainMs > 0
+          ? `<span style="font-size:10px;color:${remainH < 3 ? '#E24B4A' : '#aaa'}">${remainH}시간 ${remainM}분 후 삭제</span>`
+          : `<span style="font-size:10px;color:#E24B4A">만료됨</span>`;
+        html += `
+          <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#FAFBFF;border-radius:8px;border:1px solid #E8EAF0">
+            <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:${d._color}18;color:${d._color};border:1px solid ${d._color}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type}</span>
+            ${d._isSession ? '<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:#1D9E7520;color:#0D6E55;border:1px solid #1D9E7560;font-weight:700;white-space:nowrap;flex-shrink:0">세션</span>' : ''}
+            <span style="font-size:11px;color:#888;flex:1;min-width:0">${dateStr}${d._isSession ? '' : '<br>' + remainStr}</span>
+            <button onclick="openResultDoc(${d._gi})"
+              style="font-size:11px;padding:4px 12px;border-radius:6px;border:1.5px solid #1F3864;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;flex-shrink:0"
+              onmouseover="this.style.background='#1F3864';this.style.color='#fff'"
+              onmouseout="this.style.background='#fff';this.style.color='#1F3864'">📄 보기</button>
+          </div>`;
+      });
+    });
+    html += `</div></div>`;
   });
-  html += `</div>`;
 
   container.innerHTML = html;
 }
@@ -6658,8 +6711,8 @@ const AI_DRAFT_NOTICE = `<div class="ai-draft-notice"><span style="font-size:16p
 function buildMonthlyPrompt(opinion) {
   // 선택된 문서 확인
   const docs = {
-    m1: document.getElementById('m1')?.checked, // 상담일지
-    m2: document.getElementById('m2')?.checked, // 보호자 상담 (자동)
+    m1: document.getElementById('m1')?.checked, // 분기별 상담일지
+    m2: document.getElementById('m2')?.checked, // 보호자 상담일지
     m3: document.getElementById('m3')?.checked, // 사례관리 회의록
     m4: document.getElementById('m4')?.checked, // 월간 현황 요약
     m5: document.getElementById('m5')?.checked, // 프로그램업무수행일지
@@ -6668,12 +6721,12 @@ function buildMonthlyPrompt(opinion) {
   const docList = [];
   if (docs.m1) {
     if (counselStyle === 'narrative') {
-      docList.push('1. 상담일지 (최대 3회차) — 서술형 형식, 급여제공반영 포함');
+      docList.push('1. 분기별 상담일지 (최대 3회차) — 서술형 형식, 급여제공반영 포함');
     } else {
-      docList.push('1. 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
+      docList.push('1. 분기별 상담일지 (최대 3회차) — SOAP 형식, 급여제공반영 포함');
     }
   }
-  if (docs.m2) docList.push('2. 보호자 상담 — 이슈 발생 시 자동 추가');
+  if (docs.m2) docList.push('2. 보호자 상담일지 — 이슈 발생 시');
   if (docs.m3) docList.push('3. 사례관리 회의록 — 반드시 초안 제시, 상단에 "※ 사례관리 회의록 초안입니다. 채택 여부는 담당자가 결정하세요." 안내 포함, 상담일지 P항목과 연계하여 작성');
   if (docs.m4) docList.push('4. 월간 현황 요약 — 이용일수·혈압·식사·프로그램 한 페이지');
   if (docs.m5) docList.push(`5. 인지활동형 프로그램관리자 업무수행일지 [별지 제24호의2서식]
@@ -6848,7 +6901,7 @@ function buildMonthlyPrompt(opinion) {
    </table>
    </div>`);
 
-  if (docList.length === 0) docList.push('1. 상담일지 (기본)');
+  if (docList.length === 0) docList.push('1. 분기별 상담일지 (기본)');
 
   return `${getStylePrompt('m')}파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
 파악할 항목: 수급자명 / 생년월일 / 장기요양등급 / 장기요양인정번호 / 기관명 / 기관기호 / 기록지에 기재된 작성자(담당자) 성명 / 기록 대상 연월(시작월~종료월).
@@ -7978,8 +8031,8 @@ async function startGenerate(type) {
   // 월간 문서: 선택된 항목 기반으로 프로그레스 스텝 텍스트 업데이트
   if (type === 'monthly') {
     const stepLabels = [
-      { id: 'mp4', checked: 'm1', icon: '📝', text: '상담일지 작성 중...' },
-      { id: 'mp5', checked: 'm2', icon: '📞', text: '보호자 상담 확인 중...' },
+      { id: 'mp4', checked: 'm1', icon: '📝', text: '분기별 상담일지 작성 중...' },
+      { id: 'mp5', checked: 'm2', icon: '📞', text: '보호자 상담일지 작성 중...' },
       { id: 'mp6', checked: 'm3', icon: '👥', text: '사례관리 회의록 작성 중...' },
     ];
     // m4(월간요약), m5(프로그램일지) 선택시 덮어씀
@@ -8377,8 +8430,9 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       const r = extractBodyContent(window._monthlyHtml || '');
       await saveResidentFromResult(type, window._monthlyHtml || '');
       const resName = window.currentLinkedName || '수급자';
+      updateSessionDocNames(resName);
       const docMap = {
-        m1: { checked: document.getElementById('m1')?.checked, label: '상담일지' },
+        m1: { checked: document.getElementById('m1')?.checked, label: '본인·보호자 상담일지' },
         m3: { checked: document.getElementById('m3')?.checked, label: '사례관리 회의록' },
         m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
       };
@@ -8397,6 +8451,7 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
                             (window._periodicHtml3 || '') + (window._periodicHtml4 || '');
       await saveResidentFromResult(type, resultForSave);
       const resName = window.currentLinkedName || '수급자';
+      updateSessionDocNames(resName);
       const saveMap = [
         { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
         { html: window._periodicHtml2, label: '욕구사정' },
@@ -16278,6 +16333,7 @@ async function startAdhocGenerate() {
   // 인쇄용 HTML 저장
   window.linkageDocHTML = aiResult;
   registerSessionDoc('퇴소 연계기록지', aiResult, window.currentLinkedName || '수급자', '수시문서');
+  updateSessionDocNames(window.currentLinkedName || '');
 
   // Supabase 저장
   try {
@@ -18405,7 +18461,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.20
+  Day:음 · v2026.06.19.22
 </div>
 </body>
 </html>
