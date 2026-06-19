@@ -8432,6 +8432,7 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
   } catch(saveErr) {
     console.error('[저장 오류]', saveErr.message);
   }
+} // end startGenerate
 
 // ── HTML에서 body 내용만 추출 (DOC_CSS 제외 → Supabase 용량 절감) ──
 function extractBodyContent(fullHtml) {
@@ -8441,7 +8442,6 @@ function extractBodyContent(fullHtml) {
   if (bodyMatch) return bodyMatch[1].trim();
   // body 태그 없으면 전체 반환 (조각 HTML인 경우)
   return fullHtml;
-}
 }
 
 // ────── 피드백 → AI 수정본 ──────
@@ -18426,7 +18426,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.03
+  Day:음 · v2026.06.19.06
 </div>
 </body>
 </html>
