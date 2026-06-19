@@ -1022,62 +1022,30 @@ function renderDocHistory() {
     return;
   }
 
-  // 센터+이름 조합으로 그룹핑
-  const residents = {};
-  filtered.forEach((d) => {
-    const name = d.resident_name || '이름 없음';
-    const ctrCode = d.center_code || '';
-    const groupKey = ctrCode + '__' + name;
-    if (!residents[groupKey]) residents[groupKey] = { name, ctrCode, docs: [] };
-    // _allDocs 기준 인덱스로 저장 (id 매칭으로 필터 인덱스 불일치 방지)
+  // 시간순 단순 목록
+  let html = '<div style="display:flex;flex-direction:column;gap:4px">';
+  filtered.forEach(d => {
     const allIdx = _allDocs.findIndex(x => x.id === d.id);
-    residents[groupKey].docs.push({ ...d, _origIdx: allIdx });
-  });
-
-  let html = '';
-  Object.entries(residents).forEach(([, group]) => {
-    const { name, docs: list } = group;
-    // 카테고리별 재분류
-    const bycat = {};
-    list.forEach(d => {
-      const info = DOC_CAT_MAP[d.doc_type] || { cat: '기타', color: '#607080' };
-      if (!bycat[info.cat]) bycat[info.cat] = [];
-      bycat[info.cat].push({ ...d, _catColor: info.color });
-    });
-
-    const ctrName = list[0].center_name || list[0].center_code || '';
+    const dt = new Date(d.created_at);
+    const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const info = DOC_CAT_MAP[d.doc_type] || { cat: '기타', color: '#607080' };
+    const docColor = info.color;
+    const ctrName = d.center_name || d.center_code || '';
     const badgeCls = CTR_BADGES[ctrName] || 'badge-gray';
-
-    html += `<div style="border:1px solid #2A3A50;border-radius:10px;overflow:hidden;margin-bottom:10px">
-      <div style="background:#1A2A3A;padding:8px 12px;display:flex;align-items:center;gap:8px">
-        <span class="badge ${badgeCls}" style="flex-shrink:0;font-size:10px">${ctrName}</span>
-        <span style="font-weight:700;color:#C8D4E0;font-size:12px">👤 ${name}</span>
-        <span style="font-size:10px;background:#2A3A50;color:#607080;padding:1px 7px;border-radius:10px;font-weight:500">${list.length}건</span>
-      </div>
-      <div style="padding:7px 10px;display:flex;flex-direction:column;gap:3px">`;
-
-    const orderedCats = [...DOC_CAT_ORDER.filter(c => bycat[c]), ...Object.keys(bycat).filter(c => !DOC_CAT_ORDER.includes(c))];
-    orderedCats.forEach(cat => {
-      const catDocs = bycat[cat];
-      if (!catDocs || !catDocs.length) return;
-      const catColor = DOC_CAT_COLOR[cat] || '#607080';
-      html += `<div style="margin-top:5px;margin-bottom:2px;font-size:10px;font-weight:700;color:${catColor};padding:2px 6px;border-left:3px solid ${catColor};letter-spacing:.5px">${cat}</div>`;
-      catDocs.forEach(d => {
-        const dt = new Date(d.created_at);
-        const dateStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-        const docColor = d._catColor || '#607080';
-        html += `<div style="display:flex;align-items:center;gap:7px;padding:6px 9px;background:#141E2B;border-radius:7px;border:1px solid #2A3A50">
-          <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${docColor}25;color:${docColor};border:1px solid ${docColor}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type || '—'}</span>
-          <span style="font-size:10px;color:#405060;flex:1">${dateStr}</span>
-          <button class="doc-view-btn" onclick="openDoc(${d._origIdx})">보기</button>
-        </div>`;
-      });
-    });
-    html += `</div></div>`;
+    const resName = d.resident_name && d.resident_name !== '수급자' && d.resident_name !== '—' ? `<span style="font-size:11px;color:#C8D4E0;white-space:nowrap;flex-shrink:0">${d.resident_name}</span>` : '';
+    html += `<div style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:#141E2B;border-radius:8px;border:1px solid #2A3A50">
+      <span class="badge ${badgeCls}" style="flex-shrink:0;font-size:10px;white-space:nowrap">${ctrName}</span>
+      <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${docColor}25;color:${docColor};border:1px solid ${docColor}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type || '—'}</span>
+      ${resName}
+      <span style="font-size:10px;color:#405060;flex:1">${dateStr}</span>
+      <button class="doc-view-btn" onclick="openDoc(${allIdx})">보기</button>
+    </div>`;
   });
+  html += '</div>';
 
   el.innerHTML = html;
 }
+
 
 function openDoc(idx) {
   const d = _allDocs[idx];
