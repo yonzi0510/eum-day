@@ -332,7 +332,6 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .review-grid{display:flex;flex-direction:column;gap:10px}
 .review-card{background:#fff;border-radius:12px;border:1px solid #E8EAF0;padding:16px}
 .review-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.review-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
 .review-meta{flex:1}
 .review-name{font-size:12px;font-weight:600;color:#1a1a2e}
 .review-center{font-size:11px;color:#888;margin-top:1px}
@@ -5348,7 +5347,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  loadAdhocResidents();
 });
 
 // ── 설문지 출력: 프로그램 ──
@@ -6354,7 +6352,6 @@ function switchTab(id, btn) {
   btn.classList.add('active');
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if(id==='tab-overview') renderOverview();
   if(id==='tab-about') renderAboutReviews();
   if(id==='tab-results') {
     const f = document.getElementById('results-center-filter');
@@ -6396,14 +6393,8 @@ function switchSub(id, btn) {
   document.getElementById(id).classList.add('active');
 }
 function goOverview() {
-  const btn = document.querySelector('.tab-btn[onclick*="tab-overview"]');
-  if (btn) switchTab('tab-overview', btn);
-  else {
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-    document.getElementById('tab-overview').classList.add('active');
-    renderOverview();
-  }
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
 }
 
 // ────── 파일 → base64 변환 ──────
@@ -8281,7 +8272,6 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     const cfg = CENTERS[centerCode] || {};
     if (type === 'monthly') {
       const r = extractBodyContent(window._monthlyHtml || '');
-      await saveResidentFromResult(type, window._monthlyHtml || '');
       const resName = window.currentLinkedName;
       if (resName) {
         updateSessionDocNames(resName);
@@ -8304,7 +8294,6 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     } else {
       const resultForSave = (window._periodicHtml1 || '') + (window._periodicHtml2 || '') +
                             (window._periodicHtml3 || '') + (window._periodicHtml4 || '');
-      await saveResidentFromResult(type, resultForSave);
       const resName = window.currentLinkedName;
       if (resName) {
         updateSessionDocNames(resName);
@@ -9046,195 +9035,13 @@ function downloadDocx(type) {
 // ────── 어르신 정보 저장 (A안+B안 통합) ──────
 
 // [A안] 생성된 HTML에서 핵심 데이터 파싱
-function parseResidentDataFromHtml(type, html) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  const text = (tmp.innerText || tmp.textContent || '').replace(/\s+/g, ' ');
-  const result = {};
-
-  if (type === 'periodic') {
-    // ── 낙상위험도 (Huhn) ──
-    const fallMatch = text.match(/낙상위험도\s*평가[^총]*총점[:\s]*(\d+)점[^위험]*위험\s*수준[:\s]*([^\s(（]+)/);
-    if (!fallMatch) {
-      // 단순 패턴 fallback
-      const fm2 = text.match(/총점[:\s]*(\d+)점\s*위험\s*수준[:\s]*([가-힣]+(?:\s*\([^)]+\))?)/);
-      if (fm2) result.fall = { score: parseInt(fm2[1]), level: fm2[2].trim() };
-    } else {
-      result.fall = { score: parseInt(fallMatch[1]), level: fallMatch[2].trim() };
-    }
-    // 좀 더 견고한 패턴
-    const fallScore = html.match(/Huhn[^<]*<\/[^>]+>[^<]*<[^>]+>[^<]*총점[:\s]*(\d+)/i)
-      || text.match(/Huhn Scale[^총]*총점[:\s:]*(\d+)점/i);
-    const fallLevel = text.match(/낙상[^총]*총점[:\s]*\d+점[^위]*위험\s*수준[:\s]*([가-힣]+)/);
-    if (fallScore && !result.fall) result.fall = { score: parseInt(fallScore[1]), level: fallLevel?.[1] || '-' };
-
-    // ── 욕창위험도 (Braden) ──
-    const pressureText = text.match(/욕창위험도\s*평가[\s\S]*?총점[:\s]*(\d+)점[^위]*위험\s*수준[:\s]*([^\s(（]+)/);
-    if (pressureText) result.pressure = { score: parseInt(pressureText[1]), level: pressureText[2].trim() };
-
-    // 두 총점이 모두 있을 때 순서로 구분 (Huhn 먼저, Braden 나중)
-    if (!result.fall || !result.pressure) {
-      const allScores = [...text.matchAll(/총점[:\s]*(\d+)점\s*(?:&nbsp;)*\s*위험\s*수준[:\s]*([가-힣]+(?:\s*\([^)]+\))?)/g)];
-      if (allScores.length >= 1 && !result.fall)     result.fall     = { score: parseInt(allScores[0][1]), level: allScores[0][2].trim() };
-      if (allScores.length >= 2 && !result.pressure) result.pressure = { score: parseInt(allScores[1][1]), level: allScores[1][2].trim() };
-    }
-
-    // ── CIST (인지) ──
-    const cistMatch = text.match(/CIST\s*총점\s*(\d+)\s*\/\s*30/) || text.match(/CIST[^점]*(\d+)\/30/);
-    const cistLevel = text.match(/인지저하\s*(의심|없음|정상)/) || text.match(/(인지저하\s*의심|정상)/);
-    if (cistMatch) result.cist = { score: `${cistMatch[1]}/30`, level: cistLevel?.[1] || (parseInt(cistMatch[1]) < 15 ? '인지저하 의심' : '정상') };
-
-    // ── 욕구사정 — 진단명 ──
-    const diagMatch = text.match(/현\s*진단명[:\s]*([^\n.。]{4,40})/) || text.match(/진단명[:\s]*([^\n.。]{4,40})/);
-    if (diagMatch) result.diagnosis = diagMatch[1].replace(/<[^>]+>/g, '').trim();
-
-    // ── 욕구사정 — 배설 ──
-    const excMatch = text.match(/배설\s*양상[^:]*[:\s]*([^\n.。]{3,30})/) || text.match(/소변[^\n]{0,20}(요실금|정상|양호|배뇨곤란)/);
-    if (excMatch) result.excretion = excMatch[1].trim();
-
-    // ── 욕구사정 — 영양 ──
-    const nutriMatch = text.match(/영양\s*상태[^:]*[:\s]*(양호|적당|부족|매우\s*나쁨)/);
-    if (nutriMatch) result.nutrition = nutriMatch[1].trim();
-
-    // ── 기능회복훈련 (T51/T52/T53) — 계획서에서 파싱 ──
-    // 세부제공내용 또는 세부목표내용 패턴 추출
-    // T51 신체기능훈련 영역 텍스트
-    const t51Match = text.match(/(?:T51|신체기능(?:의\s*)?훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T52|T53|T55|T58|T60|T61|기본동작|일상생활동작|$)/);
-    const t52Match = text.match(/(?:T52|기본동작\s*훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T53|T55|T58|T60|T61|일상생활동작|$)/);
-    const t53Match = text.match(/(?:T53|일상생활동작\s*훈련)[^\n]{0,30}\n?([\s\S]{10,400}?)(?=T55|T58|T60|T61|$)/);
-
-    // 세부제공내용 기반 추출 (테이블 셀 패턴)
-    const extractCellText = (pattern) => {
-      const tmp2 = document.createElement('div');
-      tmp2.innerHTML = html;
-      const rows = tmp2.querySelectorAll('tr');
-      for (const row of rows) {
-        const cells = row.querySelectorAll('td');
-        for (let i = 0; i < cells.length; i++) {
-          if (pattern.test(cells[i].textContent)) {
-            const content = cells[cells.length - 1]?.textContent.trim();
-            if (content && content.length > 10) return content;
-          }
-        }
-      }
-      return null;
-    };
-
-    const rehabBody  = t51Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T51|신체기능(?:의)?\s*훈련/);
-    const rehabBasic = t52Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T52|기본동작\s*훈련/);
-    const rehabAdl   = t53Match?.[1]?.replace(/<[^>]+>/g,'').trim() || extractCellText(/T53|일상생활동작\s*훈련/);
-
-    if (rehabBody || rehabBasic || rehabAdl) {
-      result.rehab = {
-        body:  rehabBody  || '',
-        basic: rehabBasic || '',
-        adl:   rehabAdl   || ''
-      };
-    }
-
-  }
-
-  // ── 혈압 — 월간·정기 공통 ──
-  // 패턴: "117-76", "102/70", "133-82" 형식
-  const bpMatches = [...text.matchAll(/(\d{2,3})[-\/](\d{2,3})(?:\s*mmHg)?/g)];
-  const bpData = [];
-  const seenDates = new Set();
-  // 날짜+혈압 패턴: "혈압 117-76 (2026.04.08)" 또는 "(4/14에는 혈압이 102-70)"
-  const bpDateMatches = [...text.matchAll(/(\d{1,2})[\/.](\d{1,2})[^가-힣]{0,10}혈압[이가\s]*(\d{2,3})[-\/](\d{2,3})|혈압[^가-힣]{0,10}(\d{2,3})[-\/](\d{2,3})[^가-힣]{0,15}(\d{1,2})[\/.](\d{1,2})/g)];
-  bpDateMatches.forEach(m => {
-    let mo, day, sys, dia;
-    if (m[3]) { mo = m[1]; day = m[2]; sys = m[3]; dia = m[4]; }
-    else       { mo = m[7]; day = m[8]; sys = m[5]; dia = m[6]; }
-    const key = `${mo}/${day}`;
-    if (!seenDates.has(key) && sys >= 80 && sys <= 220 && dia >= 40 && dia <= 130) {
-      seenDates.add(key);
-      bpData.push({ date: key, sys: parseInt(sys), dia: parseInt(dia) });
-    }
-  });
-  // 날짜 매핑 없이 단순 수치만 있을 때 (최대 6개)
-  if (bpData.length === 0) {
-    bpMatches.slice(0, 6).forEach((m, i) => {
-      const sys = parseInt(m[1]), dia = parseInt(m[2]);
-      if (sys >= 80 && sys <= 220 && dia >= 40 && dia <= 130)
-        bpData.push({ date: `측정${i+1}`, sys, dia });
-    });
-  }
-  if (bpData.length > 0) result.bp = bpData.slice(0, 8);
-
-  // ── 이벤트 태그 ──
-  const events = [];
-  if (/낙상|쓰러짐|넘어짐/.test(text)) events.push({ type: 'red', label: '낙상' });
-  if (/BPSD|배회|폭력|망상|환각|반복질문/.test(text)) events.push({ type: 'red', label: 'BPSD' });
-  if (/저혈압|혈압\s*[0-9]{2,3}[-\/][0-9]{2}\D/.test(text) && /9[0-9][-\/][0-9]/.test(text)) events.push({ type: 'amber', label: '혈압' });
-  if (/욕창/.test(text)) events.push({ type: 'amber', label: '욕창위험' });
-  if (/골절|수술/.test(text)) events.push({ type: 'red', label: '골절' });
-  if (/사레|흡인|연하/.test(text)) events.push({ type: 'amber', label: '흡인위험' });
-  if (events.length > 0) result.events = events;
-
-  return result;
-}
 
 // [B안] 최근 생성된 문서 HTML을 localStorage에 보관 (어르신별, 최신 1건씩)
-function saveRecentDocHtml(name, type, html) {
-  try {
-    const key = `ium-recent-doc-${centerCode}-${name}`;
-    const existing = JSON.parse(localStorage.getItem(key) || '{}');
-    existing[type] = {
-      html,
-      label: type === 'monthly' ? '월간문서' : '정기문서',
-      date: new Date().toLocaleDateString('ko-KR'),
-      ts: Date.now()
-    };
-    localStorage.setItem(key, JSON.stringify(existing));
-  } catch(e) { /* 용량 초과 시 무시 */ }
-}
 
-function getRecentDocHtml(name, type) {
-  try {
-    const key = `ium-recent-doc-${centerCode}-${name}`;
-    const d = JSON.parse(localStorage.getItem(key) || '{}');
-    return d[type] || null;
-  } catch(e) { return null; }
-}
 
 // 문서 보기 모달
-function showDocModal(name, type) {
-  const doc = getRecentDocHtml(name, type);
-  if (!doc) { alert('저장된 문서가 없어요. 먼저 문서를 생성해주세요.'); return; }
-  let modal = document.getElementById('doc-preview-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'doc-preview-modal';
-    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
-    modal.innerHTML = `
-      <div style="background:#fff;border-radius:14px;width:100%;max-width:860px;overflow:hidden;margin:auto">
-        <div style="background:#1F3864;color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px">
-          <span id="doc-modal-title" style="font-size:14px;font-weight:600;flex:1"></span>
-          <span id="doc-modal-date" style="font-size:11px;opacity:.7"></span>
-          <button onclick="document.getElementById('doc-preview-modal').remove()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 4px">✕</button>
-        </div>
-        <div id="doc-modal-body" style="padding:16px;max-height:80vh;overflow-y:auto;font-family:'Noto Sans KR','맑은 고딕',sans-serif"></div>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-  }
-  document.getElementById('doc-modal-title').textContent = `${name} 어르신 · ${doc.label}`;
-  document.getElementById('doc-modal-date').textContent = doc.date + ' 생성';
-  document.getElementById('doc-modal-body').innerHTML = doc.html;
-  modal.style.display = 'flex';
-}
 
 // ── 메인 저장 함수 ──
-async function saveResidentFromResult(type, resultHtml) {
-  // 이름 추출 제거 — 어르신현황 탭 파싱 데이터만 유지
-  try {
-    const parsed = parseResidentDataFromHtml(type, resultHtml);
-    // 파싱 데이터만 활용 (어르신현황 탭 별도 관리)
-    await renderOverview();
-  } catch(e) {
-    console.log('어르신 정보 저장 오류:', e);
-  }
-}
 
 // ────── 평가지표 Q&A 채팅 ──────
 const QA_SYSTEM_BASE = `당신은 2026년 주야간보호 장기요양기관 평가지표를 안내하는 전문 도우미입니다.
@@ -16035,8 +15842,7 @@ function resetSub(type) {
     document.getElementById('adhoc-exit-reason').value = '';
     document.getElementById('adhoc-after-plan').value = '';
     window.adhocFileData = null;
-    window.adhocResidentData = null;
-    document.querySelectorAll('.revised-area').forEach(el=>el.classList.remove('show'));
+      document.querySelectorAll('.revised-area').forEach(el=>el.classList.remove('show'));
     return;
   }
   const prefix = type==='monthly'?'m':'p';
@@ -16090,29 +15896,7 @@ function resetSub(type) {
 }
 
 // ────── 수시 문서: 어르신 목록 로드 ──────
-async function loadAdhocResidents() {
-  const list = await loadAll();
-  const wrap = document.getElementById('adhoc-resident-list');
-  const noMsg = document.getElementById('adhoc-no-resident');
-  if (!list || list.length === 0) {
-    wrap.innerHTML = '';
-    noMsg.style.display = 'block';
-    return;
-  }
-  noMsg.style.display = 'none';
-  wrap.innerHTML = list.map(r =>
-    `<button class="res-chip" onclick="selectAdhocResident('${r.id}',this)">${r.name}</button>`
-  ).join('');
-}
 
-function selectAdhocResident(id, btn) {
-  document.querySelectorAll('#adhoc-resident-list .res-chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  loadAll().then(list => {
-    const r = list.find(x => x.id === id);
-    if (r) { window.adhocResidentData = r; window.adhocFileData = null; }
-  });
-}
 
 function handleAdhocFile(input) {
   const file = input.files[0];
@@ -16121,8 +15905,6 @@ function handleAdhocFile(input) {
   document.getElementById('adhoc-fname-wrap').style.display = 'block';
   document.getElementById('adhoc-fname').textContent = file.name;
   // 저장 어르신 선택 해제
-  document.querySelectorAll('#adhoc-resident-list .res-chip').forEach(c => c.classList.remove('active'));
-  window.adhocResidentData = null;
   fileToBase64(file).then(b64 => { window.adhocFileData = { name: file.name, data: b64 }; });
 }
 
@@ -16135,7 +15917,6 @@ document.addEventListener('DOMContentLoaded', () => {
       wrap.style.display = sel.value === '기타' ? 'block' : 'none';
     });
   }
-  loadAdhocResidents();
 });
 
 // ────── 수시 문서: 연계기록지 생성 ──────
@@ -16148,8 +15929,8 @@ async function startAdhocGenerate() {
     alert('퇴소일과 퇴소사유를 입력해주세요.');
     return;
   }
-  if (!window.adhocFileData && !window.adhocResidentData) {
-    alert('어르신 정보를 선택하거나 PDF를 업로드해주세요.');
+  if (!window.adhocFileData) {
+    alert('PDF를 업로드해주세요.');
     return;
   }
 
@@ -16191,7 +15972,7 @@ async function startAdhocGenerate() {
 
   // Supabase 저장
   try {
-    const resName = window.adhocResidentData?.name || window.currentLinkedName || '수급자';
+    const resName = window.currentLinkedName || '수급자';
     const cfg = CENTERS[centerCode] || {};
     await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '퇴소 연계기록지', aiResult);
   } catch(e) { console.log('수시문서 저장 오류:', e); }
@@ -16199,10 +15980,7 @@ async function startAdhocGenerate() {
 
 async function callLinkageAI(exitDate, exitReason, afterPlan) {
   let contextText = '';
-  if (window.adhocResidentData) {
-    const r = window.adhocResidentData;
-    contextText = `어르신 저장 데이터:\n이름: ${r.name}\n등급: ${r.grade}\n상태: ${r.state}\n생년월일: ${r.birth}`;
-  } else if (window.adhocFileData) {
+  if (window.adhocFileData) {
     contextText = `[급여제공기록지 파일 첨부됨: ${window.adhocFileData.name}]\n파일 내용을 분석하여 작성하세요.`;
   }
 
@@ -16656,7 +16434,6 @@ function checkKey() {
 
 // 센터별 DB 키 분리 (데이터 완전 분리)
 // DB_KEY는 centerCode가 확정된 후 동적으로 참조
-function getDbKey() { return `ium-residents-${centerCode}`; }
 const DB_KEY = null; // 하위 호환용 (사용 안 함)
 
 // 센터 변경 (로그인 화면으로 이동)
@@ -16680,485 +16457,9 @@ function applyCenterUI() {
 }
 
 // ────── 어르신 데이터 저장·불러오기 ──────
-async function saveResident(data) {
-  try {
-    const list = await loadAll();
-    const i = list.findIndex(r => r.id === data.id);
-    if (i >= 0) list[i] = data; else list.push(data);
-    // localStorage 저장 (빠른 접근)
-    localStorage.setItem(getDbKey(), JSON.stringify(list));
-    // Supabase 동기화 (기기 간 공유)
-    syncResidentToSupabase(centerCode, list);
-  } catch(e) {
-    console.error('저장 오류:', e);
-  }
-}
-
-async function loadAll() {
-  try {
-    // 1순위: localStorage (빠름)
-    const raw = localStorage.getItem(getDbKey());
-    if (raw) return JSON.parse(raw);
-    // 2순위: Supabase (다른 기기에서 저장된 데이터)
-    return await loadResidentsFromSupabase(centerCode);
-  } catch(e) {
-    return [];
-  }
-}
-
-// Supabase 어르신 정보 저장 (비동기, 실패해도 무관)
-async function syncResidentToSupabase(code, list) {
-  try {
-    // residents 키로 documents 테이블에 JSON 저장
-    const existRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/documents?center_code=eq.${code}&doc_type=eq.__residents__&select=id`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-    );
-    const existing = await existRes.json();
-    const payload = {
-      center_code: code,
-      center_name: CENTERS[code]?.name || code,
-      resident_name: '__residents__',
-      doc_type: '__residents__',
-      doc_content: JSON.stringify(list),
-      doc_label: `__residents__`
-    };
-    if (existing?.length > 0) {
-      // 업데이트
-      await fetch(`${SUPABASE_URL}/rest/v1/documents?center_code=eq.${code}&doc_type=eq.__residents__`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
-        body: JSON.stringify({ doc_content: JSON.stringify(list) })
-      });
-    } else {
-      // 신규 저장
-      await fetch(`${SUPABASE_URL}/rest/v1/documents`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=minimal' },
-        body: JSON.stringify(payload)
-      });
-    }
-  } catch(e) { /* 실패 무시 */ }
-}
-
-// Supabase에서 어르신 정보 로드
-async function loadResidentsFromSupabase(code) {
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/documents?center_code=eq.${code}&doc_type=eq.__residents__&select=doc_content&limit=1`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-    );
-    const data = await res.json();
-    if (data?.length > 0 && data[0].doc_content) {
-      const list = JSON.parse(data[0].doc_content);
-      // localStorage에도 캐시
-      localStorage.setItem(getDbKey(), JSON.stringify(list));
-      return list;
-    }
-    return [];
-  } catch(e) { return []; }
-}
-
-const DEMO_RESIDENTS = [
-  {
-    id:'demo-kim-soon', name:'김○순', avatar:'김', grade:'4등급', state:'부분도움',
-    birth:'1942년생 · 여', lastUpdate:'2026.06.01',
-    months:[
-      {month:'2026년 6월',monthKey:'2026-06',days:20,events:[{type:'amber',label:'혈압'},{type:'red',label:'BPSD'}],bpsdLevel:'moderate',bpsdDesc:'반복질문·불안 행동 지속. 농번기 과부하 영향 의심.',docs:['상담일지 2회차']},
-      {month:'2026년 5월',monthKey:'2026-05',days:22,events:[{type:'amber',label:'혈압'},{type:'red',label:'BPSD'}],bpsdLevel:'mild',bpsdDesc:'경미한 배회 1회 · 감정기복 증가',docs:['상담일지 2회차','월간현황요약']},
-      {month:'2026년 4월',monthKey:'2026-04',days:21,events:[],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 1회차','급여제공계획서','급여제공결과평가']}
-    ],
-    eval:{
-      bp:[{date:'06/03',sys:158,dia:92},{date:'06/10',sys:162,dia:98},{date:'06/17',sys:155,dia:90},{date:'06/24',sys:160,dia:95}],
-      wt:[{date:'4월',kg:52.3},{date:'5월',kg:51.8},{date:'6월',kg:51.2}],
-      bpsd:[{label:'반복질문',active:true},{label:'배회',active:true},{label:'불안',active:true},{label:'폭력',active:false},{label:'망상',active:false},{label:'환각',active:false},{label:'우울',active:true},{label:'수면장애',active:false}]
-    },
-    schedule:{
-      done:[
-        {date:'04/15',title:'급여제공계획서 재작성',sub:'결과평가 반영 완료'},
-        {date:'05/20',title:'보호자 상담 실시',sub:'농번기 과로 · BPSD 심화 공유'}
-      ],
-      deadline:'2026-12-31',
-      checklist:[
-        {key:'eval3',label:'기초평가 3종 재실시',desc:'낙상·욕창·인지 반기 1회 · 지표 21',done:true},
-        {key:'needs',label:'욕구사정 재실시',desc:'연 1회 · 지표 20',done:true},
-        {key:'result',label:'급여제공결과평가',desc:'반기 1회 · 지표 34-1',done:true},
-        {key:'plan',label:'급여제공계획서 재작성',desc:'결과평가 후 30일 이내 · 지표 22',done:true}
-      ]
-    },
-    rehab:{body:'슬링재활운동으로 어깨·팔 근력 강화 주 3회 제공\n백세체조(팔운동·손가락운동·지구력훈련) 매일 실시\n관절염 고려하여 무리없는 범위 내 운동 진행',basic:'워커 사용하여 안전한 보행 훈련 주 3회 실시\n균형 유지를 위한 앉았다 일어서기 10회 반복\n이동 시 낙상 위험 고려 동행 지원',adl:'착탈의 시 단추 채우기·지퍼 잠그기 부분 지원\n목욕의자 활용 샤워 보조 주 2회\n소화 상태에 따른 식사 형태 조정 지원'}
-  },
-  {
-    id:'demo-park-ok', name:'박○옥', avatar:'박', grade:'5등급', state:'와상',
-    birth:'1938년생 · 여', lastUpdate:'2026.05.28',
-    months:[
-      {month:'2026년 6월',monthKey:'2026-06',days:18,events:[{type:'red',label:'욕창위험'}],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 1회차']},
-      {month:'2026년 5월',monthKey:'2026-05',days:20,events:[{type:'red',label:'휠체어전환'},{type:'amber',label:'요실금'}],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 2회차','보호자상담']},
-      {month:'2026년 4월',monthKey:'2026-04',days:19,events:[],bpsdLevel:'none',bpsdDesc:'',docs:['급여제공계획서','급여제공결과평가']}
-    ],
-    eval:{
-      bp:[{date:'06/05',sys:138,dia:82},{date:'06/12',sys:142,dia:86},{date:'06/19',sys:136,dia:80}],
-      wt:[{date:'4월',kg:58.0},{date:'5월',kg:57.8},{date:'6월',kg:57.9}],
-      bpsd:[]
-    },
-    schedule:{
-      done:[
-        {date:'05/10',title:'자립보행 소실 — 휠체어 전환',sub:'보호자 동의·계획서 변경 완료'},
-        {date:'05/18',title:'욕창 예방 교육 실시',sub:'체위변경 2시간마다 적용 중'}
-      ],
-      deadline:'2026-12-31',
-      checklist:[
-        {key:'eval3',label:'기초평가 3종 재실시',desc:'낙상·욕창·인지 반기 1회 · 지표 21',done:true},
-        {key:'needs',label:'욕구사정 재실시',desc:'연 1회 · 지표 20',done:false},
-        {key:'result',label:'급여제공결과평가',desc:'반기 1회 · 지표 34-1',done:true},
-        {key:'plan',label:'급여제공계획서 재작성',desc:'결과평가 후 30일 이내 · 지표 22',done:false}
-      ]
-    },
-    rehab:{body:'탄성밴드(세라밴드) 활용 상지 근력운동 주 3회\n앉아서 하지 운동(무릎 올리기·발목 돌리기) 매일 실시\n연하체조로 흡인 예방',basic:'휠체어 자가 조작 훈련(앞뒤·방향 전환) 주 2회\n체위변경 2시간마다 욕창 예방 실시\n침대↔휠체어 이동 훈련(보조 하에)',adl:'기저귀 교환 시 존엄성 중심 지원\n정시 화장실 유도 프로그램(2시간 간격)\n목욕 시 피부 상태 관찰 및 보습 관리'}
-  },
-  {
-    id:'demo-lee-su', name:'이○수', avatar:'이', grade:'인지지원등급', state:'독립',
-    birth:'1945년생 · 남', lastUpdate:'2026.06.05',
-    months:[
-      {month:'2026년 6월',monthKey:'2026-06',days:16,events:[{type:'amber',label:'통증'}],bpsdLevel:'none',bpsdDesc:'',docs:[]},
-      {month:'2026년 5월',monthKey:'2026-05',days:18,events:[{type:'amber',label:'척추통증'}],bpsdLevel:'none',bpsdDesc:'',docs:['상담일지 1회차']},
-      {month:'2026년 4월',monthKey:'2026-04',days:20,events:[],bpsdLevel:'none',bpsdDesc:'',docs:['월간현황요약']}
-    ],
-    eval:{
-      bp:[{date:'06/02',sys:132,dia:78},{date:'06/09',sys:128,dia:76},{date:'06/16',sys:135,dia:80}],
-      wt:[{date:'4월',kg:63.5},{date:'5월',kg:62.8},{date:'6월',kg:62.0}],
-      bpsd:[]
-    },
-    schedule:{
-      done:[
-        {date:'05/03',title:'척추관 협착증 신규 진단',sub:'이동 보조 항목 계획서 추가'}
-      ],
-      deadline:'2026-12-31',
-      checklist:[
-        {key:'eval3',label:'기초평가 3종 재실시',desc:'낙상·욕창·인지 반기 1회 · 지표 21',done:false},
-        {key:'needs',label:'욕구사정 재실시',desc:'연 1회 · 지표 20',done:false},
-        {key:'result',label:'급여제공결과평가',desc:'반기 1회 · 지표 34-1',done:false},
-        {key:'plan',label:'급여제공계획서 재작성',desc:'결과평가 후 30일 이내 · 지표 22',done:false}
-      ]
-    },
-    rehab:{body:'슬링재활운동 주 2회(허리·하지 근력 강화)\n빙고게임·이야기여행 인지활동형 프로그램 매일 60분\n지구력훈련(보행 연습) 평지 5분 왕복',basic:'안전 보행 훈련(척추관 협착 고려 짧은 구간)\n앉았다 일어서기 5회 반복(낙상 위험 고려)\n계단 오르내리기 손잡이 활용 훈련',adl:'하의 착탈의 보조(굽히기 제한 고려)\n외모 관리 자립 유지 지원(면도·로션)\n통증 고려 목욕 환경 조성(의자 목욕)'}
-  }
-];
-
-let demoVisible = false;
-
-async function toggleDemoResident() {
-  const btn = document.getElementById('demo-toggle-btn');
-  if (!demoVisible) {
-    // 샘플 보기 — 데모 데이터 저장
-    for (const r of DEMO_RESIDENTS) await saveResident(r);
-    demoVisible = true;
-    if (btn) { btn.textContent = '✕ 샘플 닫기'; btn.style.color = '#E24B4A'; }
-  } else {
-    // 샘플 닫기 — 데모 데이터 삭제
-    const list = await loadAll();
-    const filtered = list.filter(r => !r.id.startsWith('demo-'));
-    localStorage.setItem(getDbKey(), JSON.stringify(filtered));
-    demoVisible = false;
-    if (btn) { btn.textContent = '👀 샘플 보기'; btn.style.color = ''; }
-  }
-  renderOverview();
-}
-
-async function renderOverview() {
-  let list = await loadAll();
-  // 데모 버튼을 누르지 않은 경우 demo- 데이터 제외
-  if (!demoVisible) list = list.filter(r => !r.id.startsWith('demo-'));
-  const resList = document.getElementById('resident-list');
-  const noData = document.getElementById('no-data-msg');
-  const content = document.getElementById('overview-content');
-  const delBtn = document.getElementById('delete-resident-btn');
-  if(list.length===0){ resList.innerHTML=''; noData.style.display='block'; content.style.display='none'; if(delBtn) delBtn.style.display='none'; return; }
-  resList.innerHTML = list.map((r,i)=>`<button class="res-chip ${i===0?'active':''}" onclick="selectRes('${r.id}',this)">${r.name}</button>`).join('');
-  noData.style.display='none'; content.style.display='block';
-  // 삭제 버튼 표시 (데모 어르신이 아닐 때만)
-  if (delBtn) delBtn.style.display = (list[0] && !list[0].id.startsWith('demo-')) ? 'block' : 'none';
-  window._currentResId = list[0]?.id || null;
-  renderResDetail(list[0]);
-}
-function selectRes(id,btn) {
-  document.querySelectorAll('.res-chip').forEach(c=>c.classList.remove('active'));
-  btn.classList.add('active');
-  window._currentResId = id;
-  const delBtn = document.getElementById('delete-resident-btn');
-  if (delBtn) delBtn.style.display = id.startsWith('demo-') ? 'none' : 'block';
-  loadAll().then(list=>{ const r=list.find(x=>x.id===id); if(r) renderResDetail(r); });
-}
 
 // ── 어르신 삭제 ──
-async function deleteCurrentResident() {
-  const id = window._currentResId;
-  if (!id) return;
-  if (id.startsWith('demo-')) { alert('샘플 어르신은 삭제할 수 없습니다.'); return; }
-  // 이름 찾기
-  const list = await loadAll();
-  const target = list.find(r => r.id === id);
-  if (!target) return;
-  if (!confirm(`'${target.name}' 어르신의 모든 데이터를 삭제할까요?\n\n이 작업은 되돌릴 수 없습니다.`)) return;
-  const newList = list.filter(r => r.id !== id);
-  localStorage.setItem(getDbKey(), JSON.stringify(newList));
-  syncResidentToSupabase(centerCode, newList);
-  window._currentResId = null;
-  const delBtn = document.getElementById('delete-resident-btn');
-  if (delBtn) delBtn.style.display = 'none';
-  renderOverview();
-}
-function renderResDetail(r) {
-  document.getElementById('ov-avatar').textContent = r.avatar || r.name?.slice(0,1) + '○○';
-  document.getElementById('ov-name').textContent = `${r.name} 어르신`;
-  document.getElementById('ov-meta').textContent = `${r.grade || '-'} · ${r.state || '-'} · ${r.birth || '-'} | ${CENTERS[centerCode]?.name || ''}` ;
-  document.getElementById('ov-months').textContent = `${r.months?.length || 0}개월`;
-  document.getElementById('ov-last').textContent = r.lastUpdate || '-';
 
-  // 기초평가 — 실제 데이터 있으면 표시, 없으면 안내 메시지
-  document.getElementById('s1-sum').textContent = r.eval?.summary || '정기 문서 생성 후 자동 업데이트됩니다';
-  const evalGrid = document.getElementById('eval-grid');
-  if (r.eval?.fall || r.eval?.pressure || r.eval?.cist) {
-    let evalHtml = '';
-    if (r.eval.fall) evalHtml += '<div class="eval-card high"><div class="eval-lbl">낙상(Huhn)</div><div class="eval-score" style="color:#E24B4A">' + r.eval.fall.score + '점</div><div class="badge b-danger" style="margin-top:4px">' + r.eval.fall.level + '</div></div>';
-    if (r.eval.pressure) evalHtml += '<div class="eval-card mid"><div class="eval-lbl">욕창(Braden)</div><div class="eval-score" style="color:#BA7517">' + r.eval.pressure.score + '점</div><div class="badge b-warn" style="margin-top:4px">' + r.eval.pressure.level + '</div></div>';
-    if (r.eval.cist) evalHtml += '<div class="eval-card high"><div class="eval-lbl">CIST (인지)</div><div class="eval-score" style="color:#E24B4A">' + r.eval.cist.score + '</div><div class="badge b-danger" style="margin-top:4px">' + r.eval.cist.level + '</div></div>';
-    evalGrid.innerHTML = evalHtml;
-  } else {
-    const hasPDoc = getRecentDocHtml(r.name, 'periodic');
-    evalGrid.innerHTML = hasPDoc
-      ? `<div style="padding:4px 0">
-           <div style="font-size:11px;color:#888;margin-bottom:8px">정기문서에서 점수를 자동 추출하지 못했어요. 아래에서 직접 확인하세요.</div>
-           <button onclick="showDocModal('${r.name}','periodic')" style="font-size:11px;padding:6px 14px;border-radius:7px;border:1.5px solid #0D6E55;background:#F0FBF6;color:#0D6E55;cursor:pointer;font-family:inherit;font-weight:600">📄 정기문서 보기</button>
-         </div>`
-      : `<div style="font-size:12px;color:#aaa;padding:8px">정기문서 생성 후 자동으로 채워집니다</div>`;
-  }
-
-  // 월별 이력
-  const hg = document.getElementById('history-grid');
-  if (r.months && r.months.length > 0) {
-    hg.innerHTML = r.months.map((m, i) => {
-      const docBadges = (m.docs || []).map(d => {
-        const isM = d.includes('월간'), isP = d.includes('정기');
-        const clr = isM ? '#1F3864' : isP ? '#0D6E55' : '#5C3489';
-        const dt  = isM ? 'monthly' : isP ? 'periodic' : null;
-        return dt
-          ? `<span onclick="showDocModal('${r.name}','${dt}')" title="${d} 보기" style="display:inline-flex;align-items:center;gap:2px;font-size:9px;padding:2px 6px;border-radius:3px;background:${clr}18;color:${clr};border:1px solid ${clr}40;cursor:pointer;white-space:nowrap">${d} 📄</span>`
-          : `<span style="font-size:9px;padding:2px 5px;border-radius:3px;background:#F0F0F0;color:#888">${d}</span>`;
-      }).join('');
-      return `
-      <div class="month-card ${i === r.months.length - 1 ? 'active-month' : ''}">
-        <div class="mc-month">${m.month}</div>
-        <div class="mc-days">이용 ${m.days || 0}일</div>
-        <div class="mc-events">${(m.events || []).map(e => `<span class="edot" style="background:${e.type==='red'?'#E24B4A':e.type==='amber'?'#BA7517':'#1D9E75'}" title="${e.label}"></span>`).join('')}</div>
-        <div style="display:flex;flex-direction:column;gap:2px;margin-top:3px">${docBadges || '<span style="font-size:10px;color:#ccc">-</span>'}</div>
-      </div>`;
-    }).join('');
-  } else {
-    hg.innerHTML = `<div style="font-size:12px;color:#aaa;padding:8px">월간 문서 생성 후 표시됩니다</div>`;
-  }
-
-  // 섹션2 욕구사정 — 실제 데이터 있으면 표시, 없으면 안내
-  const s2Content = document.getElementById('s2-content');
-  const s2Sum = document.getElementById('s2-sum');
-  if (r.needs) {
-    s2Sum.textContent = r.needs.summary || '-';
-    s2Content.innerHTML = `
-      <div class="two-col">
-        <div class="info-card">
-          <div class="info-head">질병 및 신체</div>
-          ${r.needs.diagnosis ? `<div class="row"><span class="rl">주 진단명</span><span class="rv">${r.needs.diagnosis}</span></div>` : ''}
-          ${r.needs.bp ? `<div class="row"><span class="rl">혈압</span><span class="rv" style="color:#E24B4A">${r.needs.bp}</span></div>` : ''}
-          ${r.needs.nutrition ? `<div class="row"><span class="rl">영양상태</span><span class="rv">${r.needs.nutrition}</span></div>` : ''}
-          ${r.needs.excretion ? `<div class="row"><span class="rl">배설</span><span class="rv">${r.needs.excretion}</span></div>` : ''}
-        </div>
-        ${r.needs.bpsdItems ? `
-        <div class="info-card">
-          <div class="info-head">BPSD</div>
-          <div class="bpsd-grid">${r.needs.bpsdItems.map(item =>
-            `<div class="bi ${item.active ? 'bon' : 'boff'}">${item.active ? '✓' : '—'} ${item.label}</div>`
-          ).join('')}</div>
-        </div>` : ''}
-      </div>
-      ${r.needs.events && r.needs.events.length > 0 ? `
-      <div style="background:#fff;border:0.5px solid #E0E6F0;border-radius:8px;padding:11px 13px;margin-top:8px">
-        <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">주요 관찰 사항</div>
-        <div class="imp-list">${r.needs.events.map(e =>
-          `<div class="imp ${e.type}">${e.type==='red'?'⚠':e.type==='amber'?'⚡':'✓'} ${e.text}</div>`
-        ).join('')}</div>
-      </div>` : ''}`;
-  } else {
-    s2Sum.textContent = '-';
-    const hasPDoc2 = getRecentDocHtml(r.name, 'periodic');
-    s2Content.innerHTML = hasPDoc2
-      ? `<div style="padding:4px 0">
-           <div style="font-size:11px;color:#888;margin-bottom:8px">욕구사정 데이터를 자동 추출하지 못했어요. 아래에서 직접 확인하세요.</div>
-           <button onclick="showDocModal('${r.name}','periodic')" style="font-size:11px;padding:6px 14px;border-radius:7px;border:1.5px solid #0D6E55;background:#F0FBF6;color:#0D6E55;cursor:pointer;font-family:inherit;font-weight:600">📄 정기문서 보기</button>
-         </div>`
-      : `<div style="font-size:12px;color:#aaa;padding:8px">정기문서(욕구사정) 생성 후 자동으로 채워집니다</div>`;
-  }
-
-  // BPSD 현황
-  const bpsdWrap = document.getElementById('s3-bpsd-wrap');
-  const bpsdContent = document.getElementById('s3-bpsd-content');
-  if (r.eval?.bpsd && r.eval.bpsd.length > 0) {
-    bpsdWrap.style.display = 'block';
-    const activeItems = r.eval.bpsd.filter(b => b.active);
-    const recentBpsd = r.months ? r.months.find(function(m){ return m.bpsdLevel && m.bpsdLevel !== 'none'; }) : null;
-    const levelColor = {moderate:'#E24B4A', mild:'#BA7517', none:'#1D9E75'};
-    const levelLabel = {moderate:'중간', mild:'경미', none:'없음'};
-
-    const badgeHtml = activeItems.length > 0
-      ? '<span style="background:#E24B4A;color:#fff;font-size:10px;padding:1px 7px;border-radius:10px">' + activeItems.length + '개 해당</span>'
-      : '<span style="background:#1D9E75;color:#fff;font-size:10px;padding:1px 7px;border-radius:10px">해당 없음</span>';
-
-    const chipHtml = r.eval.bpsd.map(function(b) {
-      const bg = b.active ? '#FFEBEE' : '#F5F5F5';
-      const cl = b.active ? '#C62828' : '#aaa';
-      const bd = b.active ? '#FFCDD2' : '#E0E0E0';
-      const mk = b.active ? '✓' : '—';
-      return '<span style="padding:3px 9px;border-radius:12px;font-size:11px;font-weight:500;background:' + bg + ';color:' + cl + ';border:1px solid ' + bd + '">' + mk + ' ' + b.label + '</span>';
-    }).join('');
-
-    const recentHtml = recentBpsd
-      ? '<div style="margin-top:8px;font-size:11px;color:#555;border-top:1px solid #FFCDD2;padding-top:7px"><span style="color:' + (levelColor[recentBpsd.bpsdLevel] || '#555') + ';font-weight:600">[' + recentBpsd.month + ' · ' + (levelLabel[recentBpsd.bpsdLevel] || '') + ']</span> ' + recentBpsd.bpsdDesc + '</div>'
-      : '';
-
-    bpsdContent.innerHTML = '<div style="background:#FFF5F5;border:1px solid #FFCDD2;border-radius:8px;padding:10px 13px;margin-bottom:8px">'
-      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:11px;font-weight:600;color:#555">활성 항목</span>' + badgeHtml + '</div>'
-      + '<div style="display:flex;flex-wrap:wrap;gap:5px">' + chipHtml + '</div>'
-      + recentHtml + '</div>';
-  } else {
-    if (bpsdWrap) bpsdWrap.style.display = 'none';
-  }
-
-  // 혈압 세로 막대 차트
-  const bc = document.getElementById('bp-chart');
-  if (r.eval?.bp && r.eval.bp.length > 0) {
-    const maxSys = Math.max(...r.eval.bp.map(b => b.sys), 180);
-    bc.innerHTML = r.eval.bp.map(b => {
-      const warn = b.sys >= 160 || b.dia >= 100;
-      const hSys = Math.round((b.sys / maxSys) * 85);
-      const hDia = Math.round((b.dia / maxSys) * 85);
-      const valColor = warn ? '#E24B4A' : '#555';
-      const sysColor = warn ? '#E24B4A' : '#E07070';
-      const diaColor = warn ? '#c0392b' : '#378ADD';
-      return '<div class="bp-col-group">'
-        + '<div class="bp-col-val" style="color:' + valColor + '">' + b.sys + '/' + b.dia + '</div>'
-        + '<div class="bp-col-bars">'
-        + '<div class="bp-col" style="height:' + hSys + 'px;background:' + sysColor + ';width:12px" title="수축기 ' + b.sys + '"></div>'
-        + '<div class="bp-col" style="height:' + hDia + 'px;background:' + diaColor + ';width:12px" title="이완기 ' + b.dia + '"></div>'
-        + '</div>'
-        + '<div class="bp-col-date">' + b.date + '</div>'
-        + '</div>';
-    }).join('');
-  } else {
-    bc.innerHTML = '<div style="font-size:12px;color:#aaa;padding:8px">혈압 데이터가 없습니다</div>';
-  }
-
-  // 체중 세로 막대 차트
-  const wc = document.getElementById('wt-chart');
-  const wtWrap = document.getElementById('wt-chart-wrap');
-  if (r.eval?.wt && r.eval.wt.length > 0) {
-    const weights = r.eval.wt.map(w => w.kg);
-    const minWt = Math.min(...weights) - 2;
-    const maxWt = Math.max(...weights) + 2;
-    wc.innerHTML = r.eval.wt.map((w, i) => {
-      const prev = i > 0 ? r.eval.wt[i-1].kg : null;
-      const diff = prev !== null ? (w.kg - prev).toFixed(1) : null;
-      const diffColor = diff > 0 ? '#E24B4A' : diff < 0 ? '#378ADD' : '#888';
-      const diffStr = diff === null ? '' : (diff > 0 ? '▲' + diff : diff < 0 ? '▼' + Math.abs(diff) : '-');
-      const diffSpan = diff !== null ? '<span style="color:' + diffColor + ';font-size:9px">' + diffStr + '</span>' : '';
-      const h = Math.round(((w.kg - minWt) / (maxWt - minWt)) * 65) + 10;
-      return '<div class="wt-col-group">'
-        + '<div class="wt-col-val">' + w.kg + 'kg ' + diffSpan + '</div>'
-        + '<div class="wt-col" style="height:' + h + 'px;background:#5B8AD4" title="' + w.kg + 'kg"></div>'
-        + '<div class="wt-col-date">' + w.date + '</div>'
-        + '</div>';
-    }).join('');
-    wtWrap.style.display = 'block';
-  } else {
-    wtWrap.style.display = 'none';
-  }
-
-  // 업무일정
-  const today=new Date('2026-06-11'); const dl=new Date(r.schedule.deadline);
-  const diff=Math.round((dl-today)/86400000);
-  document.getElementById('s4-sum').textContent=`완료 ${r.schedule.done.length}건 · 하반기 마감 D-${diff}`;
-  let html='';
-  r.schedule.done.forEach(d=>{
-    html+=`<div class="tl-row past" style="margin-bottom:2px">
-      <div style="padding-top:7px;text-align:right;font-size:10px;color:#aaa;opacity:.5">2026.${d.date}</div>
-      <div style="display:flex;flex-direction:column;align-items:center"><div style="display:flex;align-items:center;justify-content:center;height:28px"><div class="pdot"></div></div><div class="pseg"></div></div>
-      <div style="padding:3px 0 7px"><div class="dc"><div class="dt"><div class="ck">✓</div>${d.title}</div><div class="ds">${d.sub}</div></div></div>
-    </div>`;
-  });
-  html+=`<div class="today-line"><div class="tl-label">오늘</div><div style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#E24B4A">▼</div><div class="tl-hr"></div></div>`;
-  const doneCi=r.schedule.checklist.filter(c=>c.done).length;
-  const totalCi=r.schedule.checklist.length;
-  html+=`<div class="tl-row" style="align-items:stretch">
-    <div style="padding-top:12px;text-align:right;font-size:10px;font-weight:500;color:#555">12.31<br><span style="color:#aaa;font-size:9px">하반기</span></div>
-    <div style="display:flex;flex-direction:column;align-items:center"><div style="display:flex;align-items:center;justify-content:center;height:36px"><div class="now-pulse"><div class="now-inner"></div></div></div></div>
-    <div style="padding:5px 0">
-      <div class="now-card" id="nc-ov">
-        <div class="now-top"><div><div class="nbadge" id="nb-ov">▶ 다음 기한</div><div class="ntitle">하반기 업무 마감</div></div><div class="ndday" id="nd-ov">D-${diff}</div></div>
-        <div class="checklist" id="cl-ov">
-          ${r.schedule.checklist.map(c=>`
-          <div class="ci ${c.done?'dn':'pend'}" onclick="togCI(this)">
-            <div class="cbox">${c.done?'✓':'⚠'}</div>
-            <div class="ctext"><div class="cname">${c.label}</div><div class="cdesc">${c.desc}</div></div>
-            <button class="ctog" tabindex="-1">${c.done?'취소':'완료'}</button>
-          </div>`).join('')}
-        </div>
-        <div class="pbw"><div class="pb" id="pb-ov" style="width:${Math.round(doneCi/totalCi*100)}%"></div></div>
-        <div class="pt" id="pt-ov">${doneCi} / ${totalCi} 완료</div>
-      </div>
-    </div>
-  </div>`;
-  document.getElementById('tl-area').innerHTML=html;
-
-  // ── 섹션5 기능회복훈련 렌더링 ──
-  renderRehabSection(r);
-}
-
-function renderRehabSection(r) {
-  const el  = document.getElementById('s5-content');
-  const sum = document.getElementById('s5-sum');
-  if (!el) return;
-
-  const rehab = r.rehab;
-  if (!rehab || (!rehab.body && !rehab.basic && !rehab.adl)) {
-    const hasPDoc3 = getRecentDocHtml(r.name, 'periodic');
-    el.innerHTML = hasPDoc3
-      ? `<div style="padding:4px 0">
-           <div style="font-size:11px;color:#888;margin-bottom:8px">기능회복훈련 데이터를 자동 추출하지 못했어요. 아래에서 직접 확인하세요.</div>
-           <button onclick="showDocModal('${r.name}','periodic')" style="font-size:11px;padding:6px 14px;border-radius:7px;border:1.5px solid #0D6E55;background:#F0FBF6;color:#0D6E55;cursor:pointer;font-family:inherit;font-weight:600">📄 정기문서(계획서) 보기</button>
-         </div>`
-      : `<div style="font-size:12px;color:#aaa;padding:8px">정기문서(급여제공계획서) 생성 후 어르신별 훈련 내용이 표시됩니다.</div>`;
-    if (sum) sum.textContent = '미등록';
-    return;
-  }
-
-  const areas = [];
-  if (rehab.body  && rehab.body.length  > 0) areas.push('신체기능');
-  if (rehab.basic && rehab.basic.length > 0) areas.push('기본동작');
-  if (rehab.adl   && rehab.adl.length   > 0) areas.push('일상생활');
-  if (sum) sum.textContent = areas.length > 0 ? areas.join('·') + ' 등록' : '미등록';
-
-  const box = (icon, color, border, title, badge, items) => `
-    <div style="background:${color};border-radius:8px;padding:10px 13px;margin-bottom:8px">
-      <div style="font-size:12px;font-weight:700;color:${border};margin-bottom:6px;display:flex;align-items:center;gap:5px">
-        ${icon} ${title}${badge ? `<span style="background:#E24B4A;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px">필수</span>` : ''}
-      </div>
-      <div style="font-size:11px;color:#333;line-height:1.8;white-space:pre-wrap">${items}</div>
-    </div>`;
-
-  let html = '';
-  if (rehab.body)  html += box('🏃', '#EEF2FF', '#1F3864', 'T51 신체기능훈련',  false, rehab.body);
-  if (rehab.basic) html += box('🚶', '#E8F5E9', '#1B5E20', 'T52 기본동작훈련',  true,  rehab.basic);
-  if (rehab.adl)   html += box('🍽️', '#FFF3E0', '#E65100', 'T53 일상생활동작훈련', false, rehab.adl);
-  el.innerHTML = html;
-}
 
 function togCI(el) {
   const isDn=el.classList.contains('dn');
@@ -18334,7 +17635,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.20.16
+  Day:음 · v2026.06.20.19
 </div>
 </body>
 </html>
