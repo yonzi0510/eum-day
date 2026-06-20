@@ -150,7 +150,7 @@ body{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px
 
 /* 업로드 */
 .upload-zone{border:2px dashed #C5CAE9;border-radius:8px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:#FAFBFF}
-.upload-zone:hover{border-color:#1F3864;background:#F0F3FF}
+.upload-zone:hover,.upload-zone.drag-over{border-color:#1F3864;background:#F0F3FF}
 .upload-zone.has-file{border-color:#1D9E75;background:#F0FBF6;border-style:solid}
 .file-tag{display:inline-flex;align-items:center;gap:5px;background:#E1F5EE;color:#085041;border-radius:6px;padding:4px 10px;font-size:12px;margin-top:7px}
 .sample-btn{font-size:11px;color:#1F3864;border:1px solid #C5CAE9;border-radius:4px;padding:2px 8px;background:#fff;cursor:pointer;margin-top:6px;font-family:inherit}
@@ -1294,28 +1294,17 @@ if (typeof CENTERS === 'undefined') {
         </div>
       </div>
 
-      <!-- 어르신 정보 -->
+      <!-- PDF 업로드 -->
       <div class="card">
-        <div class="card-title"><div class="num">2</div> 어르신 정보</div>
-
-        <!-- 저장된 데이터 불러오기 -->
-        <div style="margin-bottom:10px">
-          <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px">저장된 어르신 선택</div>
-          <div id="adhoc-resident-list" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px"></div>
-          <div id="adhoc-no-resident" style="font-size:11px;color:#aaa;padding:6px 0">저장된 어르신이 없습니다. PDF를 직접 업로드하세요.</div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:10px;margin:10px 0">
-          <div style="flex:1;height:1px;background:#E8EAF0"></div>
-          <span style="font-size:11px;color:#aaa">또는</span>
-          <div style="flex:1;height:1px;background:#E8EAF0"></div>
-        </div>
-
-        <!-- PDF 업로드 -->
-        <div class="upload-zone" id="adhoc-upload" onclick="document.getElementById('adhoc-file').click()">
+        <div class="card-title"><div class="num">2</div> 급여제공기록지 업로드</div>
+        <div class="upload-zone" id="adhoc-upload"
+          onclick="document.getElementById('adhoc-file').click()"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="event.preventDefault();this.classList.remove('drag-over');handleAdhocFile({files:event.dataTransfer.files})">
           <div style="font-size:22px;margin-bottom:4px">📋</div>
           <div style="font-size:13px;color:#555;margin-bottom:2px">급여제공기록지 PDF 업로드</div>
-          <div style="font-size:11px;color:#999">퇴소 전 달 기록지 · 케어포 내보내기</div>
+          <div style="font-size:11px;color:#999">퇴소 전 달 기록지 · 케어포 내보내기 · 드래그 업로드 가능</div>
           <div id="adhoc-fname-wrap" style="display:none"><span class="file-tag">✓ <span id="adhoc-fname"></span></span></div>
         </div>
         <input type="file" id="adhoc-file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleAdhocFile(this)">
@@ -17382,17 +17371,32 @@ async function saveUsageToSupabase(log) {
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify({
-        logged_at:   log.ts,
-        center_code:  log.center_code  || '',
-        center_name:  log.center_name  || log.center || '',
-        center_short: log.center       || '',
-        doc_label:    log.doc          || '',
-        input_tokens: log.input        || 0,
-        output_tokens:log.output       || 0,
-        cost_krw:     log.costKRW      || 0,
-        cost_raw_krw: log.costRawKRW   || 0
-      })
+      body: JSON.stringify((() => {
+        const _label = log.doc || '';
+        const _periodicSet = new Set(['욕구사정','급여제공결과평가','급여제공계획서','기초평가','기초평가(낙상·욕창·인지)','낙상위험도','욕창위험도','인지선별검사(CIST)']);
+        const _monthlySet  = new Set(['분기별 상담일지','보호자 상담일지','본인·보호자 상담일지','사례관리 회의록','프로그램업무수행일지','월간문서']);
+        const _verifySet   = new Set(['문서검증','문서검증_수정본','AI질의','문서교정','문서교정결과','문서검증결과']);
+        const _reportSet   = new Set(['요양일지','일일보고서','현황보고서','사례회의보고서']);
+        const _surveySet   = new Set(['프로그램 의견수렴','식사만족도조사']);
+        let _docType = 'monthly';
+        if (_periodicSet.has(_label))      _docType = 'periodic';
+        else if (_monthlySet.has(_label))  _docType = 'monthly';
+        else if (_verifySet.has(_label))   _docType = 'verify';
+        else if (_reportSet.has(_label))   _docType = 'report';
+        else if (_surveySet.has(_label))   _docType = 'survey';
+        return {
+          logged_at:    log.ts,
+          center_code:  log.center_code  || '',
+          center_name:  log.center_name  || log.center || '',
+          center_short: log.center       || '',
+          doc_label:    _label,
+          doc_type:     _docType,
+          input_tokens: log.input        || 0,
+          output_tokens:log.output       || 0,
+          cost_krw:     log.costKRW      || 0,
+          cost_raw_krw: log.costRawKRW   || 0
+        };
+      })())
     });
   } catch(e) { /* 실패 무시 */ }
 }
@@ -18435,7 +18439,7 @@ function journalDownloadAll() {
 // callClaude: 상단 함수 사용 (usage 기록 포함)
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.19.30
+  Day:음 · v2026.06.20.01
 </div>
 </body>
 </html>
