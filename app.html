@@ -8278,9 +8278,9 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
       const resName = window.currentLinkedName || '수급자';
       updateSessionDocNames(resName);
       const docMap = {
-        m1: { checked: document.getElementById('m1')?.checked, label: '본인·보호자 상담일지' },
-        m3: { checked: document.getElementById('m3')?.checked, label: '사례관리 회의록' },
-        m5: { checked: document.getElementById('m5')?.checked, label: '프로그램업무수행일지' },
+        m1: { checked: document.getElementById('m1')?.checked, label: '월간문서' },
+        m3: { checked: document.getElementById('m3')?.checked, label: '월간문서' },
+        m5: { checked: document.getElementById('m5')?.checked, label: '월간문서' },
       };
       let savedCount = 0;
       for (const [, v] of Object.entries(docMap)) {
@@ -18138,17 +18138,9 @@ ${client.notes}
 위 모든 날짜에 대해 [신체] [인지] [기능] [건강] 4개 섹션으로 작성해주세요.`;
 
     try {
-      const raw = await callClaude(system, userPrompt, '요양일지', 8000);
+      const raw = await callClaude(system, userPrompt, '요양일지', 2000);
       const parts = journalSplitParts(raw);
       allResults.push({ name: client.name, raw, parts });
-
-      // 결과보기 탭 등록 + Supabase 저장 (어르신별 1건)
-      const journalHtml = `<pre style="font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:13px;line-height:2.2;white-space:pre-wrap;word-break:keep-all;padding:16px">${raw}</pre>`;
-      registerSessionDoc('요양일지', journalHtml, client.name, '요양일지');
-      try {
-        const _cfgCenter = CENTERS[centerCode] || {};
-        await saveDocToSupabase(centerCode, _cfgCenter.name || centerCode, client.name, '요양일지', journalHtml);
-      } catch(e) { console.warn('[요양일지 저장 오류]', e.message); }
 
       // 어르신 카드 (파트 3개로 분리)
       const wrap = document.createElement('div');
@@ -18222,7 +18214,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.20.13
+  Day:음 · v2026.06.20.11
 </div>
 </body>
 </html>
