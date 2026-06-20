@@ -326,6 +326,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
               <option value="수시문서">수시문서</option>
               <option value="조사문서">조사문서</option>
               <option value="검증/교정">검증/교정</option>
+              <option value="급여반영">급여반영</option>
             </select>
           </div>
           <div id="doc-history-body">
@@ -457,14 +458,15 @@ const DOC_CAT_MAP = {
   '프로그램업무수행일지':      { cat:'월간문서', color:'#1F3864' },
   '월간문서':                  { cat:'월간문서', color:'#1F3864' },
   '퇴소 연계기록지':           { cat:'수시문서', color:'#BA7517' },
+  '급여반영':                  { cat:'급여반영', color:'#0D6E55' },
   '문서검증결과':              { cat:'검증/교정', color:'#5C3489' },
   '문서검증_수정본':           { cat:'검증/교정', color:'#5C3489' },
   '문서교정결과':              { cat:'검증/교정', color:'#5C3489' },
   '프로그램 의견수렴':         { cat:'조사문서', color:'#0C5A8A' },
   '식사만족도조사':            { cat:'조사문서', color:'#0C5A8A' },
 };
-const DOC_CAT_ORDER = ['정기문서','월간문서','수시문서','조사문서','검증/교정','기타'];
-const DOC_CAT_COLOR = { '정기문서':'#0D6E55','월간문서':'#1F3864','수시문서':'#BA7517','조사문서':'#0C5A8A','검증/교정':'#5C3489','기타':'#607080' };
+const DOC_CAT_ORDER = ['정기문서','월간문서','수시문서','조사문서','검증/교정','급여반영','기타'];
+const DOC_CAT_COLOR = { '정기문서':'#0D6E55','월간문서':'#1F3864','수시문서':'#BA7517','조사문서':'#0C5A8A','검증/교정':'#5C3489','급여반영':'#0D6E55','기타':'#607080' };
 
 let _allLogs    = [];
 let _periodDays = 0;
@@ -702,7 +704,7 @@ function renderCenterTable(logs) {
   const byCtr = {};
   logs.forEach(l => {
     const k = l.center_short || Object.values(CENTERS).find(c => c.short === l.center_short)?.short || l.center_name || '기타';
-    if (!byCtr[k]) byCtr[k] = { calls:0, monthly:0, periodic:0, adhoc:0, verify:0, report:0, survey:0, other:0, cost:0, raw:0, input:0, output:0 };
+    if (!byCtr[k]) byCtr[k] = { calls:0, monthly:0, periodic:0, adhoc:0, verify:0, report:0, survey:0, benefit:0, other:0, cost:0, raw:0, input:0, output:0 };
     byCtr[k].calls++;
     byCtr[k].cost   += l.cost_krw      || 0;
     byCtr[k].raw    += l.cost_raw_krw  || Math.round((l.cost_krw||0) / 3);
@@ -718,6 +720,7 @@ function renderCenterTable(logs) {
     else if (_vl.has(l.doc_label))           byCtr[k].verify++;
     else if (_rl.has(l.doc_label))           byCtr[k].report++;
     else if (_sl.has(l.doc_label))           byCtr[k].survey++;
+    else if (l.doc_label === '급여반영')     byCtr[k].benefit++;
     else                                     byCtr[k].other++;
   });
 
@@ -740,6 +743,7 @@ function renderCenterTable(logs) {
         <th class="right" style="font-size:10px">검증·교정</th>
         <th class="right" style="font-size:10px">요양일지</th>
         <th class="right" style="font-size:10px">조사</th>
+        <th class="right" style="font-size:10px">급여반영</th>
         <th class="right" style="font-size:10px">기타</th>
         <th class="right">API 호출</th>
         <th class="right">원가 (실지불)</th>
@@ -765,6 +769,7 @@ function renderCenterTable(logs) {
             ${cell(d.verify)}
             ${cell(d.report)}
             ${cell(d.survey)}
+            ${cell(d.benefit)}
             ${cell(d.other)}
             <td class="right" style="color:#607080;font-size:11px">${d.calls}</td>
             <td class="right" style="color:#4ECFA0;font-weight:600">₩${d.raw.toLocaleString()}</td>
@@ -1274,5 +1279,8 @@ function copyCentersJs() {
     .catch(() => alert('복사 실패'));
 }
 </script>
+<div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
+  Day:음 admin · v2026.06.20.01
+</div>
 </body>
 </html>
