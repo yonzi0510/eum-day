@@ -18138,7 +18138,7 @@ ${client.notes}
 위 모든 날짜에 대해 [신체] [인지] [기능] [건강] 4개 섹션으로 작성해주세요.`;
 
     try {
-      const raw = await callClaude(system, userPrompt, '요양일지', 2000);
+      const raw = await callClaude(system, userPrompt, '요양일지', 8000);
       const parts = journalSplitParts(raw);
       allResults.push({ name: client.name, raw, parts });
 
@@ -18214,7 +18214,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.20.10
+  Day:음 · v2026.06.20.11
 </div>
 </body>
 </html>
