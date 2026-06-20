@@ -5096,7 +5096,8 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;colo
     // Supabase 저장 (문서이력 조회용)
     try {
       const _cfgCenter = CENTERS[centerCode] || {};
-      await saveDocToSupabase(centerCode, _cfgCenter.name || centerCode, window.currentLinkedName || '—', cfg.label || '요양일지', html);
+      const htmlToSave = extractBodyContent(html) || html;
+      await saveDocToSupabase(centerCode, _cfgCenter.name || centerCode, window.currentLinkedName || '—', cfg.label || '요양일지', htmlToSave);
     } catch(e) { console.warn('[요양일지 저장 오류]', e.message); }
 
   } catch (e) {
@@ -18138,7 +18139,7 @@ ${client.notes}
 위 모든 날짜에 대해 [신체] [인지] [기능] [건강] 4개 섹션으로 작성해주세요.`;
 
     try {
-      const raw = await callClaude(system, userPrompt, '요양일지', 2000);
+      const raw = await callClaude(system, userPrompt, '요양일지', 8000);
       const parts = journalSplitParts(raw);
       allResults.push({ name: client.name, raw, parts });
 
@@ -18214,7 +18215,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.20.11
+  Day:음 · v2026.06.20.13
 </div>
 </body>
 </html>
