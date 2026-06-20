@@ -9,126 +9,126 @@
 <title>Day:음 관리자</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px;background:#0F1923;color:#E8EAF0;min-height:100vh}
+body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:13px;background:#F5F6FA;color:#1a1a2e;min-height:100vh}
 
 /* ── 로그인 화면 ── */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.login-box{background:#1A2535;border:1px solid #2A3A50;border-radius:20px;padding:44px 36px 36px;width:100%;max-width:360px;text-align:center}
-.login-logo{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:4px}
-.login-logo span{color:#4ECFA0}
-.login-sub{font-size:12px;color:#607080;margin-bottom:36px}
-.login-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#1F3864;color:#7AAEE8;border:1px solid #2A4A7A;margin-bottom:28px;letter-spacing:.5px}
-.login-input{width:100%;padding:13px 16px;background:#0F1923;border:1.5px solid #2A3A50;border-radius:10px;font-size:15px;font-family:inherit;color:#fff;text-align:center;letter-spacing:6px;transition:border .2s;margin-bottom:8px}
-.login-input:focus{outline:none;border-color:#4ECFA0}
-.login-input::placeholder{letter-spacing:1px;font-size:13px;color:#405060}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#EEF2FF 0%,#F0FAF6 100%)}
+.login-box{background:#fff;border:1px solid #E0E6F0;border-radius:20px;padding:44px 36px 36px;width:100%;max-width:360px;text-align:center;box-shadow:0 8px 32px rgba(31,56,100,.08)}
+.login-logo{font-size:28px;font-weight:800;color:#1F3864;letter-spacing:-1px;margin-bottom:4px}
+.login-logo span{color:#0D6E55}
+.login-sub{font-size:12px;color:#888;margin-bottom:36px}
+.login-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#EEF2FF;color:#1F3864;border:1px solid #C5CAE9;margin-bottom:28px;letter-spacing:.5px}
+.login-input{width:100%;padding:13px 16px;background:#F8F9FB;border:1.5px solid #E0E6F0;border-radius:10px;font-size:15px;font-family:inherit;color:#1a1a2e;text-align:center;letter-spacing:6px;transition:border .2s;margin-bottom:8px}
+.login-input:focus{outline:none;border-color:#1F3864;background:#fff}
+.login-input::placeholder{letter-spacing:1px;font-size:13px;color:#bbb}
 .login-error{font-size:11px;color:#E24B4A;min-height:18px;margin-bottom:10px}
 .login-btn{width:100%;padding:13px;background:linear-gradient(135deg,#1F3864,#0D6E55);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s}
 .login-btn:hover{opacity:.88}
 
 /* ── 대시보드 ── */
 #dashboard{display:none}
-.top-bar{background:#1A2535;border-bottom:1px solid #2A3A50;padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
-.top-logo{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.5px}
-.top-logo span{color:#4ECFA0}
-.top-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;background:#1F3864;color:#7AAEE8;border:1px solid #2A4A7A}
+.top-bar{background:#fff;border-bottom:1.5px solid #E0E6F0;padding:12px 24px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(31,56,100,.06)}
+.top-logo{font-size:15px;font-weight:800;color:#1F3864;letter-spacing:-.5px}
+.top-logo span{color:#0D6E55}
+.top-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;background:#EEF2FF;color:#1F3864;border:1px solid #C5CAE9}
 .top-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.top-time{font-size:11px;color:#607080}
-.top-btn{padding:5px 13px;border-radius:6px;border:1px solid #2A3A50;background:rgba(255,255,255,.05);color:#AAB4C0;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s}
-.top-btn:hover{border-color:#4ECFA0;color:#4ECFA0}
-.top-btn.danger:hover{border-color:#E24B4A;color:#E24B4A}
+.top-time{font-size:11px;color:#999}
+.top-btn{padding:5px 13px;border-radius:6px;border:1px solid #E0E6F0;background:#fff;color:#666;font-size:11px;cursor:pointer;font-family:inherit;transition:all .2s}
+.top-btn:hover{border-color:#1F3864;color:#1F3864;background:#EEF2FF}
+.top-btn.danger:hover{border-color:#E24B4A;color:#E24B4A;background:#FEF2F2}
 
-/* ── 사이드 탭 ── */
+/* ── 사이드바 ── */
 .layout{display:grid;grid-template-columns:180px 1fr;min-height:calc(100vh - 49px)}
-.sidebar{background:#141E2B;border-right:1px solid #2A3A50;padding:16px 0}
-.side-label{font-size:9px;font-weight:700;color:#405060;letter-spacing:1.5px;padding:0 16px 6px;margin-top:8px}
-.side-btn{width:100%;display:flex;align-items:center;gap:9px;padding:10px 16px;border:none;background:none;color:#7A8A9A;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .18s;text-align:left}
-.side-btn:hover{background:rgba(78,207,160,.06);color:#C8D4E0}
-.side-btn.active{background:rgba(78,207,160,.12);color:#4ECFA0;font-weight:700}
+.sidebar{background:#fff;border-right:1.5px solid #E0E6F0;padding:16px 0}
+.side-label{font-size:9px;font-weight:700;color:#bbb;letter-spacing:1.5px;padding:0 16px 6px;margin-top:8px}
+.side-btn{width:100%;display:flex;align-items:center;gap:9px;padding:10px 16px;border:none;background:none;color:#888;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .18s;text-align:left}
+.side-btn:hover{background:#F5F6FA;color:#1F3864}
+.side-btn.active{background:#EEF2FF;color:#1F3864;font-weight:700;border-right:3px solid #1F3864}
 .side-btn .si{font-size:15px;flex-shrink:0}
-.side-divider{height:1px;background:#2A3A50;margin:8px 16px}
+.side-divider{height:1px;background:#E8EAF0;margin:8px 16px}
 
-.content{padding:22px 24px;overflow-y:auto}
+.content{padding:22px 24px;overflow-y:auto;background:#F5F6FA}
 .sec-content{display:none}
 .sec-content.active{display:block}
 
 /* ── 공통 카드 ── */
-.card{background:#1A2535;border:1px solid #2A3A50;border-radius:12px;padding:18px;margin-bottom:14px}
-.card-title{font-size:13px;font-weight:700;color:#C8D4E0;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card{background:#fff;border:1px solid #E8EAF0;border-radius:12px;padding:18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(31,56,100,.04)}
+.card-title{font-size:13px;font-weight:700;color:#1F3864;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .card-title-left{display:flex;align-items:center;gap:7px}
 
 /* ── KPI 그리드 ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.kpi-card{background:#141E2B;border:1px solid #2A3A50;border-radius:10px;padding:14px 16px}
-.kpi-label{font-size:10px;color:#607080;margin-bottom:6px;font-weight:600;letter-spacing:.3px}
+.kpi-card{background:#fff;border:1px solid #E8EAF0;border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(31,56,100,.04)}
+.kpi-label{font-size:10px;color:#999;margin-bottom:6px;font-weight:600;letter-spacing:.3px}
 .kpi-val{font-size:22px;font-weight:800;line-height:1}
-.kpi-sub{font-size:10px;color:#405060;margin-top:4px}
+.kpi-sub{font-size:10px;color:#bbb;margin-top:4px}
 
 /* ── 기간 버튼 ── */
 .period-row{display:flex;gap:6px;flex-wrap:wrap}
-.period-btn{padding:5px 12px;border-radius:20px;border:1px solid #2A3A50;background:none;font-size:11px;font-weight:600;color:#607080;cursor:pointer;font-family:inherit;transition:all .18s}
-.period-btn:hover{border-color:#4ECFA0;color:#4ECFA0}
-.period-btn.active{background:#4ECFA0;border-color:#4ECFA0;color:#0F1923}
+.period-btn{padding:5px 12px;border-radius:20px;border:1px solid #E0E6F0;background:#fff;font-size:11px;font-weight:600;color:#888;cursor:pointer;font-family:inherit;transition:all .18s}
+.period-btn:hover{border-color:#1F3864;color:#1F3864}
+.period-btn.active{background:#1F3864;border-color:#1F3864;color:#fff}
 
 /* ── 테이블 ── */
 .data-table{width:100%;border-collapse:collapse;font-size:12px}
-.data-table th{background:#141E2B;color:#607080;font-weight:700;padding:8px 12px;text-align:left;border-bottom:1.5px solid #2A3A50;font-size:10px;letter-spacing:.3px;white-space:nowrap}
+.data-table th{background:#F8F9FB;color:#888;font-weight:700;padding:8px 12px;text-align:left;border-bottom:1.5px solid #E8EAF0;font-size:10px;letter-spacing:.3px;white-space:nowrap}
 .data-table th.right,.data-table td.right{text-align:right}
-.data-table td{padding:9px 12px;border-bottom:0.5px solid #1E2E42;color:#A8B4C0;vertical-align:middle}
+.data-table td{padding:9px 12px;border-bottom:0.5px solid #F0F2F8;color:#444;vertical-align:middle}
 .data-table tr:last-child td{border-bottom:none}
-.data-table tr:hover td{background:rgba(78,207,160,.04)}
+.data-table tr:hover td{background:#F8F9FF}
 
 /* ── 바 차트 ── */
-.bar-wrap{height:8px;background:#1E2E42;border-radius:4px;overflow:hidden;min-width:60px}
+.bar-wrap{height:8px;background:#F0F2F8;border-radius:4px;overflow:hidden;min-width:60px}
 .bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
 
 /* ── 뱃지 ── */
 .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
-.badge-blue{background:#1F3864;color:#7AAEE8}
-.badge-teal{background:#0D4A3A;color:#4ECFA0}
-.badge-purple{background:#2A1A4A;color:#A07AE8}
-.badge-gray{background:#1E2E42;color:#607080}
-.badge-red{background:#3A1420;color:#E24B4A}
-.badge-amber{background:#3A2A10;color:#C8A040}
+.badge-blue{background:#EEF2FF;color:#1F3864}
+.badge-teal{background:#E1F5EE;color:#085041}
+.badge-purple{background:#EDE7F6;color:#5C3489}
+.badge-gray{background:#F1F3F8;color:#666}
+.badge-red{background:#FEECEC;color:#C0392B}
+.badge-amber{background:#FEF3E2;color:#BA7517}
 
 /* ── 로그 아이템 ── */
-.log-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#141E2B;border:1px solid #2A3A50;border-radius:8px;margin-bottom:4px;font-size:11px}
+.log-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#F8F9FB;border:1px solid #E8EAF0;border-radius:8px;margin-bottom:4px;font-size:11px}
 .log-ctr{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;flex-shrink:0}
-.log-doc{color:#A8B4C0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.log-time{color:#405060;white-space:nowrap;flex-shrink:0;font-size:10px}
-.log-cost{color:#4ECFA0;font-weight:700;white-space:nowrap;min-width:55px;text-align:right;flex-shrink:0}
+.log-doc{color:#444;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-time{color:#aaa;white-space:nowrap;flex-shrink:0;font-size:10px}
+.log-cost{color:#0D6E55;font-weight:700;white-space:nowrap;min-width:55px;text-align:right;flex-shrink:0}
 
 /* ── 일별 차트 ── */
 .daily-chart{display:flex;align-items:flex-end;gap:5px;height:90px;padding-bottom:4px}
 .daily-col{display:flex;flex-direction:column;align-items:center;flex:1;min-width:18px}
 .daily-bar{width:100%;border-radius:3px 3px 0 0;transition:height .3s}
-.daily-val{font-size:8px;color:#607080;margin-bottom:2px;white-space:nowrap}
-.daily-date{font-size:8px;color:#405060;margin-top:3px;white-space:nowrap}
+.daily-val{font-size:8px;color:#999;margin-bottom:2px;white-space:nowrap}
+.daily-date{font-size:8px;color:#bbb;margin-top:3px;white-space:nowrap}
 
 /* ── 센터 관리 ── */
-.center-card{background:#141E2B;border:1.5px solid #2A3A50;border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:border .2s}
-.center-card:hover{border-color:#2A4A6A}
-.center-name{font-size:14px;font-weight:700;color:#C8D4E0;margin-bottom:3px}
-.center-meta{font-size:11px;color:#607080;margin-bottom:12px}
+.center-card{background:#fff;border:1.5px solid #E8EAF0;border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:border .2s;box-shadow:0 1px 4px rgba(31,56,100,.04)}
+.center-card:hover{border-color:#C5CAE9}
+.center-name{font-size:14px;font-weight:700;color:#1F3864;margin-bottom:3px}
+.center-meta{font-size:11px;color:#999;margin-bottom:12px}
 .field-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.field-label{font-size:11px;color:#607080;width:80px;flex-shrink:0;font-weight:600}
-.field-input{flex:1;padding:7px 10px;background:#0F1923;border:1.5px solid #2A3A50;border-radius:7px;font-size:12px;font-family:inherit;color:#C8D4E0;transition:border .2s}
-.field-input:focus{outline:none;border-color:#4ECFA0}
-.field-select{flex:1;padding:7px 10px;background:#0F1923;border:1.5px solid #2A3A50;border-radius:7px;font-size:12px;font-family:inherit;color:#C8D4E0}
-.save-btn{padding:6px 16px;border-radius:7px;border:none;background:#1F3864;color:#7AAEE8;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s}
-.save-btn:hover{background:#4ECFA0;color:#0F1923}
-.save-msg{font-size:11px;color:#4ECFA0;margin-left:8px;display:none}
+.field-label{font-size:11px;color:#888;width:80px;flex-shrink:0;font-weight:600}
+.field-input{flex:1;padding:7px 10px;background:#F8F9FB;border:1.5px solid #E0E6F0;border-radius:7px;font-size:12px;font-family:inherit;color:#1a1a2e;transition:border .2s}
+.field-input:focus{outline:none;border-color:#1F3864;background:#fff}
+.field-select{flex:1;padding:7px 10px;background:#F8F9FB;border:1.5px solid #E0E6F0;border-radius:7px;font-size:12px;font-family:inherit;color:#1a1a2e}
+.save-btn{padding:6px 16px;border-radius:7px;border:none;background:#1F3864;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s}
+.save-btn:hover{background:#0D6E55}
+.save-msg{font-size:11px;color:#0D6E55;margin-left:8px;display:none}
 
 /* ── 입력 필터 ── */
 .filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.filter-select{padding:6px 10px;background:#141E2B;border:1px solid #2A3A50;border-radius:7px;font-size:12px;font-family:inherit;color:#A8B4C0}
-.filter-select:focus{outline:none;border-color:#4ECFA0}
-.sm-btn{padding:5px 12px;border-radius:6px;border:1px solid #2A3A50;background:none;color:#607080;font-size:11px;cursor:pointer;font-family:inherit;transition:all .18s}
-.sm-btn:hover{border-color:#E24B4A;color:#E24B4A}
+.filter-select{padding:6px 10px;background:#fff;border:1px solid #E0E6F0;border-radius:7px;font-size:12px;font-family:inherit;color:#444}
+.filter-select:focus{outline:none;border-color:#1F3864}
+.sm-btn{padding:5px 12px;border-radius:6px;border:1px solid #E0E6F0;background:#fff;color:#888;font-size:11px;cursor:pointer;font-family:inherit;transition:all .18s}
+.sm-btn:hover{border-color:#E24B4A;color:#E24B4A;background:#FEF2F2}
 
 /* ── 문서 이력 ── */
-.doc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#141E2B;border:1px solid #2A3A50;border-radius:8px;margin-bottom:5px;font-size:11px}
-.doc-view-btn{font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #2A4A6A;background:none;color:#7AAEE8;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;transition:all .15s}
-.doc-view-btn:hover{background:#1F3864;border-color:#1F3864}
+.doc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#F8F9FB;border:1px solid #E8EAF0;border-radius:8px;margin-bottom:5px;font-size:11px}
+.doc-view-btn{font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid #C5CAE9;background:#fff;color:#1F3864;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;transition:all .15s}
+.doc-view-btn:hover{background:#1F3864;color:#fff;border-color:#1F3864}
 
 /* ── 반응형 ── */
 @media(max-width:680px){
@@ -189,7 +189,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
         <!-- 기간 필터 -->
         <div class="card" style="padding:12px 16px;margin-bottom:14px">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span style="font-size:12px;font-weight:600;color:#607080">조회 기간</span>
+            <span style="font-size:12px;font-weight:600;color:#888">조회 기간</span>
             <div class="period-row">
               <button class="period-btn active" onclick="setPeriod(0,this)">오늘</button>
               <button class="period-btn" onclick="setPeriod(7,this)">7일</button>
@@ -197,7 +197,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
               <button class="period-btn" onclick="setPeriod(90,this)">90일</button>
               <button class="period-btn" onclick="setPeriod(9999,this)">전체</button>
             </div>
-            <span style="margin-left:auto;font-size:11px;color:#405060" id="last-updated">-</span>
+            <span style="margin-left:auto;font-size:11px;color:#999" id="last-updated">-</span>
           </div>
         </div>
 
@@ -249,10 +249,10 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
         <div class="card">
           <div class="card-title">
             <div class="card-title-left">🏥 센터별 사용량</div>
-            <span style="font-size:10px;color:#405060" id="center-period-label"></span>
+            <span style="font-size:10px;color:#999" id="center-period-label"></span>
           </div>
           <div id="center-table">
-            <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+            <div style="text-align:center;color:#999;padding:20px;font-size:12px">불러오는 중...</div>
           </div>
         </div>
 
@@ -260,7 +260,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
         <div class="card">
           <div class="card-title"><div class="card-title-left">📄 문서 유형별 호출</div></div>
           <div id="doctype-table">
-            <div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>
+            <div style="text-align:center;color:#999;padding:16px;font-size:12px">불러오는 중...</div>
           </div>
         </div>
 
@@ -268,7 +268,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
         <div class="card">
           <div class="card-title"><div class="card-title-left">📈 일별 API 비용 추이</div></div>
           <div id="daily-chart">
-            <div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>
+            <div style="text-align:center;color:#999;padding:16px;font-size:12px">불러오는 중...</div>
           </div>
         </div>
 
@@ -298,12 +298,12 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             </select>
             <button class="sm-btn" onclick="clearLocalLogs()">로컬 로그 초기화</button>
             <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-              <span style="font-size:11px;color:#4ECFA0;font-weight:600" id="log-range"></span>
-              <span style="font-size:11px;color:#405060" id="log-count"></span>
+              <span style="font-size:11px;color:#0D6E55;font-weight:600" id="log-range"></span>
+              <span style="font-size:11px;color:#999" id="log-count"></span>
             </div>
           </div>
           <div id="log-body">
-            <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+            <div style="text-align:center;color:#999;padding:20px;font-size:12px">불러오는 중...</div>
           </div>
         </div>
       </div>
@@ -323,8 +323,8 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
               <button class="period-btn"        id="dp-btn-9999" onclick="setDocPeriod(9999,this)">전체</button>
             </div>
             <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-              <span style="font-size:11px;color:#4ECFA0;font-weight:600" id="doc-range"></span>
-              <span style="font-size:11px;color:#405060" id="doc-count"></span>
+              <span style="font-size:11px;color:#0D6E55;font-weight:600" id="doc-range"></span>
+              <span style="font-size:11px;color:#999" id="doc-count"></span>
             </div>
           </div>
           <!-- 센터·문서유형 필터 -->
@@ -346,7 +346,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
             </select>
           </div>
           <div id="doc-history-body">
-            <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+            <div style="text-align:center;color:#999;padding:20px;font-size:12px">불러오는 중...</div>
           </div>
         </div>
       </div>
@@ -355,13 +355,13 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
       <div class="sec-content" id="sec-centers">
 
         <!-- 안내 -->
-        <div style="background:#141E2B;border:1px solid #2A3A50;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#607080;line-height:1.8">
+        <div style="background:#F8F9FB;border:1px solid #E8EAF0;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#666;line-height:1.8">
           ⚠️ 센터 추가/수정 후 아래 <strong style="color:#4ECFA0">📋 centers.js 전체 복사</strong> 버튼으로 파일을 복사하고<br>
-          GitHub에서 <code style="background:#1E2E42;padding:1px 5px;border-radius:3px;color:#A8B4C0">centers.js</code> 파일 내용을 교체한 뒤 커밋하면 반영됩니다.
+          GitHub에서 <code style="background:#1E2E42;padding:1px 5px;border-radius:3px;color:#444">centers.js</code> 파일 내용을 교체한 뒤 커밋하면 반영됩니다.
         </div>
 
         <div id="center-manage-body">
-          <div style="text-align:center;color:#405060;padding:20px;font-size:12px">불러오는 중...</div>
+          <div style="text-align:center;color:#999;padding:20px;font-size:12px">불러오는 중...</div>
         </div>
 
         <!-- 신규 센터 추가 -->
@@ -370,7 +370,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           <div class="field-row">
             <span class="field-label">센터 ID</span>
             <input class="field-input" id="new-code" placeholder="예) center4" style="max-width:160px">
-            <span style="font-size:11px;color:#405060">URL 파라미터로 사용 (?center=...)</span>
+            <span style="font-size:11px;color:#999">URL 파라미터로 사용 (?center=...)</span>
           </div>
           <div class="field-row">
             <span class="field-label">센터명</span>
@@ -383,7 +383,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           <div class="field-row">
             <span class="field-label">접속 코드</span>
             <input class="field-input" id="new-key" placeholder="예) 0404" style="max-width:120px">
-            <span style="font-size:11px;color:#405060">센터가 로그인 시 입력하는 코드</span>
+            <span style="font-size:11px;color:#999">센터가 로그인 시 입력하는 코드</span>
           </div>
           <div class="field-row">
             <span class="field-label">만료일</span>
@@ -411,11 +411,11 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           <span class="save-msg" id="add-msg"></span>
 
           <!-- 추가 후 코드 미리보기 -->
-          <div id="new-code-preview" style="display:none;background:#0F1923;border:1px solid #2A3A50;border-radius:8px;padding:10px 12px;margin-top:10px">
-            <div style="font-size:9px;font-weight:700;color:#405060;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — 3개 파일에 동일 반영</div>
-            <pre id="new-code-text" style="font-size:11px;color:#4ECFA0;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
+          <div id="new-code-preview" style="display:none;background:#F8F9FB;border:1px solid #E8EAF0;border-radius:8px;padding:10px 12px;margin-top:10px">
+            <div style="font-size:9px;font-weight:700;color:#999;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — 3개 파일에 동일 반영</div>
+            <pre id="new-code-text" style="font-size:11px;color:#0D6E55;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
             <button onclick="copyPreview('new-code-text')"
-              style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #2A3A50;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#607080;transition:all .15s"
+              style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #E8EAF0;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#888;transition:all .15s"
               onmouseover="this.style.color='#4ECFA0';this.style.borderColor='#4ECFA0'"
               onmouseout="this.style.color='#607080';this.style.borderColor='#2A3A50'">
               📋 복사
@@ -430,11 +430,11 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
 
 <!-- 문서 뷰어 모달 -->
 <div id="doc-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;overflow-y:auto;padding:20px">
-  <div style="background:#1A2535;border:1px solid #2A3A50;border-radius:14px;max-width:860px;margin:auto;overflow:hidden">
-    <div style="background:#141E2B;border-bottom:1px solid #2A3A50;padding:13px 18px;display:flex;align-items:center;gap:10px">
-      <span id="modal-title" style="font-size:13px;font-weight:700;color:#C8D4E0;flex:1"></span>
-      <span id="modal-date" style="font-size:11px;color:#607080"></span>
-      <button onclick="document.getElementById('doc-modal').style.display='none'" style="background:none;border:none;color:#607080;font-size:20px;cursor:pointer;line-height:1">✕</button>
+  <div style="background:#fff;border:1px solid #E8EAF0;border-radius:14px;max-width:860px;margin:auto;overflow:hidden;box-shadow:0 4px 24px rgba(31,56,100,.08)">
+    <div style="background:#F5F6FA;border-bottom:1px solid #E8EAF0;padding:13px 18px;display:flex;align-items:center;gap:10px">
+      <span id="modal-title" style="font-size:13px;font-weight:700;color:#1F3864;flex:1"></span>
+      <span id="modal-date" style="font-size:11px;color:#888"></span>
+      <button onclick="document.getElementById('doc-modal').style.display='none'" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;line-height:1">✕</button>
     </div>
     <div id="modal-body" style="padding:16px;max-height:80vh;overflow-y:auto"></div>
   </div>
@@ -754,7 +754,7 @@ function renderCenterTable(logs) {
   const sorted = Object.entries(byCtr).sort((a,b) => b[1].raw - a[1].raw);
 
   if (!sorted.length) {
-    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">데이터 없음</div>';
+    el.innerHTML = '<div style="text-align:center;color:#999;padding:16px;font-size:12px">데이터 없음</div>';
     return;
   }
 
@@ -786,7 +786,7 @@ function renderCenterTable(logs) {
             <td style="min-width:80px">
               <div style="display:flex;align-items:center;gap:6px">
                 <div class="bar-wrap" style="flex:1"><div class="bar-fill" style="width:${pct}%;background:${clr}"></div></div>
-                <span style="font-size:10px;color:#405060;width:28px;text-align:right">${pct}%</span>
+                <span style="font-size:10px;color:#999;width:28px;text-align:right">${pct}%</span>
               </div>
             </td>
             ${cell(d.monthly)}
@@ -802,7 +802,7 @@ function renderCenterTable(logs) {
           </tr>`;
         }).join('')}
         <tr style="border-top:1.5px solid #2A3A50">
-          <td colspan="2" style="font-weight:700;color:#C8D4E0">합계</td>
+          <td colspan="2" style="font-weight:700;color:#1F3864">합계</td>
           <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.monthly,0)||'—'}</td>
           <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.periodic,0)||'—'}</td>
           <td class="right" style="color:#C8D4E0">${sorted.reduce((s,[,d])=>s+d.adhoc,0)||'—'}</td>
@@ -832,7 +832,7 @@ function renderDocTypeTable(logs) {
 
   const sorted = Object.entries(byDoc).sort((a,b) => b[1].calls - a[1].calls).slice(0, 10);
   if (!sorted.length) {
-    el.innerHTML = '<div style="text-align:center;color:#405060;padding:12px;font-size:12px">데이터 없음</div>';
+    el.innerHTML = '<div style="text-align:center;color:#999;padding:12px;font-size:12px">데이터 없음</div>';
     return;
   }
 
@@ -870,7 +870,7 @@ function renderDailyChart(logs) {
   const days = Object.keys(byDay).sort();
   const show = days.slice(-30);
   if (!show.length) {
-    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">데이터 없음</div>';
+    el.innerHTML = '<div style="text-align:center;color:#999;padding:16px;font-size:12px">데이터 없음</div>';
     return;
   }
 
@@ -892,7 +892,7 @@ function renderDailyChart(logs) {
         </div>`;
       }).join('')}
     </div>
-    <div style="font-size:10px;color:#405060;text-align:right;margin-top:4px">단위: ₩ · 최근 ${show.length}일</div>`;
+    <div style="font-size:10px;color:#999;text-align:right;margin-top:4px">단위: ₩ · 최근 ${show.length}일</div>`;
 }
 
 // ═══════════════════════════════════════════
@@ -939,7 +939,7 @@ function renderLogs() {
   }
 
   if (!filtered.length) {
-    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">로그 없음</div>';
+    el.innerHTML = '<div style="text-align:center;color:#999;padding:16px;font-size:12px">로그 없음</div>';
     return;
   }
 
@@ -956,7 +956,7 @@ function renderLogs() {
 
       <span class="log-cost">₩${(l.cost_raw_krw || Math.round((l.cost_krw||0)/3)).toLocaleString()}</span>
     </div>`;
-  }).join('') + (filtered.length === 100 ? '<div style="text-align:center;font-size:11px;color:#405060;padding:6px">최근 100건만 표시</div>' : '');
+  }).join('') + (filtered.length === 100 ? '<div style="text-align:center;font-size:11px;color:#999;padding:6px">최근 100건만 표시</div>' : '');
 }
 
 function clearLocalLogs() {
@@ -982,7 +982,7 @@ function setDocPeriod(days, btn) {
 async function loadDocHistory() {
   const el = document.getElementById('doc-history-body');
   if (!el) return;
-  el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">불러오는 중...</div>';
+  el.innerHTML = '<div style="text-align:center;color:#999;padding:16px;font-size:12px">불러오는 중...</div>';
 
   let url = `/rest/v1/documents?doc_type=neq.__residents__&order=created_at.desc&limit=500`;
   const docs = await fetchSupabase(url);
@@ -1049,7 +1049,7 @@ function renderDocHistory() {
   if (countEl) countEl.textContent = `총 ${filtered.length}건`;
 
   if (!filtered.length) {
-    el.innerHTML = '<div style="text-align:center;color:#405060;padding:16px;font-size:12px">저장된 문서 없음</div>';
+    el.innerHTML = '<div style="text-align:center;color:#999;padding:16px;font-size:12px">저장된 문서 없음</div>';
     return;
   }
 
@@ -1063,10 +1063,10 @@ function renderDocHistory() {
     const docColor = info.color;
     const ctrName = d.center_name || d.center_code || '';
     const badgeCls = CTR_BADGES[ctrName] || 'badge-gray';
-    html += `<div style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:#141E2B;border-radius:8px;border:1px solid #2A3A50">
+    html += `<div style="display:flex;align-items:center;gap:7px;padding:8px 10px;background:#F8F9FB;border-radius:8px;border:1px solid #E8EAF0">
       <span class="badge ${badgeCls}" style="flex-shrink:0;font-size:10px;white-space:nowrap">${ctrName}</span>
       <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:${docColor}25;color:${docColor};border:1px solid ${docColor}40;font-weight:600;white-space:nowrap;flex-shrink:0">${d.doc_type || '—'}</span>
-      <span style="font-size:10px;color:#405060;flex:1">${dateStr}</span>
+      <span style="font-size:10px;color:#999;flex:1">${dateStr}</span>
       <button class="doc-view-btn" onclick="openDoc(${allIdx})">보기</button>
     </div>`;
   });
@@ -1152,11 +1152,11 @@ function renderCenterManage() {
       </div>
 
       <!-- 코드 미리보기 -->
-      <div style="background:#0F1923;border:1px solid #2A3A50;border-radius:8px;padding:10px 12px;margin:8px 0 4px">
-        <div style="font-size:9px;font-weight:700;color:#405060;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — centers.js + admin.html 동일 반영</div>
-        <pre id="preview-${id}" style="font-size:11px;color:#4ECFA0;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
+      <div style="background:#F8F9FB;border:1px solid #E8EAF0;border-radius:8px;padding:10px 12px;margin:8px 0 4px">
+        <div style="font-size:9px;font-weight:700;color:#999;letter-spacing:1px;margin-bottom:5px">CENTERS 코드 — centers.js + admin.html 동일 반영</div>
+        <pre id="preview-${id}" style="font-size:11px;color:#0D6E55;line-height:1.6;white-space:pre-wrap;font-family:monospace"></pre>
         <button onclick="copyPreview('preview-${id}')"
-          style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #2A3A50;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#607080"
+          style="margin-top:5px;padding:3px 10px;border-radius:5px;border:1px solid #E8EAF0;background:none;font-size:10px;cursor:pointer;font-family:inherit;color:#888"
           onmouseover="this.style.color='#4ECFA0';this.style.borderColor='#4ECFA0'"
           onmouseout="this.style.color='#607080';this.style.borderColor='#2A3A50'">
           📋 복사
@@ -1306,7 +1306,7 @@ function copyCentersJs() {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 admin · v2026.06.20.03
+  Day:음 admin · v2026.06.20.04
 </div>
 </body>
 </html>
