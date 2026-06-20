@@ -206,17 +206,33 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif
           <div class="kpi-card">
             <div class="kpi-label">문서 생성 건수</div>
             <div class="kpi-val" style="color:#7AAEE8" id="kpi-calls">-</div>
-            <div class="kpi-sub" style="margin-top:8px;display:flex;flex-direction:column;gap:3px">
-              <div style="display:flex;justify-content:space-between;font-size:10px">
+            <div class="kpi-sub" style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid #1A2A3A">
                 <span style="color:#7AAEE8">📅 월간문서</span>
                 <span id="kpi-monthly">-</span>
               </div>
-              <div style="display:flex;justify-content:space-between;font-size:10px">
+              <div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid #1A2A3A">
                 <span style="color:#4ECFA0">📋 정기문서</span>
                 <span id="kpi-periodic">-</span>
               </div>
-              <div style="display:flex;justify-content:space-between;font-size:10px">
-                <span style="color:#5C3489">🔍 문서검증·AI질의</span>
+              <div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid #1A2A3A">
+                <span style="color:#BA7517">📂 수시문서</span>
+                <span id="kpi-adhoc">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid #1A2A3A">
+                <span style="color:#0C5A8A">📊 조사문서</span>
+                <span id="kpi-survey">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid #1A2A3A">
+                <span style="color:#0D6E55">🔗 급여반영</span>
+                <span id="kpi-benefit">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0;border-bottom:1px solid #1A2A3A">
+                <span style="color:#8B4513">📓 요양일지</span>
+                <span id="kpi-report">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;padding:3px 0">
+                <span style="color:#5C3489">🔍 검증·교정·AI질의</span>
                 <span id="kpi-other">-</span>
               </div>
             </div>
@@ -670,18 +686,24 @@ function renderOverview() {
 }
 
 function renderKPI(logs) {
-  // doc_type + doc_label 기준 분류
   const monthly  = logs.filter(l => l.doc_type === 'monthly').length;
   const periodic = logs.filter(l => l.doc_type === 'periodic').length;
-  const verifyLabels = new Set(['문서검증','문서검증_수정본','AI질의']);
-  const verify   = logs.filter(l => verifyLabels.has(l.doc_label)).length;
-  const other    = logs.filter(l => l.doc_type !== 'monthly' && l.doc_type !== 'periodic' && !verifyLabels.has(l.doc_label)).length;
-  const calls    = logs.length;
 
-  const cost = logs.reduce((s,l) => s + (l.cost_krw || 0), 0);
-  const raw  = logs.reduce((s,l) => s + (l.cost_raw_krw || Math.round((l.cost_krw||0) / 3)), 0);
+  const adhocLabels   = new Set(['퇴소 연계기록지']);
+  const surveyLabels  = new Set(['프로그램 의견수렴','식사만족도조사']);
+  const benefitLabels = new Set(['급여반영']);
+  const reportLabels  = new Set(['요양일지','일일보고서','현황보고서','사례회의보고서']);
+  const verifyLabels  = new Set(['문서검증','문서검증_수정본','AI질의','문서교정','문서교정결과','문서검증결과']);
 
-  // 기간 범위 계산
+  const adhoc   = logs.filter(l => adhocLabels.has(l.doc_label)).length;
+  const survey  = logs.filter(l => surveyLabels.has(l.doc_label)).length;
+  const benefit = logs.filter(l => benefitLabels.has(l.doc_label)).length;
+  const report  = logs.filter(l => reportLabels.has(l.doc_label)).length;
+  const verify  = logs.filter(l => verifyLabels.has(l.doc_label)).length;
+  const calls   = logs.length;
+
+  const raw = logs.reduce((s,l) => s + (l.cost_raw_krw || Math.round((l.cost_krw||0) / 3)), 0);
+
   const dates = logs.map(l => l.logged_at).filter(Boolean).sort();
   const fmt = iso => iso ? iso.slice(0,10).replace(/-/g,'.') : '';
   const rangeStr = dates.length === 0 ? '데이터 없음'
@@ -692,10 +714,13 @@ function renderKPI(logs) {
   set('kpi-calls',    calls.toLocaleString() + '건');
   set('kpi-monthly',  monthly + '건');
   set('kpi-periodic', periodic + '건');
-  set('kpi-other',    (verify + other) + '건');
+  set('kpi-adhoc',    adhoc + '건');
+  set('kpi-survey',   survey + '건');
+  set('kpi-benefit',  benefit + '건');
+  set('kpi-report',   report + '건');
+  set('kpi-other',    verify + '건');
   set('kpi-raw',    '₩' + raw.toLocaleString());
   set('kpi-raw-sub', rangeStr);
-
 }
 
 function renderCenterTable(logs) {
@@ -1281,7 +1306,7 @@ function copyCentersJs() {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 admin · v2026.06.20.02
+  Day:음 admin · v2026.06.20.03
 </div>
 </body>
 </html>
