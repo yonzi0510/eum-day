@@ -17580,6 +17580,16 @@ ${client.notes}
           ${journalRenderParts(client.name, parts)}
         </div>`;
       resultBody.appendChild(wrap);
+
+      // 세션 등록 + Supabase 저장 (문서 생성당 1건)
+      const docLabel = `요양일지`;
+      registerSessionDoc(docLabel, raw, client.name, '요양일지');
+      updateSessionDocNames(client.name);
+      try {
+        const _cfgCenter = CENTERS[centerCode] || {};
+        await saveDocToSupabase(centerCode, _cfgCenter.name || centerCode, client.name, docLabel, raw);
+      } catch(e2) { console.warn('[요양일지 저장 오류]', e2.message); }
+
     } catch(e) {
       const errCard = document.createElement('div');
       errCard.style.cssText = 'border:1px solid #F5C6C2;border-radius:8px;margin-bottom:12px;padding:12px;background:#FCF0EF;font-size:12px;color:#C0392B';
@@ -17639,7 +17649,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.20.111
+  Day:음 · v2026.06.20.112
 </div>
 </body>
 </html>
