@@ -262,8 +262,6 @@ textarea:focus{outline:none;border-color:#1F3864;background:#fff}
 .dl-btn.primary{background:#1F3864;color:#fff}
 .dl-btn.primary:hover{background:#162a4e}
 .reset-btn{background:none;border:1px solid #E0E0E0;border-radius:6px;padding:5px 12px;font-size:11px;color:#888;cursor:pointer;font-family:inherit;margin-top:8px}
-.goto-btn{background:#E1F5EE;border:1.5px solid #1D9E75;color:#085041;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:all .2s;margin-top:8px;width:100%;justify-content:center}
-.goto-btn:hover{background:#1D9E75;color:#fff}
 .reason-item{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:7px;border:1.5px solid #E0E0E0;background:#fff;cursor:pointer;transition:all .15s}
 .reason-item:hover{border-color:#FFB300;background:#FFFBF0}
 .reason-item.selected-reason{border-color:#0D6E55;background:#F0FBF6}
@@ -789,7 +787,6 @@ if (typeof CENTERS === 'undefined') {
           </span>
         </div>
         <div class="doc-result-body" id="m-r1"></div>
-        </div>
       </div>
 
       <!-- 문서2: 사례관리 회의록 -->
@@ -804,7 +801,6 @@ if (typeof CENTERS === 'undefined') {
           <p><strong>직원 발언:</strong> 시설장·사회복지사·간호조무사·요양보호사 직종별 의견 포함</p>
           <p><strong>사례관리 계획:</strong> 오후 2시 이후 색칠공부 선제 배치 / 약물 부작용 매일 관찰 / 혈압 주 3회 측정</p>
           <p>→ 전체 내용은 최종 Word 파일에 완성되어 있습니다.</p>
-        </div>
         </div>
       </div>
 
@@ -822,7 +818,6 @@ if (typeof CENTERS === 'undefined') {
         <button class="dl-btn" style="background:#1F3864;color:#fff;border-color:#1F3864" onclick="openDocViewer(window._monthlyHtml, '월간 문서')">🔍 크게 보기</button>
         <button class="dl-btn primary" id="dl-monthly" style="opacity:.4;pointer-events:none" onclick="downloadDocx('monthly')">📄 Word 다운로드</button>
       </div>
-      <button class="goto-btn" onclick="goOverview()">👤 어르신 현황 탭에서 업데이트된 데이터 확인하기 →</button>
       <div style="text-align:center"><button class="reset-btn" onclick="resetSub('monthly')">↩ 처음으로</button></div>
     </div>
   </div>
@@ -1139,7 +1134,6 @@ if (typeof CENTERS === 'undefined') {
         </div>
         <div class="doc-result-body" id="p-r4"><p style="color:#aaa;font-size:12px;padding:8px 0">생성 후 표시됩니다</p></div>
         </div>
-      </div>
 
       <!-- 급여제공계획서 엑셀 다운로드 (박스4 바로 아래) -->
       <div id="plan-excel-section" style="display:none;margin-bottom:8px;background:#FFF8E1;border:1.5px solid #FFE082;border-radius:10px;padding:12px 14px">
@@ -1169,10 +1163,7 @@ if (typeof CENTERS === 'undefined') {
         <button class="dl-btn" style="background:#0D6E55;color:#fff;border-color:#0D6E55" onclick="openDocViewer(window._periodicHtml, '정기 문서 (기초평가+욕구사정+결과평가)')">🔍 전체 문서 크게 보기</button>
         <button class="dl-btn primary" id="dl-periodic" style="background:#0D6E55;border-color:#0D6E55;opacity:.4;pointer-events:none" onclick="downloadDocx('periodic')">📄 Word 다운로드 (3종)</button>
       </div>
-      <button class="goto-btn" onclick="goOverview()">👤 어르신 현황 탭에서 업데이트된 데이터 확인하기 →</button>
       <div style="text-align:center"><button class="reset-btn" onclick="resetSub('periodic')">↩ 처음으로</button></div>
-    </div>
-  </div>
 
   <!-- ── 서브탭: 수시 문서 ── -->
   <div class="sub-content" id="sub-adhoc">
@@ -1283,7 +1274,6 @@ if (typeof CENTERS === 'undefined') {
         <button class="dl-btn" style="color:#BA7517;border-color:#BA7517" onclick="resetSub('adhoc')">↩ 다시 작성</button>
       </div>
     </div>
-  </div>
 
   <!-- ── 서브탭: 조사 ── -->
   <div class="sub-content" id="sub-survey">
@@ -1784,7 +1774,6 @@ if (typeof CENTERS === 'undefined') {
   </div><!-- /sub-report -->
 
 
-</div><!-- /main -->
 
   <!-- 요양일지 (덕산주간보호센터 전용) -->
   <div class="sub-content" id="sub-journal">
@@ -2074,7 +2063,6 @@ if (typeof CENTERS === 'undefined') {
     </div>
   </div><!-- /eval-sub-correct -->
 
-</div>
 </div>
 
 <!-- AI질의 플로팅 위젯 -->
@@ -18226,7 +18214,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.20.08
+  Day:음 · v2026.06.20.10
 </div>
 </body>
 </html>
