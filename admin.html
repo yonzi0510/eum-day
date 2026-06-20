@@ -582,8 +582,9 @@ async function loadAllData() {
     _allLogs = [...localLogs].sort((a,b) => b.logged_at.localeCompare(a.logged_at));
   }
 
-  // 문서 유형 필터 옵션 채우기
-  const docTypes = [...new Set(_allLogs.map(l => l.doc_label).filter(Boolean))].sort();
+  // 문서 유형 필터 옵션 채우기 ('문서'는 구버전 잘못 기록된 것으로 제외)
+  const EXCLUDE_LABELS = new Set(['문서']);
+  const docTypes = [...new Set(_allLogs.map(l => l.doc_label).filter(d => d && !EXCLUDE_LABELS.has(d)))].sort();
   const docSel = document.getElementById('log-doc-filter');
   if (docSel) {
     docSel.innerHTML = '<option value="">전체 문서</option>' +
@@ -925,7 +926,7 @@ function renderLogs() {
     const clr = CTR_COLORS[ctr] || '#405060';
     return `<div class="log-item">
       <span class="log-ctr" style="background:${clr}20;color:${clr};border:1px solid ${clr}40">${ctr || '?'}</span>
-      <span class="log-doc">${l.doc_label || '?'}</span>
+      <span class="log-doc">${l.doc_label === '문서' ? '피드백수정(구)' : (l.doc_label || '?')}</span>
       <span class="log-time">${dateStr}</span>
 
       <span class="log-cost">₩${(l.cost_raw_krw || Math.round((l.cost_krw||0)/3)).toLocaleString()}</span>
@@ -1280,7 +1281,7 @@ function copyCentersJs() {
 }
 </script>
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 admin · v2026.06.20.01
+  Day:음 admin · v2026.06.20.02
 </div>
 </body>
 </html>
