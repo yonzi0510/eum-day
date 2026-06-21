@@ -5099,6 +5099,33 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;font-size:10.5pt;colo
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message);
 
+    // usage 로깅
+    try {
+      const _cfg2 = CENTERS[centerCode] || {};
+      const _input = data.usage?.input_tokens || 0;
+      const _output = data.usage?.output_tokens || 0;
+      const _costUSD = (_input * 3 + _output * 15) / 1_000_000;
+      const _isPilot = (_cfg2.pilot === true);
+      const _mult = _isPilot ? POINT_MULTIPLIER_PILOT : POINT_MULTIPLIER_BASE;
+      const _costKRW = Math.round(_costUSD * 1380 * _mult);
+      const _costRaw = Math.round(_costUSD * 1380);
+      const _log = {
+        ts: new Date().toISOString(),
+        center: _cfg2.short || centerCode,
+        center_code: centerCode,
+        center_name: _cfg2.name || centerCode,
+        doc: cfg.label || '보고서',
+        input: _input, output: _output,
+        costKRW: _costKRW, costRawKRW: _costRaw
+      };
+      const _UKEY = 'daeum-usage-log';
+      const _prev = JSON.parse(localStorage.getItem(_UKEY) || '[]');
+      _prev.push(_log);
+      if (_prev.length > 500) _prev.splice(0, _prev.length - 500);
+      localStorage.setItem(_UKEY, JSON.stringify(_prev));
+      saveUsageToSupabase(_log);
+    } catch(e2) { console.warn('[보고서 usage 로깅 오류]', e2.message); }
+
     clearInterval(progTimer);
     progBar.style.width = '100%';
     await new Promise(r => setTimeout(r, 300));
@@ -6525,7 +6552,7 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
         center: cfg.short || centerCode,
         center_code: centerCode,
         center_name: cfg.name || centerCode,
-        doc: docLabel || '문서',
+        doc: docLabel || '알수없음',
         input: inputTokens,
         output: outputTokens,
         costKRW,
@@ -17432,88 +17459,55 @@ function journalSetProgress(pct, msg) {
 }
 
 // AI 원문에서 파트별로 텍스트 분리
+// 날짜별 {date, 신체, 인지, 기능, 간호} 파싱
 function journalSplitParts(raw) {
   const lines = raw.split('\n');
-  const part1 = []; // 신체 + 인지
-  const part2 = []; // 기능
-  const part3 = []; // 건강
-  let currentDate = '';
-
+  const entries = [];
+  let cur = null;
   for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    // 날짜 헤더
-    if (/^\d{2}\/\d{2}\s*\([월화수목금토일]\)/.test(trimmed)) {
-      currentDate = trimmed;
-      continue;
-    }
-    if (trimmed.startsWith('[신체]') || trimmed.startsWith('[인지]')) {
-      if (currentDate) { part1.push(currentDate); currentDate = ''; }
-      part1.push(trimmed);
-    } else if (trimmed.startsWith('[기능]')) {
-      if (currentDate) { part2.push(currentDate); currentDate = ''; }
-      part2.push(trimmed);
-    } else if (trimmed.startsWith('[건강]')) {
-      if (currentDate) { part3.push(currentDate); currentDate = ''; }
-      part3.push(trimmed);
+    const t = line.trim();
+    if (!t) continue;
+    if (/^\d{2}\/\d{2}\s*\([월화수목금토일]\)/.test(t)) {
+      if (cur) entries.push(cur);
+      cur = { date: t, 신체: '', 인지: '', 기능: '', 간호: '' };
+    } else if (cur) {
+      if (t.startsWith('[신체]'))      cur.신체 = t.replace('[신체]', '').trim();
+      else if (t.startsWith('[인지]')) cur.인지 = t.replace('[인지]', '').trim();
+      else if (t.startsWith('[기능]')) cur.기능 = t.replace('[기능]', '').trim();
+      else if (t.startsWith('[간호]') || t.startsWith('[건강]')) cur.간호 = t.replace(/\[(간호|건강)\]/, '').trim();
     }
   }
-  return {
-    part1: part1.join('\n'),
-    part2: part2.join('\n'),
-    part3: part3.join('\n')
-  };
+  if (cur) entries.push(cur);
+  return entries; // [{date, 신체, 인지, 기능, 간호}, ...]
 }
 
-function journalRenderParts(clientName, parts) {
-  const uid = clientName.replace(/[^가-힣a-zA-Z0-9]/g, '');
-  const TABS = [
-    { key: 'part1', label: '요양', color: '#1F3864', active: true },
-    { key: 'part2', label: '프로그램', color: '#2D6A4F', active: false },
-    { key: 'part3', label: '간호', color: '#7B3F00', active: false },
-  ];
-
-  const tabBtns = TABS.map((t, i) => `
-    <button onclick="journalSwitchPartTab('${uid}', '${t.key}', this)"
-      id="jptab-${uid}-${t.key}"
-      style="padding:6px 16px;border:none;background:${t.active ? '#fff' : 'transparent'};
-      border-bottom:${t.active ? '2.5px solid '+t.color : '2.5px solid transparent'};
-      color:${t.active ? t.color : '#aaa'};font-size:12px;font-weight:700;
-      cursor:pointer;font-family:inherit;transition:all .15s"
-    >${t.label}</button>`).join('');
-
-  const tabContents = TABS.map(t => `
-    <div id="jpcontent-${uid}-${t.key}" style="display:${t.active ? 'block' : 'none'};padding:14px">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-        <button onclick="journalCopyText(this)" data-text="${encodeURIComponent(parts[t.key])}"
-          style="font-size:11px;padding:3px 10px;border:1px solid #C9C5BC;border-radius:5px;background:#fff;cursor:pointer">⎘ 복사</button>
-      </div>
-      <div style="font-size:12px;line-height:2.2;color:#1C1B18;white-space:pre-wrap;word-break:keep-all">${parts[t.key]}</div>
-    </div>`).join('');
-
-  return `
-    <div style="border:1px solid #E0E6F0;border-radius:8px;overflow:hidden">
-      <div style="display:flex;border-bottom:1px solid #E0E6F0;background:#F7F6F2;padding:0 8px">
-        ${tabBtns}
-      </div>
-      ${tabContents}
-    </div>`;
+// 표 형태 렌더링
+function journalRenderParts(clientName, entries) {
+  if (!entries.length) return '<div style="padding:12px;color:#aaa;font-size:12px">내용을 파싱하지 못했어요.</div>';
+  const rows = entries.map(e => `
+    <tr>
+      <td style="width:58px;text-align:center;font-weight:700;color:#1B4332;background:#F5FAF7;border:1px solid #C8DDD2;padding:10px 6px;vertical-align:middle;white-space:nowrap;font-size:12px">${e.date.replace('/', '/<br>')}</td>
+      <td style="border:1px solid #C8DDD2;padding:0;vertical-align:top">
+        ${[['신체', e.신체], ['인지', e.인지], ['기능', e.기능], ['간호', e.간호]].map(([lbl, txt], idx, arr) => `
+          <div style="display:flex;${idx < arr.length-1 ? 'border-bottom:1px solid #E8F0EC' : ''}">
+            <div style="width:38px;flex-shrink:0;background:#EAF2EE;color:#1B4332;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center;border-right:1px solid #C8DDD2;padding:7px 4px">${lbl}</div>
+            <div style="flex:1;padding:7px 10px;line-height:1.7;color:#222;font-size:12px">${txt || '—'}</div>
+          </div>`).join('')}
+      </td>
+    </tr>`).join('');
+  return `<table style="width:100%;border-collapse:collapse"><tbody>${rows}</tbody></table>`;
 }
 
-function journalSwitchPartTab(uid, key, btn) {
-  // 탭 버튼 스타일
-  const keys = ['part1','part2','part3'];
-  const colors = { part1:'#1F3864', part2:'#2D6A4F', part3:'#7B3F00' };
-  keys.forEach(k => {
-    const b = document.getElementById('jptab-'+uid+'-'+k);
-    const c = document.getElementById('jpcontent-'+uid+'-'+k);
-    if (!b || !c) return;
-    const isActive = k === key;
-    b.style.background = isActive ? '#fff' : 'transparent';
-    b.style.borderBottom = isActive ? '2.5px solid '+colors[k] : '2.5px solid transparent';
-    b.style.color = isActive ? colors[k] : '#aaa';
-    c.style.display = isActive ? 'block' : 'none';
-  });
+async function journalDownloadXlsx(name, entries) {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+  const wb = XLSX.utils.book_new();
+  const wsData = [['날짜', '신체', '인지', '기능', '간호']];
+  for (const e of entries) wsData.push([e.date, e.신체, e.인지, e.기능, e.간호]);
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  // 열 너비
+  ws['!cols'] = [{ wch: 12 }, { wch: 40 }, { wch: 40 }, { wch: 40 }, { wch: 30 }];
+  XLSX.utils.book_append_sheet(wb, ws, '요양일지');
+  XLSX.writeFile(wb, `${name}_요양일지.xlsx`);
 }
 
 async function journalGenerate() {
@@ -17541,13 +17535,13 @@ async function journalGenerate() {
 [신체] 내용
 [인지] 내용
 [기능] 내용
-[건강] 내용
+[간호] 내용
 
 내용 작성 규칙:
 - 문체: ~하심, ~하셨음, ~참여하셨음, ~관찰됨 (경어체 기록지 문체)
 - 날짜마다 반드시 다른 표현 사용 (동일 문장 반복 절대 금지)
 - 각 섹션 1~2문장, 간결하고 구체적
-- [건강]: 특별 이슈 없으면 "혈압 측정 및 건강관리 시행함. 특이사항 없음." 으로
+- [간호]: 특별 이슈 없으면 "혈압 측정 및 건강관리 시행함. 특이사항 없음." 으로
 - 폭력성·거부 행동은 완곡하되 사실적으로 기록`;
 
   for (let i = 0; i < journalClients.length; i++) {
@@ -17567,19 +17561,20 @@ ${client.notes}
     try {
       const raw = await callClaude(system, userPrompt, '요양일지', 8000);
       const parts = journalSplitParts(raw);
-      allResults.push({ name: client.name, raw, parts });
+      allResults.push({ name: client.name, raw, entries: parts });
 
-      // 어르신 카드 (파트 3개로 분리)
+      // 어르신 카드
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'border:1.5px solid #E0E6F0;border-radius:10px;margin-bottom:16px;overflow:hidden';
+      wrap.style.cssText = 'border:1.5px solid #D6E4DA;border-radius:12px;margin-bottom:16px;overflow:hidden';
       wrap.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F0EEE9;border-bottom:1px solid #E0E6F0">
-          <span style="font-size:13px;font-weight:700">${client.name} 어르신</span>
-          <button onclick="journalDownloadClient('${client.name}', this)" data-text="${encodeURIComponent(raw)}"
-            style="font-size:12px;padding:4px 11px;border:1px solid #2D6A4F;border-radius:5px;background:#E8F4EE;color:#1B4332;cursor:pointer;font-weight:600">↓ 전체 다운로드</button>
+        <div style="background:#2D6A4F;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:14px;font-weight:700">${client.name} 어르신</span>
+          <span style="font-size:12px;opacity:.85">${client.year || ''}년 ${client.month || ''}월 · ${client.grade}</span>
         </div>
-        <div style="padding:12px 14px">
-          ${journalRenderParts(client.name, parts)}
+        <div>${journalRenderParts(client.name, parts)}</div>
+        <div style="padding:10px 14px;background:#F5FAF7;border-top:1px solid #D6E4DA;display:flex;justify-content:flex-end">
+          <button onclick="journalDownloadXlsx('${client.name}', window._journalAllResults.find(r=>r.name==='${client.name}').entries)"
+            style="font-size:12px;padding:5px 13px;border:1px solid #2D6A4F;border-radius:6px;background:#E8F4EE;color:#1B4332;cursor:pointer;font-weight:600">📥 엑셀 다운로드</button>
         </div>`;
       resultBody.appendChild(wrap);
 
@@ -17651,7 +17646,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.20.119
+  Day:음 · v2026.06.21.01
 </div>
 </body>
 </html>
