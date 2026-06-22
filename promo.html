@@ -86,7 +86,7 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;background:#F0F2F7;co
   .doc-grid{flex-direction:row;flex-wrap:wrap;gap:6px}
   .doc-group-label{width:100%}
   .doc-card{flex:1;min-width:140px}
-  .preview-iframe{height:70vh;min-height:400px}
+  .preview-iframe{height:auto;min-height:500px;overflow-y:auto}
 }
 </style>
 </head>
@@ -110,13 +110,6 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;background:#F0F2F7;co
   <div class="doc-list-col">
     <div class="list-header">📄 문서 선택</div>
     <div class="doc-grid">
-
-      <div class="doc-group-label gl-urgent">🔔 수시</div>
-      <div class="doc-card" onclick="showSample('linkage')">
-        <div class="doc-icon">🔗</div>
-        <div class="doc-name">퇴소 연계기록지</div>
-        <div class="doc-arrow">›</div>
-      </div>
 
       <div class="doc-group-label gl-monthly">📅 월간</div>
       <div class="doc-card" onclick="showSample('consult')">
@@ -146,6 +139,13 @@ body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;background:#F0F2F7;co
       <div class="doc-card" onclick="showSample('result')">
         <div class="doc-icon">📊</div>
         <div class="doc-name">급여제공결과평가</div>
+        <div class="doc-arrow">›</div>
+      </div>
+
+      <div class="doc-group-label gl-urgent">🔔 수시</div>
+      <div class="doc-card" onclick="showSample('linkage')">
+        <div class="doc-icon">🔗</div>
+        <div class="doc-name">퇴소 연계기록지</div>
         <div class="doc-arrow">›</div>
       </div>
 
@@ -1595,14 +1595,37 @@ function showSample(key) {
   document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('active'));
   event.currentTarget.classList.add('active');
 
+  // 모바일에서 scale 스크립트 주입
+  const isMobile = window.innerWidth <= 700;
+  const scaleScript = isMobile ? `
+<script>
+(function(){
+  function applyScale(){
+    var pages = document.querySelectorAll('.page');
+    pages.forEach(function(page){
+      var docW = page.scrollWidth || 860;
+      var winW = window.innerWidth;
+      var ratio = Math.min(1, (winW - 16) / docW);
+      page.style.transformOrigin = 'top left';
+      page.style.transform = 'scale(' + ratio + ')';
+      page.style.marginBottom = -(page.scrollHeight * (1 - ratio)) + 'px';
+      page.style.width = docW + 'px';
+    });
+  }
+  document.addEventListener('DOMContentLoaded', applyScale);
+  window.addEventListener('resize', applyScale);
+  setTimeout(applyScale, 100);
+})();
+<\/script>` : '';
+
   // placeholder 숨기고 미리보기 표시
   document.getElementById('preview-placeholder').style.display = 'none';
   document.getElementById('preview-title').textContent = sample.title;
-  document.getElementById('preview-iframe').srcdoc = sample.html;
+  document.getElementById('preview-iframe').srcdoc = sample.html.replace('</body>', scaleScript + '</body>');
   document.getElementById('preview-wrap').classList.add('show');
 
   // 미리보기 영역으로 부드럽게 스크롤 (모바일)
-  if (window.innerWidth <= 700) {
+  if (isMobile) {
     document.getElementById('preview-wrap').scrollIntoView({behavior:'smooth', block:'start'});
   }
 }
