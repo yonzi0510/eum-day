@@ -6153,11 +6153,6 @@ async function loadResultsDocs() {
       ? all.filter(d => d.doc_type && d.doc_type !== '__residents__' && new Date(d.created_at).getTime() >= cutoff)
       : [];
 
-    if (!docs.length) {
-      body.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">최근 24시간 내 생성된 문서가 없어요.</div>';
-      return;
-    }
-
     // 세션 문서 병합 (Supabase 저장 안 된 것)
     const supabaseTypes = new Set(docs.map(d => d.doc_type + '|' + (d.resident_name||'')));
     const sessionOnly = (window._sessionDocs || []).filter(s =>
@@ -6168,7 +6163,7 @@ async function loadResultsDocs() {
     );
 
     if (!merged.length) {
-      body.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">아직 생성된 문서가 없어요.</div>';
+      body.innerHTML = noticeBanner + '<div style="text-align:center;color:#bbb;padding:24px;font-size:13px">최근 24시간 내 생성된 문서가 없어요.</div>';
       return;
     }
 
@@ -17668,11 +17663,28 @@ ${client.notes}
 
       // 세션 등록 + Supabase 저장 (문서 생성당 1건)
       const docLabel = `요양일지`;
-      registerSessionDoc(docLabel, raw, client.name, '요양일지');
+      const renderedHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: #f5f5f5; padding: 16px; font-size: 13px; }
+.journal-card { background: #fff; border: 1.5px solid #D6E4DA; border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+.journal-card-header { background: #2D6A4F; color: #fff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+table { width: 100%; border-collapse: collapse; }
+</style>
+</head><body>
+<div class="journal-card">
+  <div class="journal-card-header">
+    <span style="font-size:14px;font-weight:700">${client.name} 어르신</span>
+    <span style="font-size:12px;opacity:.85">${client.year || ''}년 ${client.month || ''}월 · ${client.grade}</span>
+  </div>
+  ${journalRenderParts(client.name, parts)}
+</div>
+</body></html>`;
+      registerSessionDoc(docLabel, renderedHtml, client.name, '요양일지');
       updateSessionDocNames(client.name);
       try {
         const _cfgCenter = CENTERS[centerCode] || {};
-        await saveDocToSupabase(centerCode, _cfgCenter.name || centerCode, client.name, docLabel, raw);
+        await saveDocToSupabase(centerCode, _cfgCenter.name || centerCode, client.name, docLabel, renderedHtml);
       } catch(e2) { console.warn('[요양일지 저장 오류]', e2.message); }
 
     } catch(e) {
@@ -17734,7 +17746,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.22.02
+  Day:음 · v2026.06.22.126
 </div>
 </body>
 </html>
