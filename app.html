@@ -553,6 +553,7 @@ if (typeof CENTERS === 'undefined') {
   <button class="tab-btn" onclick="switchTab('tab-benefit',this)">🔗 급여반영</button>
   <button class="tab-btn" onclick="switchTab('tab-results',this)">📋 문서 결과 보기</button>
   <button class="tab-btn" onclick="switchTab('tab-verify',this)">🔍 문서검증</button>
+  <button class="tab-btn" onclick="switchTab('tab-eval-support',this)">🏅 평가지원</button>
   <button class="tab-btn" onclick="switchTab('tab-pricing',this)">💳 요금제</button>
   <button class="tab-btn" onclick="switchTab('tab-contact',this)">💬 문의</button>
   <button class="tab-btn" onclick="switchTab('tab-admin',this)" id="admin-tab-btn" style="display:none">🔐 관리자</button>
@@ -610,14 +611,15 @@ if (typeof CENTERS === 'undefined') {
           <div id="split-panel" style="display:none;margin-top:8px;border:1.5px solid #C5CAE9;border-radius:10px;padding:14px;background:#FAFBFF">
 
             <!-- 파일 업로드 -->
+            <label for="split-file-input" style="display:block;cursor:pointer">
             <div class="split-drop" id="split-drop"
-                 onclick="document.getElementById('split-file-input').click()"
                  ondragover="splitDragOver(event)" ondragleave="splitDragLeave(event)" ondrop="splitDrop(event)">
               <div class="split-drop-icon">📋</div>
               <div class="split-drop-main" id="split-drop-main">케어포에서 내려받은 전체 PDF 파일을 올려주세요</div>
               <div class="split-drop-sub" id="split-drop-sub">클릭하거나 파일을 여기로 끌어다 놓으세요</div>
               <div id="split-file-tag" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="split-fname"></span></span></div>
             </div>
+            </label>
             <input type="file" id="split-file-input" accept=".pdf" style="display:none" onchange="handleSplitFile(this)">
 
             <!-- 월 선택 -->
@@ -653,8 +655,8 @@ if (typeof CENTERS === 'undefined') {
         </div>
 
         <!-- 개별 파일 업로드 -->
+        <label for="m-file" style="display:block;cursor:pointer">
         <div class="upload-zone" id="m-upload"
-             onclick="document.getElementById('m-file').click()"
              ondragover="zoneDragOver(event,'m-upload')"
              ondragleave="zoneDragLeave(event,'m-upload')"
              ondrop="zoneDrop(event,'m')">
@@ -663,12 +665,13 @@ if (typeof CENTERS === 'undefined') {
           <div style="font-size:11px;color:#999">클릭하거나 파일을 여기로 끌어다 놓으세요<br>케어포 내보내기 <strong style="color:#1F3864">PDF</strong> · 이미지 (Excel은 PDF로 변환 후 업로드)</div>
           <div id="m-fname" style="display:none;flex-wrap:wrap;gap:4px"></div>
         </div>
+        </label>
         <input type="file" id="m-file" style="display:none" onchange="handleFile('m',this)">
 
         <!-- 통화기록 음성 업로드 -->
         <div style="margin-top:8px">
+          <label for="stt-file-input" style="display:block;cursor:pointer">
           <div id="stt-upload-zone" style="border:1.5px dashed #7986CB;border-radius:10px;padding:12px 16px;background:#F8F9FF;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background 0.2s"
-               onclick="document.getElementById('stt-file-input').click()"
                onmouseenter="this.style.background='#EEF0FC'"
                onmouseleave="this.style.background='#F8F9FF'">
             <span style="font-size:20px">🎙️</span>
@@ -682,6 +685,7 @@ if (typeof CENTERS === 'undefined') {
               <span style="font-size:10px;color:#aaa" id="stt-limit-text"></span>
             </div>
           </div>
+          </label>
           <input type="file" id="stt-file-input" style="display:none" accept=".mp3,.m4a,.wav,.ogg,.flac,audio/*" onchange="handleSttFile(this)">
           <!-- 안내문구 -->
           <div style="margin-top:6px;font-size:11px;color:#9E9E9E;padding:0 2px;line-height:1.6">
@@ -861,8 +865,8 @@ if (typeof CENTERS === 'undefined') {
       <!-- 자료 첨부 -->
       <div class="card">
         <div class="card-title"><div class="num">1</div> 자료 첨부</div>
+        <label for="p-file" style="display:block;cursor:pointer">
         <div class="upload-zone" id="p-upload"
-             onclick="document.getElementById('p-file').click()"
              ondragover="zoneDragOver(event,'p-upload')"
              ondragleave="zoneDragLeave(event,'p-upload')"
              ondrop="zoneDrop(event,'p')">
@@ -877,6 +881,7 @@ if (typeof CENTERS === 'undefined') {
           <div style="font-size:11px;color:#aaa;margin-top:6px">클릭하거나 파일을 여기로 끌어다 놓으세요 · 여러 파일 동시 선택 가능</div>
           <div id="p-fname" style="display:none;margin-top:8px;flex-wrap:wrap;gap:4px"></div>
         </div>
+        </label>
         <input type="file" id="p-file" style="display:none" onchange="handleFile('p',this)" multiple>
 
       </div>
@@ -1225,8 +1230,8 @@ if (typeof CENTERS === 'undefined') {
       <!-- PDF 업로드 -->
       <div class="card">
         <div class="card-title"><div class="num">2</div> 급여제공기록지 업로드</div>
+        <label for="adhoc-file" style="display:block;cursor:pointer">
         <div class="upload-zone" id="adhoc-upload"
-          onclick="document.getElementById('adhoc-file').click()"
           ondragover="event.preventDefault();this.classList.add('drag-over')"
           ondragleave="this.classList.remove('drag-over')"
           ondrop="event.preventDefault();this.classList.remove('drag-over');handleAdhocFile({files:event.dataTransfer.files})">
@@ -1235,6 +1240,7 @@ if (typeof CENTERS === 'undefined') {
           <div style="font-size:11px;color:#999">퇴소 전 달 기록지 · 케어포 내보내기 · 드래그 업로드 가능</div>
           <div id="adhoc-fname-wrap" style="display:none"><span class="file-tag">✓ <span id="adhoc-fname"></span></span></div>
         </div>
+        </label>
         <input type="file" id="adhoc-file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleAdhocFile(this)">
       </div>
 
@@ -1762,11 +1768,13 @@ if (typeof CENTERS === 'undefined') {
       <div class="card" id="report-attach-card" style="display:none;padding:14px 16px">
         <div class="card-title" style="margin-bottom:8px"><div class="num">4</div> 자료 첨부 <span style="color:#E24B4A">*</span> <span style="font-size:10px;font-weight:400;color:#888">(사진·교육자료·서식 등)</span></div>
         <div style="font-size:11px;color:#999;margin-bottom:8px">실제 진행 자료를 첨부해주세요. 첨부 자료를 바탕으로 AI가 보고서를 작성합니다.</div>
-        <div class="upload-zone" id="report-upload" onclick="document.getElementById('report-file').click()" style="padding:14px;cursor:pointer">
+        <label for="report-file" style="display:block;cursor:pointer">
+        <div class="upload-zone" id="report-upload" style="padding:14px;cursor:pointer">
           <div style="font-size:22px;margin-bottom:4px">📎</div>
           <div style="font-size:12px;color:#888">사진 또는 교육자료를 첨부해주세요 (PDF·이미지)</div>
           <div id="report-fname" style="display:none;margin-top:6px"><span class="file-tag">✓ <span id="report-fn"></span></span></div>
         </div>
+        </label>
         <input type="file" id="report-file" style="display:none" accept=".pdf,.png,.jpg,.jpeg"
           onchange="handleReportFile(this)">
       </div>
@@ -1828,11 +1836,13 @@ if (typeof CENTERS === 'undefined') {
     <!-- PDF 업로드 -->
     <div class="card" style="margin-bottom:14px" id="journal-upload-card">
       <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:10px">📄 급여제공기록지 PDF 업로드</div>
-      <div class="upload-zone" id="journal-upload-zone" onclick="document.getElementById('journal-pdf-input').click()" style="padding:16px;cursor:pointer;text-align:center;border:1.5px dashed #C9C5BC;border-radius:8px;background:#F7F6F2">
-        <input type="file" id="journal-pdf-input" accept=".pdf" multiple style="display:none" onchange="journalHandleFiles(this.files)">
+      <label for="journal-pdf-input" style="display:block;cursor:pointer">
+      <div class="upload-zone" id="journal-upload-zone" style="padding:16px;cursor:pointer;text-align:center;border:1.5px dashed #C9C5BC;border-radius:8px;background:#F7F6F2">
         <div style="font-size:22px;margin-bottom:4px">📄</div>
         <div style="font-size:12px;color:#888"><strong style="color:#2D6A4F">PDF 선택</strong> 또는 드래그 · 여러 파일 동시 업로드 가능</div>
       </div>
+      </label>
+      <input type="file" id="journal-pdf-input" accept=".pdf" multiple style="display:none" onchange="journalHandleFiles(this.files)">
       <div id="journal-file-list" style="margin-top:8px"></div>
       <div id="journal-parse-status" style="display:none;font-size:12px;padding:6px 10px;border-radius:6px;margin-top:6px"></div>
     </div>
@@ -1932,8 +1942,8 @@ if (typeof CENTERS === 'undefined') {
     <!-- 1. 문서 업로드 -->
     <div class="card">
       <div class="card-title"><div class="num">1</div> 문서 업로드</div>
+      <label for="ev-file" style="display:block;cursor:pointer">
       <div class="upload-zone" id="ev-upload"
-           onclick="document.getElementById('ev-file').click()"
            ondragover="event.preventDefault();this.style.borderColor='#5C3489';this.style.background='#F5F0FF'"
            ondragleave="this.style.borderColor='';this.style.background=''"
            ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';handleEvFile({files:event.dataTransfer.files})">
@@ -1945,6 +1955,7 @@ if (typeof CENTERS === 'undefined') {
         </div>
         <div id="ev-fname" style="display:none"><span class="file-tag">✓ <span id="ev-fn"></span></span></div>
       </div>
+      </label>
       <input type="file" id="ev-file" style="display:none" accept=".pdf,.png,.jpg,.jpeg,.docx,.doc,.hwp,.txt" onchange="handleEvFile(this)">
     </div>
 
@@ -2041,8 +2052,8 @@ if (typeof CENTERS === 'undefined') {
       <!-- 1. 문서 업로드 -->
       <div class="card">
         <div class="card-title"><div class="num">1</div> 문서 업로드</div>
+        <label for="correct-file" style="display:block;cursor:pointer">
         <div class="upload-zone" id="correct-upload"
-             onclick="document.getElementById('correct-file').click()"
              ondragover="event.preventDefault();this.style.borderColor='#5C3489';this.style.background='#F5F0FF'"
              ondragleave="this.style.borderColor='';this.style.background=''"
              ondrop="event.preventDefault();this.style.borderColor='';this.style.background='';handleCorrectFile({files:event.dataTransfer.files})">
@@ -2051,6 +2062,7 @@ if (typeof CENTERS === 'undefined') {
           <div style="font-size:11px;color:#999">PDF · 이미지(JPG·PNG) 가능</div>
           <div id="correct-fname" style="display:none"><span class="file-tag">✓ <span id="correct-fn"></span></span></div>
         </div>
+        </label>
         <input type="file" id="correct-file" style="display:none" accept=".pdf,.png,.jpg,.jpeg,.txt" onchange="handleCorrectFile(this)">
       </div>
 
@@ -3926,6 +3938,24 @@ if (typeof CENTERS === 'undefined') {
 </div>
 
 <!-- ══════════════════════════════════════
+     탭: 평가지원
+══════════════════════════════════════ -->
+<div class="tab-content" id="tab-eval-support">
+<div class="main">
+  <div class="card" style="text-align:center;padding:40px 20px">
+    <div style="font-size:40px;margin-bottom:14px">🏅</div>
+    <div style="font-size:17px;font-weight:700;color:#1F3864;margin-bottom:8px">2026 장기요양 평가지원</div>
+    <div style="font-size:13px;color:#666;margin-bottom:28px;line-height:1.7">평가 준비에 필요한 자료와 도구를 제공합니다.<br>아래 버튼을 눌러 평가지원 페이지로 이동하세요.</div>
+    <a href="https://eval.dayeum.co.kr/" target="_blank"
+       style="display:inline-block;background:#1F3864;color:#fff;font-size:14px;font-weight:600;padding:13px 32px;border-radius:8px;text-decoration:none;letter-spacing:0.3px">
+      🔗 평가지원 페이지 바로가기
+    </a>
+    <div style="margin-top:16px;font-size:11px;color:#aaa">eval.dayeum.co.kr</div>
+  </div>
+</div>
+</div><!-- /tab-eval-support -->
+
+<!-- ══════════════════════════════════════
      탭: 요금제 안내 / 요금결제
 ══════════════════════════════════════ -->
 <div class="tab-content" id="tab-pricing">
@@ -4253,23 +4283,27 @@ if (typeof CENTERS === 'undefined') {
 
     <div class="card">
       <div class="card-title"><div class="num">1</div> 상담일지 또는 회의록 업로드</div>
-      <div class="upload-zone" id="bn-doc-upload" onclick="document.getElementById('bn-doc-file').click()">
+      <label for="bn-doc-file" style="display:block;cursor:pointer">
+      <div class="upload-zone" id="bn-doc-upload">
         <div style="font-size:26px;margin-bottom:5px">📄</div>
         <div style="font-size:13px;color:#555;margin-bottom:2px">상담일지 · 사례관리 회의록 PDF</div>
         <div style="font-size:11px;color:#999">케어포에서 출력한 PDF를 올려주세요</div>
         <div id="bn-doc-fname" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="bn-doc-fn"></span></span></div>
       </div>
+      </label>
       <input type="file" id="bn-doc-file" style="display:none" accept=".pdf" onchange="bnDocSelected(this)">
     </div>
 
     <div class="card">
       <div class="card-title"><div class="num">2</div> 급여제공기록지 업로드</div>
-      <div class="upload-zone" id="bn-rec-upload" onclick="document.getElementById('bn-rec-file').click()">
+      <label for="bn-rec-file" style="display:block;cursor:pointer">
+      <div class="upload-zone" id="bn-rec-upload">
         <div style="font-size:26px;margin-bottom:5px">📋</div>
         <div style="font-size:13px;color:#555;margin-bottom:2px">급여제공기록지 PDF</div>
         <div style="font-size:11px;color:#999">케어포에서 내보낸 같은 어르신 기록지를 올려주세요</div>
         <div id="bn-rec-fname" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="bn-rec-fn"></span></span></div>
       </div>
+      </label>
       <input type="file" id="bn-rec-file" style="display:none" accept=".pdf" onchange="bnRecSelected(this)">
     </div>
 
@@ -17746,7 +17780,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.22.126
+  Day:음 · v2026.06.23.001
 </div>
 </body>
 </html>
