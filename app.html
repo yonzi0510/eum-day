@@ -8451,7 +8451,7 @@ function extractBodyContent(fullHtml) {
 const STT_CLIENT_ID     = 'q461cmc2x4';
 const STT_CLIENT_SECRET = 'Oaeqb1KFHD9pE3TXLt7Mi2UTl5QJTIAZU7XQ3os7';
 const STT_DAILY_LIMIT   = 5;
-const STT_CHUNK_SEC     = 59; // 60초 미만으로 분할
+const STT_CHUNK_SEC     = 30; // 파일 크기 제한 대응
 
 function getSttUsageKey() {
   const today = new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'2-digit',day:'2-digit'});
@@ -8508,10 +8508,23 @@ async function handleSttFile(input) {
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
     await audioCtx.close();
 
-    const sampleRate = audioBuffer.sampleRate;
+    const origSampleRate = audioBuffer.sampleRate;
+    const targetSampleRate = 16000;
     const totalSec = audioBuffer.duration;
+
+    // 16000Hz 다운샘플링
+    const origData = audioBuffer.getChannelData(0);
+    const resampledLength = Math.ceil(origData.length * targetSampleRate / origSampleRate);
+    const resampledData = new Float32Array(resampledLength);
+    for (let i = 0; i < resampledLength; i++) {
+      const srcIdx = i * origSampleRate / targetSampleRate;
+      const lo = Math.floor(srcIdx), hi = Math.min(lo + 1, origData.length - 1);
+      resampledData[i] = origData[lo] + (origData[hi] - origData[lo]) * (srcIdx - lo);
+    }
+
+    const sampleRate = targetSampleRate;
     const chunkSamples = STT_CHUNK_SEC * sampleRate;
-    const totalChunks = Math.ceil(audioBuffer.length / chunkSamples);
+    const totalChunks = Math.ceil(resampledData.length / chunkSamples);
 
     setStat('총 ' + Math.round(totalSec) + '초 · ' + totalChunks + '개 구간으로 분할'); setBar(10);
 
@@ -8519,11 +8532,10 @@ async function handleSttFile(input) {
     let fullText = '';
     for (let i = 0; i < totalChunks; i++) {
       const startSample = i * chunkSamples;
-      const endSample   = Math.min(startSample + chunkSamples, audioBuffer.length);
-      const chunkLength = endSample - startSample;
+      const endSample   = Math.min(startSample + chunkSamples, resampledData.length);
 
-      // 모노 Float32 추출
-      const chunkData = audioBuffer.getChannelData(0).slice(startSample, endSample);
+      // 모노 Float32 추출 (다운샘플된 데이터)
+      const chunkData = resampledData.slice(startSample, endSample);
 
       // WAV 인코딩
       const wavBlob = float32ToWav(chunkData, sampleRate);
@@ -17778,7 +17790,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.23.002
+  Day:음 · v2026.06.23.003
 </div>
 </body>
 </html>
