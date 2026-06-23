@@ -688,10 +688,21 @@ if (typeof CENTERS === 'undefined') {
           </label>
           <input type="file" id="stt-file-input" style="display:none" accept=".mp3,.m4a,.wav,.ogg,.flac,audio/*" onchange="sttFileSelected(this)">
           <!-- STT 시작 버튼 (파일 선택 후 표시) -->
-          <div id="stt-options-wrap" style="display:none;margin-top:8px">
-            <button onclick="startSttGenerate()"
-              style="width:100%;padding:10px 0;border-radius:8px;border:none;background:#3949AB;color:#fff;font-size:13px;font-weight:700;cursor:pointer">
-              🎙️ 상담일지 작성 시작
+          <div id="stt-options-wrap" style="display:none;margin-top:8px;background:#F0F2FF;border-radius:8px;padding:10px 14px">
+            <div style="font-size:11px;font-weight:600;color:#3949AB;margin-bottom:8px">📋 작성 형식을 먼저 선택해주세요</div>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <button id="stt-soap-btn" onclick="setSttStyleBtn('soap')"
+                style="flex:1;padding:8px 0;border-radius:6px;border:1.5px solid #C5CAE9;background:#fff;color:#666;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">
+                SOAP<br><span style="font-size:10px;font-weight:400">S·O·A·P 구조</span>
+              </button>
+              <button id="stt-narr-btn" onclick="setSttStyleBtn('narrative')"
+                style="flex:1;padding:8px 0;border-radius:6px;border:1.5px solid #C5CAE9;background:#fff;color:#666;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s">
+                서술형<br><span style="font-size:10px;font-weight:400">자유 서술 문단</span>
+              </button>
+            </div>
+            <button id="stt-start-btn" onclick="startSttGenerate()" disabled
+              style="width:100%;padding:10px 0;border-radius:8px;border:none;background:#C5CAE9;color:#fff;font-size:13px;font-weight:700;cursor:not-allowed;transition:all .2s">
+              🎙️ 형식을 선택해주세요
             </button>
           </div>
           <!-- 안내문구 -->
@@ -7999,8 +8010,9 @@ function setUiLock(locked) {
 async function startGenerate(type) {
   const prefix = type === 'monthly' ? 'm' : 'p';
   const upload = document.getElementById(prefix + '-upload');
-  if (!upload.classList.contains('has-file')) {
-    alert('먼저 파일을 업로드하거나 샘플을 선택해주세요.');
+  const opinionVal = document.getElementById(prefix + '-opinion')?.value?.trim();
+  if (!upload.classList.contains('has-file') && !opinionVal) {
+    alert('파일을 업로드하거나 작성자 특이사항을 입력해주세요.');
     return;
   }
 
@@ -8072,23 +8084,28 @@ async function startGenerate(type) {
     const directFile = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
     const activeFile = linkedFile || directFile || (dropFiles && dropFiles[0]);
 
-    if (!activeFile) {
+    // 파일 없고 opinion만 있는 경우 허용
+    const opinionOnly = !activeFile && !!opinion;
+
+    if (!activeFile && !opinion) {
       prog.classList.remove('show');
       document.getElementById(type === 'monthly' ? 'monthly-input' : 'periodic-input').style.display = 'block';
-      alert('기록지 파일을 먼저 업로드해주세요.');
+      alert('파일을 업로드하거나 작성자 특이사항을 입력해주세요.');
       return;
     }
 
     // 멀티파일 처리: 파일 목록 수집
-    const allFiles = type === 'periodic'
+    const allFiles = opinionOnly ? [] : (type === 'periodic'
       ? (dropFiles && dropFiles.length > 0 ? dropFiles : [activeFile])
-      : [activeFile];
+      : [activeFile]);
 
     // 파일명 목록 (프롬프트에 컨텍스트로 전달)
     const fileNames = allFiles.map(f => f.name).join(', ');
 
     let userContent;
-    const instructionText = `업로드된 파일: ${fileNames}\n위 파일을 분석하여 요청된 문서를 즉시 작성해주세요.\n[필수] 파일 종류나 형식을 이유로 작성을 거부하거나 추가 파일을 요청하는 것은 절대 금지입니다. 파일에서 확인 가능한 모든 정보를 최대한 활용하여 지금 바로 작성하세요.` + (opinion ? `\n\n[작성자 의견]\n${opinion}` : '');
+    const instructionText = opinionOnly
+      ? `급여제공기록지 없이 작성자 특이사항만으로 상담일지를 작성해주세요.\n[필수] 아래 작성자 특이사항을 바탕으로 상담일지를 즉시 작성하세요. 기록지가 없으므로 특이사항에 기재된 내용을 중심으로 최대한 충실하게 작성하세요.\n\n[작성자 특이사항]\n${opinion}`
+      : `업로드된 파일: ${fileNames}\n위 파일을 분석하여 요청된 문서를 즉시 작성해주세요.\n[필수] 파일 종류나 형식을 이유로 작성을 거부하거나 추가 파일을 요청하는 것은 절대 금지입니다. 파일에서 확인 가능한 모든 정보를 최대한 활용하여 지금 바로 작성하세요.` + (opinion ? `\n\n[작성자 의견]\n${opinion}` : '');
 
     // PDF 파일은 최대 5MB 이하인 것 우선 사용 (400 오류 방지)
     const MAX_PDF_SIZE = 5 * 1024 * 1024;
@@ -8102,7 +8119,8 @@ async function startGenerate(type) {
     try {
       const contentParts = [];
       let totalSize = 0;
-      for (const f of sortedFiles) {
+      const sortedFiles2 = opinionOnly ? [] : sortedFiles;
+      for (const f of sortedFiles2) {
         totalSize += f.size || 0;
         if (totalSize > MAX_PDF_SIZE * 3) break; // 총 15MB 초과 시 중단
         const isPDF = f.type === 'application/pdf' || f.name?.endsWith('.pdf');
@@ -8501,12 +8519,42 @@ function updateSttBadge() {
 // STT 대기 파일
 var sttPendingFile = null;
 
+function setSttStyleBtn(style) {
+  // 기존 counselStyle 동기화
+  counselStyle = style;
+  const soapBtn = document.getElementById('stt-soap-btn');
+  const narrBtn = document.getElementById('stt-narr-btn');
+  const startBtn = document.getElementById('stt-start-btn');
+  if (style === 'soap') {
+    if (soapBtn) { soapBtn.style.background='#3949AB'; soapBtn.style.color='#fff'; soapBtn.style.borderColor='#3949AB'; }
+    if (narrBtn) { narrBtn.style.background='#fff'; narrBtn.style.color='#666'; narrBtn.style.borderColor='#C5CAE9'; }
+  } else {
+    if (narrBtn) { narrBtn.style.background='#3949AB'; narrBtn.style.color='#fff'; narrBtn.style.borderColor='#3949AB'; }
+    if (soapBtn) { soapBtn.style.background='#fff'; soapBtn.style.color='#666'; soapBtn.style.borderColor='#C5CAE9'; }
+  }
+  // 시작 버튼 활성화
+  if (startBtn) {
+    startBtn.disabled = false;
+    startBtn.style.background = '#3949AB';
+    startBtn.style.cursor = 'pointer';
+    startBtn.textContent = '🎙️ 상담일지 작성 시작';
+  }
+}
+
 function sttFileSelected(input) {
   if (!input.files || !input.files[0]) return;
   sttPendingFile = input.files[0];
   input.value = '';
   const fnEl = document.getElementById('stt-fname');
   if (fnEl) { fnEl.textContent = '📎 ' + sttPendingFile.name; fnEl.style.display = 'block'; }
+  // 양식 선택 초기화
+  counselStyle = null;
+  const soapBtn = document.getElementById('stt-soap-btn');
+  const narrBtn = document.getElementById('stt-narr-btn');
+  const startBtn = document.getElementById('stt-start-btn');
+  if (soapBtn) { soapBtn.style.background='#fff'; soapBtn.style.color='#666'; soapBtn.style.borderColor='#C5CAE9'; }
+  if (narrBtn) { narrBtn.style.background='#fff'; narrBtn.style.color='#666'; narrBtn.style.borderColor='#C5CAE9'; }
+  if (startBtn) { startBtn.disabled=true; startBtn.style.background='#C5CAE9'; startBtn.style.cursor='not-allowed'; startBtn.textContent='🎙️ 형식을 선택해주세요'; }
   const wrap = document.getElementById('stt-options-wrap');
   if (wrap) wrap.style.display = 'block';
 }
@@ -8514,6 +8562,7 @@ function sttFileSelected(input) {
 async function startSttGenerate() {
   const file = sttPendingFile;
   if (!file) { alert('음성 파일을 먼저 업로드해주세요.'); return; }
+  if (!counselStyle) { alert('작성 형식(SOAP / 서술형)을 먼저 선택해주세요.'); return; }
 
   // 횟수 체크
   if (getSttUsageCount() >= STT_DAILY_LIMIT) {
@@ -8740,6 +8789,7 @@ function buildSttCounselPrompt() {
     '- 전문적이고 공식적인 사회복지 문서 형식으로 작성\n' +
     '- 실제 이름이 언급되지 않은 경우 "어르신", "보호자"로 표기\n' +
     '- HTML 형식으로 출력 (DOC_CSS 스타일 적용 가능한 구조)\n\n' +
+    '- 상담 내용 말미에 조치사항(향후 계획, 연계, 추적 관찰 등)을 별도 항목으로 반드시 포함할 것\n' +
     '주의: 추측이나 과도한 해석 없이 녹음 내용에 기반하여 작성할 것.';
 }
 
@@ -8936,7 +8986,7 @@ function toggleDoc(el, id) {
 }
 
 // ── 상담일지 형식 선택 (SOAP / 서술형) ──
-let counselStyle = 'soap'; // 기본값
+let counselStyle = null; // 미선택 상태 — 반드시 선택 후 진행
 
 function toggleCounselStyleWrap() {
   const wrap = document.getElementById('counsel-style-wrap');
@@ -17836,7 +17886,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.23.006
+  Day:음 · v2026.06.23.008
 </div>
 </body>
 </html>
