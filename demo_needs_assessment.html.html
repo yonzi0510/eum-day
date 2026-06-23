@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="hide-results">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- v2026.06.23.002 -->
+<!-- v2026.06.23.004 -->
 <title>Day:음 — 욕구사정 자동화 데모</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1007,8 +1007,6 @@ function resetDemo() {
   document.getElementById('uploadProg').style.display = 'none';
   document.getElementById('uploadFill').style.width = '0%';
 
-  }
-
   document.getElementById('previewHint').classList.remove('show');
   document.getElementById('opinionCard').style.display = 'none';
   document.getElementById('opinionTxt').value = '';
@@ -1033,6 +1031,7 @@ function resetDemo() {
   document.getElementById('progPct').textContent = '0%';
   document.getElementById('progLabel').textContent = 'AI 분석 중...';
   window.scrollTo({top:0, behavior:'smooth'});
+}
 </script>
 </body>
 </html>
