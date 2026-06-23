@@ -8614,11 +8614,9 @@ async function callClovaStt(wavBlob) {
   formData.append('media', wavBlob, 'chunk.wav');
   formData.append('params', JSON.stringify({ language: 'Kor', completion: 'sync' }));
 
-  const resp = await fetch('https://naveropenapi.apigw.ntruss.com/recog/v1/stt?lang=Kor', {
+  const resp = await fetch('https://clova-proxy.vercel.app/api/stt', {
     method: 'POST',
     headers: {
-      'X-NCP-APIGW-API-KEY-ID': STT_CLIENT_ID,
-      'X-NCP-APIGW-API-KEY':    STT_CLIENT_SECRET,
       'Content-Type': 'application/octet-stream'
     },
     body: wavBlob
@@ -17780,7 +17778,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.23.001
+  Day:음 · v2026.06.23.002
 </div>
 </body>
 </html>
