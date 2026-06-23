@@ -686,7 +686,14 @@ if (typeof CENTERS === 'undefined') {
             </div>
           </div>
           </label>
-          <input type="file" id="stt-file-input" style="display:none" accept=".mp3,.m4a,.wav,.ogg,.flac,audio/*" onchange="handleSttFile(this)">
+          <input type="file" id="stt-file-input" style="display:none" accept=".mp3,.m4a,.wav,.ogg,.flac,audio/*" onchange="sttFileSelected(this)">
+          <!-- STT 시작 버튼 (파일 선택 후 표시) -->
+          <div id="stt-options-wrap" style="display:none;margin-top:8px">
+            <button onclick="startSttGenerate()"
+              style="width:100%;padding:10px 0;border-radius:8px;border:none;background:#3949AB;color:#fff;font-size:13px;font-weight:700;cursor:pointer">
+              🎙️ 상담일지 작성 시작
+            </button>
+          </div>
           <!-- 안내문구 -->
           <div style="margin-top:6px;font-size:11px;color:#9E9E9E;padding:0 2px;line-height:1.6">
             💡 음성 파일에는 대상자 정보가 자동으로 포함되지 않아요. 생성 후 문서에서 직접 수정해주세요.
@@ -697,7 +704,10 @@ if (typeof CENTERS === 'undefined') {
           </div>
           <!-- STT 진행 상태 -->
           <div id="stt-progress" style="display:none;margin-top:8px;background:#EEF0FC;border-radius:8px;padding:10px 14px">
-            <div style="font-size:12px;font-weight:600;color:#3949AB;margin-bottom:6px">🎙️ 음성 변환 중...</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div style="font-size:12px;font-weight:600;color:#3949AB">🎙️ 상담일지 작성 중...</div>
+              <div id="stt-pct" style="font-size:12px;font-weight:700;color:#5C6BC0">0%</div>
+            </div>
             <div style="background:#C5CAE9;border-radius:4px;height:6px;overflow:hidden">
               <div id="stt-bar" style="height:100%;background:#5C6BC0;border-radius:4px;width:0%;transition:width 0.4s"></div>
             </div>
@@ -6287,9 +6297,17 @@ function openResultDoc(idx) {
 
   // body 조각 → DOC_CSS 씌워서 완전한 문서로 렌더링
   const t = content.trim().toLowerCase();
-  const fullHtml = (t.startsWith('<!doctype') || t.startsWith('<html'))
-    ? content
-    : `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${content}</body></html>`;
+  let fullHtml;
+  if (t.startsWith('<!doctype') || t.startsWith('<html')) {
+    // 완전한 HTML이지만 DOC_CSS 미포함 시 재주입
+    if (!content.includes('<style>')) {
+      fullHtml = content.replace('</head>', `<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head>`);
+    } else {
+      fullHtml = content;
+    }
+  } else {
+    fullHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet"><style>${DOC_CSS}</style></head><body>${content}</body></html>`;
+  }
 
   modalBody.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa;font-size:12px">불러오는 중...</div>';
   const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
@@ -7833,6 +7851,10 @@ function renderMonthlyResult(html) {
   const viewBtn = document.getElementById('view-btn-m1');
   if (viewBtn) viewBtn.style.display = 'inline-block';
 
+  // 워드 다운로드 버튼 활성화
+  const dlBtn = document.getElementById('dl-monthly');
+  if (dlBtn) { dlBtn.style.opacity = '1'; dlBtn.style.pointerEvents = 'auto'; }
+
   // 케어 이벤트 동적 추출 — source-report에서 주요 사건 파싱
   const eventBox = document.getElementById('event-summary-box');
   const eventContent = document.getElementById('event-summary-content');
@@ -8476,10 +8498,22 @@ function updateSttBadge() {
   if (limitText) limitText.textContent = '음성→상담일지 하루 ' + STT_DAILY_LIMIT + '회 한도';
 }
 
-async function handleSttFile(input) {
+// STT 대기 파일
+var sttPendingFile = null;
+
+function sttFileSelected(input) {
   if (!input.files || !input.files[0]) return;
-  const file = input.files[0];
+  sttPendingFile = input.files[0];
   input.value = '';
+  const fnEl = document.getElementById('stt-fname');
+  if (fnEl) { fnEl.textContent = '📎 ' + sttPendingFile.name; fnEl.style.display = 'block'; }
+  const wrap = document.getElementById('stt-options-wrap');
+  if (wrap) wrap.style.display = 'block';
+}
+
+async function startSttGenerate() {
+  const file = sttPendingFile;
+  if (!file) { alert('음성 파일을 먼저 업로드해주세요.'); return; }
 
   // 횟수 체크
   if (getSttUsageCount() >= STT_DAILY_LIMIT) {
@@ -8487,17 +8521,23 @@ async function handleSttFile(input) {
     return;
   }
 
-  // 파일명 표시
+  // 옵션 패널 숨김
+  const optWrap = document.getElementById('stt-options-wrap');
+  if (optWrap) optWrap.style.display = 'none';
+
   const fnEl = document.getElementById('stt-fname');
-  if (fnEl) { fnEl.textContent = '📎 ' + file.name; fnEl.style.display = 'block'; }
 
   // 진행 UI 표시
   const progEl = document.getElementById('stt-progress');
   const barEl  = document.getElementById('stt-bar');
   const statEl = document.getElementById('stt-status');
+  const pctEl  = document.getElementById('stt-pct');
   if (progEl) progEl.style.display = 'block';
 
-  const setBar = (pct) => { if (barEl) barEl.style.width = pct + '%'; };
+  const setBar = (pct) => {
+    if (barEl) barEl.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+  };
   const setStat = (msg) => { if (statEl) statEl.textContent = msg; };
 
   try {
@@ -8685,10 +8725,16 @@ function promptSttResidentName() {
 
 function buildSttCounselPrompt() {
   const centerName = CENTERS[centerCode]?.name || '주간보호센터';
+  const isSoap = (typeof counselStyle !== 'undefined' ? counselStyle : 'soap') === 'soap';
+  const styleGuide = isSoap
+    ? '- SOAP 형식으로 작성 (S: 주관적 정보, O: 객관적 정보, A: 사정, P: 계획)\n' +
+      '- 각 항목을 S/O/A/P 레이블로 명확히 구분하여 작성\n'
+    : '- 서술형으로 작성: S/O/A/P 레이블 없이 상담 경위 → 면담 내용(보호자 발언 인용 포함) → 판단 → 계획 순으로 자연스럽게 이어지는 문단\n' +
+      '- <p> 태그로 단락 구분\n';
   return '당신은 ' + centerName + ' 소속 사회복지사입니다.\n' +
     '아래 통화 녹음 내용을 바탕으로 보호자 상담일지를 작성해주세요.\n\n' +
     '작성 기준:\n' +
-    '- SOAP 형식으로 작성 (S: 주관적 정보, O: 객관적 정보, A: 사정, P: 계획)\n' +
+    styleGuide +
     '- 상담일시, 상담방법(전화), 상담자(사회복지사), 피상담자(보호자) 포함\n' +
     '- 보호자가 언급한 주요 내용, 요구사항, 어르신 상태 변화 등을 정리\n' +
     '- 전문적이고 공식적인 사회복지 문서 형식으로 작성\n' +
@@ -17790,7 +17836,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.23.003
+  Day:음 · v2026.06.23.006
 </div>
 </body>
 </html>
