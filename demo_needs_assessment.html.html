@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- v2026.06.23.001 -->
+<!-- v2026.06.23.002 -->
 <title>Day:음 — 욕구사정 자동화 데모</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -191,6 +191,8 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#F5F
 .dl-btn:hover{background:#0D6E55;color:#fff}
 #result-area{display:none}
 #prog-area{display:none}
+.hide-results #result-area{display:none!important}
+.hide-results #prog-area{display:none!important}
 .reset-btn{background:none;border:none;color:#aaa;font-size:12px;cursor:pointer;font-family:inherit;margin-top:10px;display:block;text-align:center;width:100%;padding:6px}
 .reset-btn:hover{color:#666}
 
@@ -205,6 +207,12 @@ document.addEventListener('DOMContentLoaded', function(){
 </script>
 </head>
 <body>
+<script>
+// 렌더링 전 즉시 숨김 — DOMContentLoaded보다 빠름
+(function(){
+  document.documentElement.classList.add('hide-results');
+})();
+</script>
 
 <div class="header">
   <div class="logo">Day<span>:음</span></div>
@@ -914,6 +922,7 @@ function startGenerate() {
   generating = true;
   document.getElementById('genBtn').classList.remove('btn-highlight');
   document.getElementById('input-area').style.display = 'none';
+  document.documentElement.classList.remove('hide-results');
   document.getElementById('prog-area').style.display = 'block';
   window.scrollTo({top: 80, behavior: 'smooth'});
 
@@ -983,6 +992,7 @@ function toggleExpand(id) {
 function resetDemo() {
   uploadDone = false; generating = false; activeTags.clear();
   ['result-area','prog-area'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.documentElement.classList.add('hide-results');
   document.getElementById('input-area').style.display = 'block';
 
   const zone = document.getElementById('uploadZone');
