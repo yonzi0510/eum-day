@@ -17515,29 +17515,39 @@ async function parseJournalPDFs() {
   statusEl.textContent = '📖 PDF 분석 중...';
 
   try {
-    // app.html 기존 PDF.js 로더 활용
     if (!window.pdfjsLib) {
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
       window.pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    const allTexts = await Promise.all(journalPdfFiles.map(async file => {
+    // 각 PDF에서 텍스트 + 위치 정보(items with transform) 모두 추출
+    const allData = await Promise.all(journalPdfFiles.map(async file => {
       const buf = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-      let text = '';
+      let flatText = '';
+      let allPageItems = []; // [{x, y, text}, ...]
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const tc = await page.getTextContent();
-        const withSpace = tc.items.map(it => it.str).join(' ');
-        const noSpace  = tc.items.map(it => it.str).join('');
-        text += withSpace + '\n' + noSpace + '\n';
+        // 평문 추출 (이름/등급 파싱용)
+        flatText += tc.items.map(it => it.str).join('') + '\n';
+        flatText += tc.items.map(it => it.str).join(' ') + '\n';
+        // 위치 정보 보존 (특이사항 파싱용)
+        tc.items.forEach(it => {
+          if (!it.str.trim()) return;
+          const x = it.transform[4];
+          const y = it.transform[5];
+          allPageItems.push({ x, y, text: it.str, pageNum: i });
+        });
       }
-      return text;
+      return { flatText, items: allPageItems };
     }));
-    const combined = allTexts.join('\n');
 
-    const found = journalParseClients(combined);
+    const combinedText = allData.map(d => d.flatText).join('\n');
+    const allItems = allData.flatMap(d => d.items);
+
+    const found = journalParseClients(combinedText);
     if (found.length === 0) {
       statusEl.style.background = '#FCF0EF';
       statusEl.style.color = '#C0392B';
@@ -17545,15 +17555,21 @@ async function parseJournalPDFs() {
       return;
     }
 
-    // 기존 메모 및 일지 유지
+    // 기록지에서 날짜별 특이사항 추출
+    const parsedNotes = journalParseNotesByDate(allItems);
+
+    // 기존 메모 및 일지 유지 + 기록지 특이사항 자동 채우기
     journalClients = found.map((f, idx) => {
       const existing = journalClients.find(c => c.name === f.name);
+      // 기록지 특이사항을 날짜별로 정리해서 notes로 변환
+      const autoNotes = journalBuildAutoNotes(parsedNotes, f.dates);
       return {
         id: idx + 1,
         name: f.name,
         grade: f.grade,
         dates: f.dates,
-        notes: existing ? existing.notes : '',
+        notes: existing ? existing.notes : autoNotes,
+        parsedNotes: parsedNotes, // 날짜별 원본 보존
         existingJournal: existing ? (existing.existingJournal || '') : '',
         existingJournalName: existing ? (existing.existingJournalName || '') : ''
       };
@@ -17573,6 +17589,132 @@ async function parseJournalPDFs() {
     statusEl.style.color = '#C0392B';
     statusEl.textContent = '⚠️ PDF 읽기 오류: ' + e.message;
   }
+}
+
+// 기록지 PDF 아이템에서 날짜별 특이사항 추출
+function journalParseNotesByDate(items) {
+  // PDF.js y좌표는 아래에서 위 방향 → y 내림차순 = 문서 위에서 아래 순
+  // 페이지별로 분리해서 처리
+  const byPage = {};
+  items.forEach(it => {
+    byPage[it.pageNum] = byPage[it.pageNum] || [];
+    byPage[it.pageNum].push(it);
+  });
+
+  const SECTION_KEYS = ['신체', '인지', '간호', '기능'];
+  // 작성자 이름 목록 (컬럼 내용에서 제외)
+  const AUTHOR_NAMES = new Set(['이현숙','오성자','황형선','문경숙','문세동','김자영','이현경','오성','이현','황형','문경','김자','이선화']);
+  
+  const allNotes = {}; // { 'MM/DD': { 신체:'', 인지:'', 간호:'', 기능:'' } }
+
+  Object.values(byPage).forEach(pageItems => {
+    // y 내림차순 정렬 (문서 위→아래)
+    const sorted = [...pageItems].sort((a,b) => b.y - a.y);
+
+    // y값을 그룹핑 (±3 오차)
+    const yGroups = [];
+    sorted.forEach(it => {
+      const grp = yGroups.find(g => Math.abs(g.y - it.y) < 3);
+      if (grp) grp.items.push(it);
+      else yGroups.push({ y: it.y, items: [it] });
+    });
+    yGroups.sort((a,b) => b.y - a.y); // 위→아래
+
+    // 날짜 헤더 행 찾기
+    let dateRowIdx = -1;
+    let datePositions = []; // [{x, label:'MM/DD'}, ...]
+    for (let gi = 0; gi < yGroups.length; gi++) {
+      const grp = yGroups[gi];
+      const nums = grp.items.filter(it => /^\d{2}$/.test(it.text)).sort((a,b)=>a.x-b.x);
+      // 날짜 쌍 묶기
+      const pairs = [];
+      for (let ni = 0; ni < nums.length-1; ni++) {
+        if (nums[ni+1].x - nums[ni].x < 30) {
+          pairs.push({ x: (nums[ni].x + nums[ni+1].x)/2, label: `${nums[ni].text}/${nums[ni+1].text}` });
+          ni++;
+        }
+      }
+      if (pairs.length >= 2) {
+        dateRowIdx = gi;
+        datePositions = pairs;
+        break;
+      }
+    }
+    if (dateRowIdx < 0 || datePositions.length === 0) return;
+
+    // 컬럼 x 경계
+    const colBounds = datePositions.map((dp, idx) => {
+      const xStart = idx === 0 ? dp.x - 60 : (datePositions[idx-1].x + dp.x) / 2;
+      const xEnd   = idx === datePositions.length-1 ? dp.x + 100 : (dp.x + datePositions[idx+1].x) / 2;
+      return { xStart, xEnd, label: dp.label };
+    });
+
+    // "특이사항" 행 y 좌표 (순서대로 신체/인지/간호/기능)
+    const noteRowYs = [];
+    // "작성자" 행 y 좌표
+    const authorRowYs = [];
+    for (const grp of yGroups) {
+      const texts = grp.items.map(it => it.text);
+      if (texts.includes('특이사항') && noteRowYs.length < 4) noteRowYs.push(grp.y);
+      if (texts.includes('작성자') && authorRowYs.length < 4) authorRowYs.push(grp.y);
+    }
+    if (noteRowYs.length === 0) return;
+
+    // 섹션별 텍스트 수집
+    SECTION_KEYS.forEach((secName, secIdx) => {
+      if (secIdx >= noteRowYs.length) return;
+      const yTop    = noteRowYs[secIdx] + 3;
+      const yBottom = authorRowYs[secIdx] !== undefined ? authorRowYs[secIdx] - 1 : noteRowYs[secIdx] - 80;
+      // PDF.js y는 아래서위 → yTop > yBottom
+      const yMax = Math.max(yTop, yBottom);
+      const yMin = Math.min(yTop, yBottom);
+
+      colBounds.forEach(col => {
+        const colItems = pageItems.filter(it =>
+          it.y >= yMin && it.y <= yMax &&
+          it.x >= col.xStart && it.x < col.xEnd &&
+          it.text.trim() &&
+          !AUTHOR_NAMES.has(it.text.trim()) &&
+          !/^[■□]+$/.test(it.text) &&
+          it.text !== '특이사항' && it.text !== '작성자' && it.text !== '성명' &&
+          it.x > 80  // 섹션 레이블 영역 제외
+        ).sort((a,b) => {
+          // 위→아래, 같은 행이면 왼→오른
+          const dy = b.y - a.y;
+          return Math.abs(dy) > 2 ? dy : a.x - b.x;
+        });
+
+        if (colItems.length === 0) return;
+        const txt = colItems.map(it => it.text).join('').trim();
+        if (!txt) return;
+
+        const dateKey = col.label;
+        allNotes[dateKey] = allNotes[dateKey] || { 신체:'', 인지:'', 간호:'', 기능:'' };
+        allNotes[dateKey][secName] = (allNotes[dateKey][secName] + ' ' + txt).trim();
+      });
+    });
+  });
+
+  return allNotes;
+}
+
+// 날짜별 파싱 결과 → textarea용 텍스트 변환
+function journalBuildAutoNotes(parsedNotes, dates) {
+  if (!parsedNotes || Object.keys(parsedNotes).length === 0) return '';
+  const lines = [];
+  dates.forEach(d => {
+    // label 예: "01/14 (화)" → "01/14"
+    const key = d.label.replace(/\s*\([월화수목금토일]\)/, '').trim();
+    const note = parsedNotes[key];
+    if (!note) return;
+    const parts = [];
+    if (note.신체) parts.push(`[신체] ${note.신체}`);
+    if (note.인지) parts.push(`[인지] ${note.인지}`);
+    if (note.기능) parts.push(`[기능] ${note.기능}`);
+    if (note.간호) parts.push(`[간호] ${note.간호}`);
+    if (parts.length > 0) lines.push(`${d.label}\n${parts.join('\n')}`);
+  });
+  return lines.join('\n\n');
 }
 
 function journalParseClients(text) {
@@ -17668,7 +17810,7 @@ function renderJournalForms() {
       <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px">✍️ 특이사항 메모 <span style="font-weight:400;color:#888;font-size:11px">(필수)</span></div>
       <textarea id="jnotes-${c.id}"
         style="width:100%;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;min-height:90px;line-height:1.65;outline:none;background:#F7F6F2;color:#1C1B18"
-        placeholder="예) 거동 어려움, 안마의자에만 앉아 있음, 소변 실수 잦음, 기저귀 교환 거부 심함, 무기력하고 대화 의지 없음, 기분 나쁠 때 폭력성 있음"
+        placeholder="기록지에 없는 추가 내용만 입력 (예: 보행 시 특별히 불안정했음, 가족 면회 있었음, 파스 요청)&#10;기록지 업로드 시 자동으로 채워진 내용은 수정·보완하여 사용됩니다."
         oninput="journalUpdateNotes(${c.id}, this.value)">${c.notes||''}</textarea>
     </div>`).join('');
 
@@ -17876,32 +18018,77 @@ MM/DD (요일)
 
     const dateList = client.dates.map(d => d.label).join(', ');
     const hasExisting = client.existingJournal && client.existingJournal.trim().length > 0;
+    const hasParsedNotes = client.parsedNotes && Object.keys(client.parsedNotes).length > 0;
 
-    const userPrompt = hasExisting
-      ? `어르신: ${client.name} (${client.grade})
+    // 기록지 특이사항을 날짜별 구조화 텍스트로 변환
+    const buildParsedSection = () => {
+      if (!hasParsedNotes) return '';
+      const lines = [];
+      client.dates.forEach(d => {
+        const key = d.label.replace(/\s*\([월화수목금토일]\)/, '').trim();
+        const note = client.parsedNotes[key];
+        if (!note) return;
+        const parts = [];
+        if (note.신체) parts.push(`  [신체원문] ${note.신체}`);
+        if (note.인지) parts.push(`  [인지원문] ${note.인지}`);
+        if (note.기능) parts.push(`  [기능원문] ${note.기능}`);
+        if (note.간호) parts.push(`  [간호원문] ${note.간호}`);
+        if (parts.length > 0) lines.push(`${d.label}\n${parts.join('\n')}`);
+      });
+      return lines.join('\n\n');
+    };
+
+    // 추가 특이사항 메모 (textarea 입력값, 기록지와 다른 내용)
+    const extraNotes = hasParsedNotes ? client.notes : '';
+    const parsedSection = buildParsedSection();
+
+    let userPrompt;
+    if (hasExisting) {
+      // 기존 일지 PDF + 기록지 원문 + 추가 메모
+      userPrompt = `어르신: ${client.name} (${client.grade})
 작성 기간: ${client.year || ''}년 ${client.month || ''}월
 이용 날짜 (이 날짜들 모두 작성): ${dateList}
 
-━━ 기존 일지 ━━
+━━ 기존 일지 (수정 전) ━━
 ${client.existingJournal}
 
-━━ 이번 달 특이사항 메모 ━━
-${client.notes}
+━━ 급여제공기록지 날짜별 원문 ━━
+${parsedSection || '(기록지 정보 없음)'}
+${extraNotes ? `\n━━ 추가 특이사항 메모 ━━\n${extraNotes}` : ''}
 
 [작성 지침]
-위 기존 일지를 바탕으로, 특이사항 메모를 반영하여 수정·보완해주세요.
+기존 일지를 바탕으로, 급여제공기록지 원문과 추가 메모를 반영하여 수정·보완해주세요.
+- 기록지 원문에 있는 내용만 사용하세요. 없는 사실을 만들어 쓰지 마세요.
 - 기존 일지에서 표현이 좋은 부분은 유지해도 됩니다.
 - 단편적이거나 반복적인 표현은 현장감 있게 고쳐주세요.
-- 특이사항 메모의 내용을 적절히 반영하여 보완해주세요.
-- 모든 이용 날짜에 대해 [신체] [인지] [기능] [간호] 4개 섹션으로 출력해주세요.`
-      : `어르신: ${client.name} (${client.grade})
+- 모든 이용 날짜에 대해 [신체] [인지] [기능] [간호] 4개 섹션으로 출력해주세요.`;
+    } else if (hasParsedNotes) {
+      // 기록지 원문만 있는 경우
+      userPrompt = `어르신: ${client.name} (${client.grade})
+작성 기간: ${client.year || ''}년 ${client.month || ''}월
+이용 날짜 (이 날짜들 모두 작성): ${dateList}
+
+━━ 급여제공기록지 날짜별 원문 ━━
+${parsedSection}
+${extraNotes ? `\n━━ 추가 특이사항 메모 ━━\n${extraNotes}` : ''}
+
+[작성 지침]
+- 반드시 위 급여제공기록지 원문에 있는 내용만 근거로 작성하세요.
+- 기록지에 없는 사실(낙상, 통증, 행동 등)을 임의로 추가하지 마세요.
+- 원문의 단편적 표현을 현장감 있게 풀어서 작성하세요.
+- 모든 이용 날짜에 대해 [신체] [인지] [기능] [간호] 4개 섹션으로 출력해주세요.`;
+    } else {
+      // 기록지 파싱 없이 메모만 있는 경우 (기존 방식)
+      userPrompt = `어르신: ${client.name} (${client.grade})
 작성 기간: ${client.year || ''}년 ${client.month || ''}월
 이용 날짜 (이 날짜들 모두 작성): ${dateList}
 
 ━━ 특이사항 메모 ━━
 ${client.notes}
 
-위 모든 날짜에 대해 [신체] [인지] [기능] [간호] 4개 섹션으로 작성해주세요.`;
+- 메모에 없는 사실을 임의로 추가하지 마세요.
+- 모든 이용 날짜에 대해 [신체] [인지] [기능] [간호] 4개 섹션으로 작성해주세요.`;
+    }
 
     try {
       const raw = await callClaude(system, userPrompt, '요양일지', 8000);
@@ -18008,7 +18195,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.25.001
+  Day:음 · v2026.06.25.003
 </div>
 </body>
 </html>
