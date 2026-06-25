@@ -17545,7 +17545,7 @@ async function parseJournalPDFs() {
       return;
     }
 
-    // 기존 메모 유지
+    // 기존 메모 및 일지 유지
     journalClients = found.map((f, idx) => {
       const existing = journalClients.find(c => c.name === f.name);
       return {
@@ -17553,7 +17553,9 @@ async function parseJournalPDFs() {
         name: f.name,
         grade: f.grade,
         dates: f.dates,
-        notes: existing ? existing.notes : ''
+        notes: existing ? existing.notes : '',
+        existingJournal: existing ? (existing.existingJournal || '') : '',
+        existingJournalName: existing ? (existing.existingJournalName || '') : ''
       };
     });
     journalActiveId = journalClients[0].id;
@@ -17643,21 +17645,100 @@ function renderJournalForms() {
   if (!el) return;
   el.innerHTML = journalClients.map(c => `
     <div class="journal-client-form" data-id="${c.id}" style="display:${c.id===journalActiveId?'block':'none'}">
-      <div style="font-size:12px;color:#888;margin-bottom:8px;line-height:1.7">
+      <div style="font-size:12px;color:#888;margin-bottom:10px;line-height:1.7">
         <strong style="color:#1B4332">${c.grade || ''}</strong>
         ${c.dates && c.dates.length ? ` · ${c.dates.length}일 이용` : ''}
         ${c.dates && c.dates.length ? `<br>${c.dates.map(d=>d.label).join('  ')}` : ''}
       </div>
+
+      <!-- 기존 일지 PDF 업로드 -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px">📋 기존 일지 PDF <span style="font-weight:400;color:#888;font-size:11px">(선택 · 첨부 시 수정·보완 방식으로 작성)</span></div>
+        <label for="joldpdf-${c.id}" style="display:block;cursor:pointer">
+          <div id="joldpdf-zone-${c.id}" style="border:1.5px dashed #C9C5BC;border-radius:8px;padding:10px 14px;background:#F7F6F2;display:flex;align-items:center;gap:8px;font-size:12px;color:#888">
+            <span style="font-size:16px">📄</span>
+            <span id="joldpdf-label-${c.id}">${c.existingJournalName ? `<span style="color:#1B4332;font-weight:600">${c.existingJournalName}</span>` : '<strong style="color:#2D6A4F">PDF 선택</strong> 또는 드래그'}</span>
+            ${c.existingJournalName ? `<button onclick="journalClearOldPdf(${c.id},event)" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#999;font-size:13px">✕</button>` : ''}
+          </div>
+        </label>
+        <input type="file" id="joldpdf-${c.id}" accept=".pdf" style="display:none" onchange="journalLoadOldPdf(${c.id}, this.files[0])">
+      </div>
+
+      <!-- 특이사항 메모 -->
+      <div style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px">✍️ 특이사항 메모 <span style="font-weight:400;color:#888;font-size:11px">(필수)</span></div>
       <textarea id="jnotes-${c.id}"
-        style="width:100%;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;min-height:100px;line-height:1.65;outline:none;background:#F7F6F2;color:#1C1B18"
+        style="width:100%;border:1px solid #E0E6F0;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;min-height:90px;line-height:1.65;outline:none;background:#F7F6F2;color:#1C1B18"
         placeholder="예) 거동 어려움, 안마의자에만 앉아 있음, 소변 실수 잦음, 기저귀 교환 거부 심함, 무기력하고 대화 의지 없음, 기분 나쁠 때 폭력성 있음"
         oninput="journalUpdateNotes(${c.id}, this.value)">${c.notes||''}</textarea>
     </div>`).join('');
+
+  // 드래그앤드롭 이벤트 연결
+  journalClients.forEach(c => {
+    const zone = document.getElementById(`joldpdf-zone-${c.id}`);
+    const input = document.getElementById(`joldpdf-${c.id}`);
+    if (!zone || !input) return;
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='#2D6A4F'; });
+    zone.addEventListener('dragleave', () => { zone.style.borderColor='#C9C5BC'; });
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.style.borderColor='#C9C5BC';
+      const f = e.dataTransfer.files[0];
+      if (f && f.type === 'application/pdf') journalLoadOldPdf(c.id, f);
+    });
+  });
 }
 
 function journalUpdateNotes(id, val) {
   const c = journalClients.find(c => c.id === id);
   if (c) c.notes = val;
+}
+
+async function journalLoadOldPdf(id, file) {
+  if (!file) return;
+  const c = journalClients.find(c => c.id === id);
+  if (!c) return;
+
+  const labelEl = document.getElementById(`joldpdf-label-${id}`);
+  const zoneEl  = document.getElementById(`joldpdf-zone-${id}`);
+  if (labelEl) labelEl.innerHTML = '<span style="color:#888">읽는 중...</span>';
+
+  try {
+    if (!window.pdfjsLib) {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const tc = await page.getTextContent();
+      text += tc.items.map(it => it.str).join('') + '\n';
+    }
+    c.existingJournal = text.trim();
+    c.existingJournalName = file.name;
+    if (labelEl) labelEl.innerHTML = `<span style="color:#1B4332;font-weight:600">${file.name}</span> <button onclick="journalClearOldPdf(${id},event)" style="margin-left:6px;background:none;border:none;cursor:pointer;color:#999;font-size:13px">✕</button>`;
+    if (zoneEl) zoneEl.style.borderColor = '#2D6A4F';
+  } catch(e) {
+    c.existingJournal = '';
+    c.existingJournalName = '';
+    if (labelEl) labelEl.innerHTML = '<span style="color:#C0392B">PDF 읽기 실패. 다시 시도해주세요.</span>';
+  }
+}
+
+function journalClearOldPdf(id, e) {
+  if (e) e.stopPropagation();
+  const c = journalClients.find(c => c.id === id);
+  if (!c) return;
+  c.existingJournal = '';
+  c.existingJournalName = '';
+  const labelEl = document.getElementById(`joldpdf-label-${id}`);
+  const zoneEl  = document.getElementById(`joldpdf-zone-${id}`);
+  const inputEl = document.getElementById(`joldpdf-${id}`);
+  if (labelEl) labelEl.innerHTML = '<strong style="color:#2D6A4F">PDF 선택</strong> 또는 드래그';
+  if (zoneEl)  zoneEl.style.borderColor = '#C9C5BC';
+  if (inputEl) inputEl.value = '';
 }
 
 function journalSetProgress(pct, msg) {
@@ -17750,36 +17831,77 @@ async function journalGenerate() {
   resultBody.innerHTML = '';
   let allResults = [];
 
-  const system = `당신은 주간보호센터 사회복지사입니다. 급여제공기록지의 날짜별 특이사항을 작성합니다.
+  const system = `당신은 10년 경력의 주간보호센터 사회복지사입니다. 요양일지를 날짜별로 작성합니다.
 
-출력 규칙:
-- 반드시 아래 형식으로만 출력. 다른 설명 절대 없이.
-날짜 헤더 (예: 01/06 (월))
+출력 형식 (이 형식만 사용, 다른 설명·머리말 절대 없이):
+MM/DD (요일)
 [신체] 내용
 [인지] 내용
 [기능] 내용
 [간호] 내용
 
-내용 작성 규칙:
-- 문체: ~하심, ~하셨음, ~참여하셨음, ~관찰됨 (경어체 기록지 문체)
-- 날짜마다 반드시 다른 표현 사용 (동일 문장 반복 절대 금지)
+━━ 섹션별 작성 기준 ━━
+
+[신체]
+- 어르신의 신체기능 상태만 기술 (이동·보행·자세·식사·근력·낙상위험 등)
+- 프로그램 참여 내용 절대 포함 금지
+- "직원이 보조함" 단독 사용 금지 → 어떤 상황에서 어떻게 보조했는지 구체적으로
+
+[인지]
+- 어르신의 인지기능 및 BPSD(행동심리증상)만 기술
+- 지남력·의사소통·감정 상태·대인관계 반응·행동증상 등
+- 프로그램 참여 내용 절대 포함 금지
+- "명료함" "양호함" 단독 나열 금지 → 실제 행동·발언으로 근거 제시
+
+[기능]
+- 프로그램 참여 상황만 기술
+- 참여 태도·반응·선호·거부 의사표현을 구체적으로 묘사
+- "참여하셨음" 단독 사용 금지 → 어떻게 참여했는지 묘사
+
+[간호]
+- 간호적 상황만 기술 (통증·투약·상처·혈압·낙상 등)
+- 이슈 없으면: "혈압 측정 및 건강 상태 확인함. 이상 소견 없음."
+- 이슈 있으면 증상·처치·경과 순으로 구체적으로
+
+━━ 공통 작성 원칙 ━━
+- 문체: ~하심, ~하셨음, ~보이심, ~표현하심 (경어체 기록 문체)
+- 어르신의 실제 말씀·표정·행동을 담아 현장감 있게 서술
+- 날짜마다 반드시 다른 표현·다른 문장 구조 사용 (동일 표현 반복 절대 금지)
 - 각 섹션 1~2문장, 간결하고 구체적
-- [간호]: 특별 이슈 없으면 "혈압 측정 및 건강관리 시행함. 특이사항 없음." 으로
-- 폭력성·거부 행동은 완곡하되 사실적으로 기록`;
+- 폭력·거부 행동은 완곡하되 사실적으로 기록`;
 
   for (let i = 0; i < journalClients.length; i++) {
     const client = journalClients[i];
     journalSetProgress(Math.round((i / journalClients.length) * 90), `${client.name} 어르신 일지 작성 중... (${i+1}/${journalClients.length})`);
 
     const dateList = client.dates.map(d => d.label).join(', ');
-    const userPrompt = `어르신: ${client.name} (${client.grade})
+    const hasExisting = client.existingJournal && client.existingJournal.trim().length > 0;
+
+    const userPrompt = hasExisting
+      ? `어르신: ${client.name} (${client.grade})
 작성 기간: ${client.year || ''}년 ${client.month || ''}월
 이용 날짜 (이 날짜들 모두 작성): ${dateList}
 
-특이사항 메모:
+━━ 기존 일지 ━━
+${client.existingJournal}
+
+━━ 이번 달 특이사항 메모 ━━
 ${client.notes}
 
-위 모든 날짜에 대해 [신체] [인지] [기능] [건강] 4개 섹션으로 작성해주세요.`;
+[작성 지침]
+위 기존 일지를 바탕으로, 특이사항 메모를 반영하여 수정·보완해주세요.
+- 기존 일지에서 표현이 좋은 부분은 유지해도 됩니다.
+- 단편적이거나 반복적인 표현은 현장감 있게 고쳐주세요.
+- 특이사항 메모의 내용을 적절히 반영하여 보완해주세요.
+- 모든 이용 날짜에 대해 [신체] [인지] [기능] [간호] 4개 섹션으로 출력해주세요.`
+      : `어르신: ${client.name} (${client.grade})
+작성 기간: ${client.year || ''}년 ${client.month || ''}월
+이용 날짜 (이 날짜들 모두 작성): ${dateList}
+
+━━ 특이사항 메모 ━━
+${client.notes}
+
+위 모든 날짜에 대해 [신체] [인지] [기능] [간호] 4개 섹션으로 작성해주세요.`;
 
     try {
       const raw = await callClaude(system, userPrompt, '요양일지', 8000);
@@ -17886,7 +18008,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.23.008
+  Day:음 · v2026.06.25.001
 </div>
 </body>
 </html>
