@@ -9829,9 +9829,13 @@ function getSelectedIndicators() {
   }).filter(Boolean);
 }
 
+var _evDroppedFile = null;
+
 function handleEvFile(input) {
-  if(!input.files[0]) return;
-  document.getElementById('ev-fn').textContent = input.files[0].name;
+  const file = input.files[0];
+  if (!file) return;
+  _evDroppedFile = file;
+  document.getElementById('ev-fn').textContent = file.name;
   document.getElementById('ev-fname').style.display = 'block';
   document.getElementById('ev-upload').classList.add('has-file');
 }
@@ -15796,14 +15800,16 @@ async function startEvalCheck() {
 
   try {
     let userContent;
-    if (!fileInput.files || fileInput.files.length === 0) {
+    // 일반 선택 또는 드래그앤드롭 모두 _evDroppedFile에 저장됨
+    const file = (fileInput.files && fileInput.files.length > 0)
+      ? fileInput.files[0]
+      : _evDroppedFile;
+    if (!file) {
       document.getElementById('eval-input').style.display = 'block';
       document.getElementById('eval-prog').classList.remove('show');
       alert('문서 파일을 먼저 업로드해주세요.');
       return;
     }
-
-    const file = fileInput.files[0];
     const fileName = file.name.toLowerCase();
     const b64 = await fileToBase64(file);
 
@@ -18099,7 +18105,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.25.004
+  Day:음 · v2026.06.25.013
 </div>
 </body>
 </html>
