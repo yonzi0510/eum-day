@@ -6208,11 +6208,17 @@ async function loadResultsDocs() {
       ? all.filter(d => d.doc_type && d.doc_type !== '__residents__' && new Date(d.created_at).getTime() >= cutoff)
       : [];
 
-    // 세션 문서 병합 (Supabase 저장 안 된 것)
-    const supabaseTypes = new Set(docs.map(d => d.doc_type + '|' + (d.resident_name||'')));
-    const sessionOnly = (window._sessionDocs || []).filter(s =>
-      !supabaseTypes.has(s.doc_type + '|' + (s.resident_name||''))
-    );
+    // 세션 문서 병합 (Supabase에 없는 것만)
+    // created_at 분 단위까지 비교해서 중복 방지
+    const supabaseKeys = new Set(docs.map(d => {
+      const dt = new Date(d.created_at);
+      return d.doc_type + '|' + (d.resident_name||'') + '|' + dt.getFullYear() + dt.getMonth() + dt.getDate() + dt.getHours() + dt.getMinutes();
+    }));
+    const sessionOnly = (window._sessionDocs || []).filter(s => {
+      const dt = new Date(s.created_at);
+      const key = s.doc_type + '|' + (s.resident_name||'') + '|' + dt.getFullYear() + dt.getMonth() + dt.getDate() + dt.getHours() + dt.getMinutes();
+      return !supabaseKeys.has(key);
+    });
     const merged = [...docs, ...sessionOnly].sort(
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     );
@@ -17948,7 +17954,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.26.002
+  Day:음 · v2026.06.26.003
 </div>
 </body>
 </html>
