@@ -7061,8 +7061,12 @@ HTML 구조:
 
 ${opinion ? `[작성자 현장 의견 — 반영 필수]\n${opinion}\n` : ''}
 
-[작성할 문서 — 선택된 항목만 작성]
+[작성할 문서 — 선택된 항목만, 반드시 모두 작성]
 ${docList.join('\n')}
+
+⚠️ 위 목록에 있는 문서는 빠짐없이 전부 작성해야 합니다.
+상담일지만 쓰고 끝내거나, 업무수행일지 등 다른 문서를 누락하면 절대 안 됩니다.
+목록에 없는 문서는 작성하지 않습니다.
 
 [출력] 마크다운 금지. HTML로 출력. <style> 태그 없이 body 태그부터 시작. CSS는 이미 로드됨.
 각 문서는 별도 <div class="page">로 구분.
@@ -9256,7 +9260,24 @@ function downloadDocx(type) {
     finalHtml = finalHtml.replace('<html', "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'");
   }
 
-  const blob = new Blob(['\ufeff' + finalHtml], { type: 'application/msword;charset=utf-8' });
+  // Word XML 네임스페이스 보강 (손상 경고 방지)
+  const wordXml = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+    xmlns:w='urn:schemas-microsoft-com:office:word'
+    xmlns='http://www.w3.org/TR/REC-html40'>
+    <head>
+      <meta charset='utf-8'>
+      <meta name=ProgId content=Word.Document>
+      <meta name=Generator content='Microsoft Word 15'>
+      <meta name=Originator content='Microsoft Word 15'>
+      <style>
+        body { font-family: '맑은 고딕', sans-serif; font-size: 10pt; line-height: 1.6; }
+        table { border-collapse: collapse; }
+        td, th { border: 1px solid #ccc; padding: 4px 6px; }
+      </style>
+    </head>
+    <body>${finalHtml.replace(/<html[^>]*>|<\/html>|<head[^>]*>[\s\S]*?<\/head>|<body[^>]*>|<\/body>/gi, '')}</body>
+    </html>`;
+  const blob = new Blob(['\ufeff' + wordXml], { type: 'application/msword;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   const now = new Date();
@@ -17984,7 +18005,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.29.001
+  Day:음 · v2026.06.29.002
 </div>
 </body>
 </html>
