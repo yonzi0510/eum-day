@@ -6864,7 +6864,7 @@ function buildMonthlyPrompt(opinion) {
    </table>
    </div>`);
 
-  if (docList.length === 0) docList.push('1. 분기별 상담일지 (기본)');
+  // docList가 비어있어도 기본값 추가하지 않음 (선택된 문서만 생성)
 
   return `${getStylePrompt('m')}파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
 파악할 항목: 수급자명 / 생년월일 / 장기요양등급 / 장기요양인정번호 / 기관명 / 기관기호 / 기록지에 기재된 작성자(담당자) 성명 / 기록 대상 연월(시작월~종료월).
@@ -8165,7 +8165,7 @@ async function startGenerate(type) {
 
     if (type === 'monthly') {
       const systemPrompt = buildMonthlyPrompt(opinion);
-      const apiPromise = callClaude(systemPrompt, userContent, '월간문서');
+      const apiPromise = callClaude(systemPrompt, userContent, '월간문서', 32000);
 
       const pctMsgs = ['기록지 분석 중...', '케어 이벤트 감지 중...', '의견 통합 중...', '문서 작성 중...', '문서 작성 중...', '문서 작성 중...', '저장 중...', '최종 완료 중...'];
       const setMonthlyPct = (pct, msg) => {
@@ -18005,7 +18005,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.29.002
+  Day:음 · v2026.06.29.004
 </div>
 </body>
 </html>
