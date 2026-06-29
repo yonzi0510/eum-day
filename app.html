@@ -7867,7 +7867,10 @@ function renderMonthlyResult(html) {
     finalHtml = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>${DOC_CSS}</style></head><body>${AI_DRAFT_NOTICE}${cleanHtml}</body></html>`;
   }
   window._monthlyHtml = finalHtml;
-  registerSessionDoc('월간문서', finalHtml, window.currentLinkedName || '—', '월간문서');
+  // m5(업무수행일지)만 선택 시 doc_type 구분 — 생성 시점 저장 값 사용
+  const _d = window._lastCheckedDocs || {};
+  const _monthlyDocLabel = (!_d.m1 && !_d.m2 && !_d.m3 && !_d.m4 && _d.m5) ? '프로그램업무수행일지' : '월간문서';
+  registerSessionDoc(_monthlyDocLabel, finalHtml, window.currentLinkedName || '—', '월간문서');
 
   // 크게보기 버튼 표시
   const viewBtn = document.getElementById('view-btn-m1');
@@ -8019,6 +8022,16 @@ function setUiLock(locked) {
 }
 
 async function startGenerate(type) {
+  // 생성 시점의 체크박스 상태 저장 (renderMonthlyResult에서 참조)
+  if (type === 'monthly') {
+    window._lastCheckedDocs = {
+      m1: document.getElementById('m1')?.checked || false,
+      m2: document.getElementById('m2')?.checked || false,
+      m3: document.getElementById('m3')?.checked || false,
+      m4: document.getElementById('m4')?.checked || false,
+      m5: document.getElementById('m5')?.checked || false,
+    };
+  }
   const prefix = type === 'monthly' ? 'm' : 'p';
   const upload = document.getElementById(prefix + '-upload');
   const opinionVal = document.getElementById(prefix + '-opinion')?.value?.trim();
@@ -18005,7 +18018,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.29.004
+  Day:음 · v2026.06.29.007
 </div>
 </body>
 </html>
