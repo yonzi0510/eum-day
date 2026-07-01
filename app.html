@@ -620,7 +620,7 @@ if (typeof CENTERS === 'undefined') {
               <div id="split-file-tag" style="display:none;margin-top:8px"><span class="file-tag">✓ <span id="split-fname"></span></span></div>
             </div>
             </label>
-            <input type="file" id="split-file-input" accept=".pdf" style="display:none" onchange="handleSplitFile(this)">
+            <input type="file" id="split-file-input" accept=".pdf" style="display:none" onchange="splitFileSelected(this)">
 
             <!-- 월 선택 -->
             <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
@@ -4355,23 +4355,6 @@ if (typeof CENTERS === 'undefined') {
       </div>
       <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:8px">📊 상세 분석</div>
       <div id="benefit-body" style="font-size:12px;line-height:1.9"></div>
-    </div>
-
-    <div class="card">
-      <div style="cursor:pointer;display:flex;align-items:center;gap:6px" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-        <span style="font-size:13px;font-weight:600">💬 AI에게 추가 요청</span>
-        <span style="font-size:11px;color:#888">근거 보완, 문체 수정 등</span>
-      </div>
-      <div style="display:none;margin-top:10px">
-        <textarea class="feedback-input" id="fbi-bn" placeholder="예) 3번 항목 근거기록을 더 찾아줘&#10;예) 케어포 입력 양식에 맞게 더 간결하게 써줘"></textarea>
-        <div style="margin-top:7px">
-          <button style="margin-top:7px;padding:8px 16px;border-radius:6px;border:none;background:#0D6E55;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onclick="sendFeedback('bn','fbi-bn','rev-bn')">✈ 전송</button>
-        </div>
-        <div class="revised-area" id="rev-bn">
-          <div class="revised-head">✅ 수정본<button class="revised-copy" onclick="copyResult('rev-bn-body')">복사</button></div>
-          <div class="revised-body" id="rev-bn-body"></div>
-        </div>
-      </div>
     </div>
 
     <div class="dl-row">
@@ -17839,15 +17822,53 @@ function journalRenderParts(clientName, entries) {
 }
 
 async function journalDownloadXlsx(name, entries) {
-  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
-  const wb = XLSX.utils.book_new();
-  const wsData = [['날짜', '신체', '인지', '기능', '간호']];
-  for (const e of entries) wsData.push([e.date, e.신체, e.인지, e.기능, e.간호]);
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  // 열 너비
-  ws['!cols'] = [{ wch: 12 }, { wch: 40 }, { wch: 40 }, { wch: 40 }, { wch: 30 }];
-  XLSX.utils.book_append_sheet(wb, ws, '요양일지');
-  XLSX.writeFile(wb, `${name}_요양일지.xlsx`);
+  if (!window.ExcelJS) {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js');
+  }
+  const headers = ['날짜', '신체', '인지', '기능', '간호'];
+  const colWidths = [12, 40, 40, 40, 30];
+
+  const wb = new window.ExcelJS.Workbook();
+  const ws = wb.addWorksheet('요양일지');
+  ws.columns = colWidths.map(w => ({ width: w }));
+
+  const headerRow = ws.addRow(headers);
+  headerRow.height = 30;
+  headerRow.eachCell(cell => {
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E4E8E' } };
+    cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    cell.border = {
+      left: { style: 'thin', color: { argb: 'FFAAAAAA' } }, right: { style: 'thin', color: { argb: 'FFAAAAAA' } },
+      top: { style: 'thin', color: { argb: 'FFAAAAAA' } }, bottom: { style: 'thin', color: { argb: 'FFAAAAAA' } }
+    };
+  });
+
+  entries.forEach((e, idx) => {
+    const row = ws.addRow([e.date, e.신체, e.인지, e.기능, e.간호]);
+    const isBand = (idx % 2 === 0);
+    row.eachCell(cell => {
+      cell.font = { name: 'Calibri', size: 11 };
+      cell.alignment = { vertical: 'top', wrapText: true };
+      cell.border = {
+        left: { style: 'thin', color: { argb: 'FFAAAAAA' } }, right: { style: 'thin', color: { argb: 'FFAAAAAA' } },
+        top: { style: 'thin', color: { argb: 'FFAAAAAA' } }, bottom: { style: 'thin', color: { argb: 'FFAAAAAA' } }
+      };
+      if (isBand) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F8FF' } };
+    });
+  });
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${name}_요양일지.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 async function journalGenerate() {
@@ -18081,7 +18102,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.06.30.004
+  Day:음 · v2026.07.01.001
 </div>
 </body>
 </html>
