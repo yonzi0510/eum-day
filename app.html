@@ -843,6 +843,7 @@ if (typeof CENTERS === 'undefined') {
           <span style="display:flex;align-items:center;gap:7px"><span>📝</span><span class="doc-result-title">월간 문서 — 초안 완성</span></span>
           <span style="display:flex;align-items:center;gap:6px">
             <button class="result-copy" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit" onclick="copyResult('m-r1')">복사</button>
+            <button id="add-counsel-btn" onclick="showAddCounselIssuePicker()" style="display:none;font-size:11px;padding:3px 10px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:5px;color:#fff;cursor:pointer;font-family:inherit">➕ 이슈 추가</button>
             <button id="view-btn-m1" onclick="openMonthlyBox()" style="display:none;font-size:11px;padding:3px 10px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);border-radius:5px;color:#fff;cursor:pointer;font-family:inherit">🔍 크게보기</button>
           </span>
         </div>
@@ -6662,6 +6663,18 @@ async function analyzeCounselIssues() {
   const card = document.getElementById('counsel-issue-card');
   if (!card) return;
 
+  window._usedIssueIdx = new Set();
+  // 이전에 "이슈 추가" 모드로 바뀌어 있던 생성 버튼이 있으면 원상 복구 (표시 상태는 건드리지 않음)
+  const genBtn = document.querySelector('#monthly-input .gen-btn');
+  if (genBtn && window._origGenBtnOnclick) {
+    genBtn.setAttribute('onclick', window._origGenBtnOnclick);
+    genBtn.onclick = null;
+    genBtn.textContent = '✨ AI로 월간 문서 자동 생성하기';
+    window._origGenBtnOnclick = null;
+  }
+  const addBtn = document.getElementById('add-counsel-btn');
+  if (addBtn) addBtn.style.display = 'none';
+
   const fileInput = document.getElementById('m-file');
   const linkedFile = window.currentLinkedFile;
   const dropFiles  = window._mDropFiles;
@@ -6733,19 +6746,22 @@ function renderCounselIssuePicker(issues) {
     return;
   }
 
-  let html = '<div class="card-title"><div class="num">🔎</div> 상담 이슈 선택 <span style="font-size:11px;font-weight:400;color:#888;margin-left:4px">(복수 선택 가능)</span></div>';
-  html += '<div style="font-size:11px;color:#888;margin-bottom:10px">선택한 이슈마다 상담일지 1회차씩 작성돼요. 선택하지 않으면 AI가 가장 핵심적인 이슈 1건을 알아서 골라요.</div>';
+  const usedIdx = window._usedIssueIdx || new Set();
+
+  let html = '<div class="card-title"><div class="num">🔎</div> 상담 이슈 선택 <span style="font-size:11px;font-weight:400;color:#888;margin-left:4px">(한 번에 1개씩)</span></div>';
+  html += '<div style="font-size:11px;color:#888;margin-bottom:10px">이슈 1개를 골라 상담일지를 생성해요. 다른 이슈도 필요하면 생성 후 하나씩 더 추가할 수 있어요. 선택하지 않으면 AI가 가장 핵심적인 이슈 1건을 알아서 골라요.</div>';
   html += '<div style="margin-bottom:12px"><input id="counsel-author-name" type="text" placeholder="상담자(작성자) 성명 — 비워두면 기록지에서 자동 확인" style="width:100%;padding:9px 12px;border:1.5px solid #E0E6F0;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box"></div>';
   html += '<div style="display:flex;flex-direction:column;gap:8px">';
   issues.forEach((iss, i) => {
     const selfDefault = iss.target !== '보호자';
     const guardianDefault = iss.target === '보호자';
+    const isUsed = usedIdx.has(i);
     html += `
-      <div style="border:1.5px solid #E0E6F0;border-radius:10px;padding:10px 12px">
-        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
-          <input type="checkbox" class="issue-check" data-idx="${i}" style="margin-top:2px" onchange="onIssueCheckChange(${i})">
+      <div style="border:1.5px solid #E0E6F0;border-radius:10px;padding:10px 12px;${isUsed ? 'opacity:.5' : ''}">
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:${isUsed ? 'default' : 'pointer'}">
+          <input type="radio" name="issue-radio" class="issue-check" data-idx="${i}" style="margin-top:2px" ${isUsed ? 'disabled' : ''} onchange="onIssueRadioChange(${i})">
           <div style="flex:1">
-            <div style="font-size:13px;font-weight:600;color:#1F3864">${iss.label || ''} <span style="font-size:11px;font-weight:400;color:#999">${iss.dateRange || ''}</span></div>
+            <div style="font-size:13px;font-weight:600;color:#1F3864">${iss.label || ''} <span style="font-size:11px;font-weight:400;color:#999">${iss.dateRange || ''}</span> ${isUsed ? '<span style="font-size:10px;color:#1D9E75;font-weight:600">✓ 작성됨</span>' : ''}</div>
             <div style="font-size:11px;color:#666;margin-top:2px">${iss.reason || ''}</div>
           </div>
         </label>
@@ -6774,30 +6790,197 @@ function renderCounselIssuePicker(issues) {
   card.innerHTML = html;
 }
 
-function onIssueCheckChange(i) {
-  const cb = document.querySelector(`.issue-check[data-idx="${i}"]`);
-  const opts = document.getElementById(`issue-opts-${i}`);
-  if (opts) opts.style.display = (cb && cb.checked) ? 'flex' : 'none';
+function onIssueRadioChange(selectedIdx) {
+  const issues = window._counselIssues || [];
+  issues.forEach((iss, i) => {
+    const opts = document.getElementById(`issue-opts-${i}`);
+    if (opts) opts.style.display = (i === selectedIdx) ? 'flex' : 'none';
+  });
 }
 
 function getSelectedCounselIssues() {
   const issues = window._counselIssues || [];
+  const checkedRadio = document.querySelector('.issue-check:checked');
+  if (!checkedRadio) return [];
+  const i = parseInt(checkedRadio.dataset.idx, 10);
+  const iss = issues[i];
+  if (!iss) return [];
+
   const selected = [];
-  issues.forEach((iss, i) => {
-    const cb = document.querySelector(`.issue-check[data-idx="${i}"]`);
-    if (!cb || !cb.checked) return;
-    const selfCb = document.getElementById(`issue-target-self-${i}`);
-    const guardianCb = document.getElementById(`issue-target-guardian-${i}`);
-    if (selfCb && selfCb.checked) {
-      const method = document.getElementById(`issue-method-self-${i}`)?.value || '대면';
-      selected.push({ label: iss.label, dateRange: iss.dateRange, reason: iss.reason, target: '본인', method });
-    }
-    if (guardianCb && guardianCb.checked) {
-      const method = document.getElementById(`issue-method-guardian-${i}`)?.value || '전화';
-      selected.push({ label: iss.label, dateRange: iss.dateRange, reason: iss.reason, target: '보호자', method });
-    }
-  });
+  const selfCb = document.getElementById(`issue-target-self-${i}`);
+  const guardianCb = document.getElementById(`issue-target-guardian-${i}`);
+  if (selfCb && selfCb.checked) {
+    const method = document.getElementById(`issue-method-self-${i}`)?.value || '대면';
+    selected.push({ label: iss.label, dateRange: iss.dateRange, reason: iss.reason, target: '본인', method });
+  }
+  if (guardianCb && guardianCb.checked) {
+    const method = document.getElementById(`issue-method-guardian-${i}`)?.value || '전화';
+    selected.push({ label: iss.label, dateRange: iss.dateRange, reason: iss.reason, target: '보호자', method });
+  }
   return selected;
+}
+
+function getSelectedCounselIssueIdx() {
+  const checkedRadio = document.querySelector('.issue-check:checked');
+  return checkedRadio ? parseInt(checkedRadio.dataset.idx, 10) : -1;
+}
+
+function updateAddCounselBtnVisibility() {
+  const btn = document.getElementById('add-counsel-btn');
+  if (!btn) return;
+  const issues = window._counselIssues || [];
+  const used = window._usedIssueIdx || new Set();
+  const hasMore = issues.length > 0 && issues.some((_, i) => !used.has(i));
+  const hadM1 = !!(window._lastCheckedDocs || {}).m1;
+  btn.style.display = (hadM1 && hasMore) ? 'inline-block' : 'none';
+}
+
+// 결과 화면에서 "➕ 이슈 추가" 클릭 시 — 입력 화면을 다시 보여주고, 생성 버튼을 "추가 작성" 동작으로 바꿔치기
+function showAddCounselIssuePicker() {
+  const inputEl = document.getElementById('monthly-input');
+  if (!inputEl) return;
+  inputEl.style.display = 'block';
+  renderCounselIssuePicker(window._counselIssues);
+
+  const genBtn = inputEl.querySelector('.gen-btn');
+  if (genBtn && !window._origGenBtnOnclick) {
+    window._origGenBtnOnclick = genBtn.getAttribute('onclick');
+    genBtn.setAttribute('onclick', '');
+    genBtn.onclick = generateAdditionalCounselSession;
+    genBtn.textContent = '➕ 선택한 이슈로 상담일지 추가 작성';
+  }
+  document.getElementById('counsel-issue-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function restoreGenBtn() {
+  const inputEl = document.getElementById('monthly-input');
+  const genBtn = inputEl?.querySelector('.gen-btn');
+  if (genBtn && window._origGenBtnOnclick) {
+    genBtn.setAttribute('onclick', window._origGenBtnOnclick);
+    genBtn.onclick = null;
+    genBtn.textContent = '✨ AI로 월간 문서 자동 생성하기';
+    window._origGenBtnOnclick = null;
+  }
+  if (inputEl) inputEl.style.display = 'none';
+}
+
+// ────── 상담일지 이슈 1건 추가 작성 (기존 문서에 회차 append) ──────
+function buildAdditionalCounselSessionPrompt(selectedIssues, counselAuthorName) {
+  const centerName = CENTERS[centerCode]?.name || '주간보호센터';
+  const isSoap = counselStyle !== 'narrative';
+  const selfIssues = selectedIssues.filter(i => i.target === '본인');
+  const guardianIssues = selectedIssues.filter(i => i.target === '보호자');
+
+  const bodyGuide = isSoap
+    ? 'S/O/A/P 각각 soap-box(soap-s/soap-o/soap-a/soap-p 클래스)로 구성. S=상담 계기(서술), O=면담 내용(<ul><li> 목록, 어르신 말씀은 큰따옴표 인용), A=상담자 판단(서술), P=조치 및 계획(<ul><li>). 날짜 나열 금지, "기록을 검토한 결과" 등 메타 서술 금지.'
+    : 'S/O/A/P 레이블 없이 <p> 태그 3단락(상담 경위 → 면담 내용 → 판단·조치)으로 서술. 날짜 나열 금지.';
+
+  const authorRule = counselAuthorName
+    ? `상담자 성명은 반드시 "${counselAuthorName}"으로 기입할 것.`
+    : '상담자 성명은 기록지에서 사회복지사 성명을 확인해 사용하고, 확인 안 되면 "(사회복지사)"로 기입할 것.';
+
+  let doc = `당신은 ${centerName} 소속 사회복지사입니다. 업로드된 급여제공기록지를 참고하여 아래 지정된 상담 이슈로 상담일지 회차를 추가 작성해주세요.
+
+[작성 규칙]
+- 기록지에 실제로 기재된 날짜와 내용만을 근거로 작성. 임의 추가·추측 절대 금지.
+- 지정된 이슈 하나에만 집중해서 작성. 다른 이슈를 섞지 말 것.
+- ${authorRule}
+
+`;
+
+  if (selfIssues.length > 0) {
+    doc += `[본인 대상 이슈]\n${selfIssues.map(i => `${i.label} (${i.dateRange || ''}) — 상담형태: ${i.method} — ${i.reason || ''}`).join('\n')}
+
+아래 구조로 session-card 1개를 작성:
+<div class="session-card">
+  <div class="session-header"><span class="session-num">회</span><span class="session-title">회차 제목</span><span class="session-date">YYYY.MM.DD (요일)</span></div>
+  <table class="meta-table"><tr><th>상담일시</th><td colspan="3">...</td></tr><tr><th>상담구분</th><td>...</td><th>상담대상</th><td>...</td></tr><tr><th>상담형태</th><td>...</td><th>상담자 성명</th><td>...</td></tr></table>
+  ${bodyGuide}
+  <div class="action-box"><div class="action-title">조치내용</div><div class="action-item"><span class="action-arrow">▶</span><span>내용<span class="action-date">YYYY.MM.DD</span></span></div></div>
+  <div class="benefit-box"><div class="benefit-title">[ 급여제공반영 ]</div><div class="benefit-row"><span class="benefit-key">반영일</span><span class="benefit-val">YYYY.MM.DD</span></div><div class="benefit-row"><span class="benefit-key">급여구분</span><span class="benefit-val">...</span></div><div class="benefit-row"><span class="benefit-key">급여내용</span></div><ul class="benefit-sub"><li>...</li></ul><div class="benefit-row" style="margin-top:8px"><span class="benefit-key">반영사유</span></div><div style="padding-left:8px;margin-top:4px;font-size:11.5px;line-height:1.9;color:#333">...</div><div class="benefit-row" style="margin-top:8px"><span class="benefit-key">근거기록</span></div><ul class="benefit-sub"><li>YYYY.MM.DD — ...</li></ul></div>
+</div>
+
+`;
+  }
+
+  if (guardianIssues.length > 0) {
+    doc += `[보호자 대상 이슈]\n${guardianIssues.map(i => `${i.label} (${i.dateRange || ''}) — 상담형태: ${i.method} — ${i.reason || ''}`).join('\n')}
+
+아래 구조로 session-card 1개를 작성:
+<div class="session-card" style="border-color:#8abf92">
+  <div class="session-header-g"><span class="session-num">회</span><span class="session-title">회차 제목</span><span class="session-date">YYYY.MM.DD (요일)</span></div>
+  <table class="meta-table meta-table-g"><tr><th>상담일시</th><td colspan="3">...</td></tr><tr><th>상담구분</th><td>보호자 상담</td><th>상담대상</th><td>이름 (관계)</td></tr><tr><th>상담형태</th><td>...</td><th>상담자 성명</th><td>...</td></tr></table>
+  S/O/A/P 각각 soap-box soap-g 클래스로 구성 (내용 기준은 위와 동일)
+  <div class="action-box-g"><div class="action-title-g">조치내용</div><div class="action-item"><span class="action-arrow-g">▶</span><span>내용<span class="action-date-g">YYYY.MM.DD</span></span></div></div>
+</div>
+
+`;
+  }
+
+  doc += '[출력] 마크다운 금지. HTML만 출력. 위에서 요청한 session-card만 출력하고, 다른 설명·페이지 제목은 추가하지 말 것.';
+  return doc;
+}
+
+async function generateAdditionalCounselSession() {
+  const idx = getSelectedCounselIssueIdx();
+  if (idx < 0) { alert('추가할 이슈를 선택해주세요.'); return; }
+  const selected = getSelectedCounselIssues();
+  if (selected.length === 0) { alert('본인 또는 보호자 상담 대상을 선택해주세요.'); return; }
+
+  const genBtn = document.querySelector('#monthly-input .gen-btn');
+  if (genBtn) { genBtn.disabled = true; genBtn.textContent = '⏳ 추가 작성 중...'; }
+
+  try {
+    const fileInput = document.getElementById('m-file');
+    const linkedFile = window.currentLinkedFile;
+    const dropFiles = window._mDropFiles;
+    const directFile = fileInput?.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+    const activeFile = linkedFile || directFile || (dropFiles && dropFiles[0]);
+    if (!activeFile) { alert('기록지 파일을 다시 업로드해주세요.'); return; }
+
+    const isPDF = activeFile.type === 'application/pdf' || activeFile.name?.toLowerCase().endsWith('.pdf');
+    const isImage = activeFile.type?.startsWith('image/') || activeFile.name?.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/);
+    const b64 = await fileToBase64(activeFile);
+    const userContent = isPDF
+      ? [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }, { type: 'text', text: '지정된 상담 이슈로 상담일지 회차를 작성해주세요.' }]
+      : isImage
+      ? [{ type: 'image', source: { type: 'base64', media_type: activeFile.type || 'image/jpeg', data: b64 } }, { type: 'text', text: '지정된 상담 이슈로 상담일지 회차를 작성해주세요.' }]
+      : [{ type: 'text', text: '지정된 상담 이슈로 상담일지 회차를 작성해주세요.' }];
+
+    const counselAuthorName = document.getElementById('counsel-author-name')?.value?.trim() || '';
+    const systemPrompt = buildAdditionalCounselSessionPrompt(selected, counselAuthorName);
+    const result = await callClaude(systemPrompt, userContent, '상담일지(추가)', 6000);
+
+    let cleanHtml = result.trim();
+    if (cleanHtml.includes('```html')) cleanHtml = cleanHtml.replace(/^[\s\S]*?```html\s*/i, '').replace(/\s*```[\s\S]*$/i, '');
+    else if (cleanHtml.includes('```')) cleanHtml = cleanHtml.replace(/^[\s\S]*?```\s*/i, '').replace(/\s*```[\s\S]*$/i, '');
+    const firstTag = cleanHtml.indexOf('<');
+    if (firstTag > 0) cleanHtml = cleanHtml.slice(firstTag);
+    const lastTag = cleanHtml.lastIndexOf('>');
+    if (lastTag !== -1 && lastTag < cleanHtml.length - 1) cleanHtml = cleanHtml.slice(0, lastTag + 1);
+    cleanHtml = cleanHtml.trim();
+
+    window._monthlyHtml = (window._monthlyHtml || '').replace('</body>', cleanHtml + '</body>');
+    const iframe = document.getElementById('monthly-iframe');
+    if (iframe) iframe.srcdoc = window._monthlyHtml;
+
+    window._usedIssueIdx = window._usedIssueIdx || new Set();
+    window._usedIssueIdx.add(idx);
+    restoreGenBtn();
+    updateAddCounselBtnVisibility();
+
+    try {
+      const cfg = CENTERS[centerCode] || {};
+      const r = extractBodyContent(window._monthlyHtml || '');
+      await saveDocToSupabase(centerCode, cfg.name || centerCode, window.currentLinkedName || '—', '월간문서', r);
+    } catch(e) { console.error('[추가 상담일지 저장 오류]', e.message); }
+
+  } catch(err) {
+    alert('추가 상담일지 작성 중 오류: ' + err.message);
+    console.error(err);
+  } finally {
+    if (genBtn) { genBtn.disabled = false; }
+  }
 }
 
 // ────── 월간문서 max_tokens 동적 산정 ──────
@@ -8048,6 +8231,14 @@ function renderMonthlyResult(html) {
   const _monthlyDocLabel = (!_d.m1 && !_d.m2 && !_d.m3 && !_d.m4 && _d.m5) ? '프로그램업무수행일지' : '월간문서';
   registerSessionDoc(_monthlyDocLabel, finalHtml, window.currentLinkedName || '—', '월간문서');
 
+  // 이번 생성에 쓰인 상담 이슈는 "추가 작성" 후보에서 제외하고, 남은 이슈가 있으면 추가 버튼 노출
+  if (_d.m1) {
+    const usedIdx = (typeof getSelectedCounselIssueIdx === 'function') ? getSelectedCounselIssueIdx() : -1;
+    window._usedIssueIdx = window._usedIssueIdx || new Set();
+    if (usedIdx >= 0) window._usedIssueIdx.add(usedIdx);
+    if (typeof updateAddCounselBtnVisibility === 'function') updateAddCounselBtnVisibility();
+  }
+
   // 크게보기 버튼 표시
   const viewBtn = document.getElementById('view-btn-m1');
   if (viewBtn) viewBtn.style.display = 'inline-block';
@@ -8376,7 +8567,14 @@ async function startGenerate(type) {
         setMonthlyPct(Math.round((i / (steps.length - 1)) * 90), pctMsgs[i] || '');
       }
 
-      const result = await apiPromise;
+      let result = await apiPromise;
+
+      // 분량 한도로 중간에 끊겼으면 사용자에게 알리지 않고 조용히 여유 있는 한도로 이어서 완성
+      if (window._lastStopReason === 'max_tokens' && dynamicMaxTokens < 32000) {
+        setMonthlyPct(88, '문서 마무리하는 중...');
+        result = await callClaude(systemPrompt, userContent, '월간문서', 32000);
+      }
+
       setMonthlyPct(95, '마무리 중...');
 
       const lastIdx = steps.length - 1;
@@ -8395,13 +8593,13 @@ async function startGenerate(type) {
       document.getElementById(type + '-result').classList.add('show');
       renderMonthlyResult(result);
 
-      // 토큰 한도로 문서가 중간에 잘렸는지 확인 — 조용히 넘어가지 않고 사용자에게 명확히 알림
+      // 여유 있는 한도로 다시 시도했는데도 분량이 넘친 극히 드문 경우 — 시스템 오류가 아니라 "선택 범위가 많다"는 안내로 부드럽게 전달
       if (window._lastStopReason === 'max_tokens') {
         const resultWrap = document.getElementById('monthly-result');
-        const warnBox = document.createElement('div');
-        warnBox.style.cssText = 'background:#FCEBEB;border:1.5px solid #E24B4A;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#791F1F;line-height:1.7';
-        warnBox.innerHTML = '⚠️ <strong>문서가 분량 한도로 중간에 잘렸을 수 있어요.</strong><br>선택한 이슈/문서 수를 줄이거나 나눠서 다시 생성해주세요.';
-        if (resultWrap) resultWrap.insertBefore(warnBox, resultWrap.firstChild);
+        const noticeBox = document.createElement('div');
+        noticeBox.style.cssText = 'background:#FFF8E1;border:1.5px solid #FFB300;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#795548;line-height:1.7';
+        noticeBox.innerHTML = '💡 <strong>선택하신 이슈·문서 수가 많아 일부 내용이 짧게 정리됐을 수 있어요.</strong><br>더 자세히 필요하면 이슈 수를 나눠서 한 번 더 생성해보세요.';
+        if (resultWrap) resultWrap.insertBefore(noticeBox, resultWrap.firstChild);
       }
 
     } else {
@@ -18289,7 +18487,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.02.007
+  Day:음 · v2026.07.02.008
 </div>
 </body>
 </html>
