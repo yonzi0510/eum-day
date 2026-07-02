@@ -9237,7 +9237,7 @@ function handleFile(prefix, input) {
 
   // 드래그앤드롭(zoneDrop)과 동일하게 다중 파일 목록 저장 — 클릭으로 여러 파일 선택해도 전부 인식되도록
   if (prefix === 'p') window._pDropFiles = files;
-  if (prefix === 'm') { window._mDropFiles = [files[0]]; analyzeCounselIssues(); }
+  if (prefix === 'm') { window._mDropFiles = [files[0]]; if (document.getElementById('m1')?.checked) analyzeCounselIssues(); }
 }
 
 // ── 드래그앤드롭 공통 함수 ──
@@ -9289,7 +9289,7 @@ function zoneDrop(e, prefix) {
 
   // 실제 파일 참조 저장
   if (prefix === 'p') window._pDropFiles = Array.from(files);
-  if (prefix === 'm') { window._mDropFiles = [files[0]]; analyzeCounselIssues(); }
+  if (prefix === 'm') { window._mDropFiles = [files[0]]; if (document.getElementById('m1')?.checked) analyzeCounselIssues(); }
 }
 
 // ── 신규/재사정 선택 핸들러 ──
@@ -9399,6 +9399,16 @@ function toggleDoc(el, id) {
   }
   // 정기문서: 계획서(p6) 또는 결과평가(p5) 변경 시 사유 박스 업데이트
   if (id === 'p5' || id === 'p6') checkReasonBox();
+  // 상담일지(m1) 선택 시에만 이슈 자동 분석 — 상담일지를 안 쓸 거면 분석하지 않음
+  if (id === 'm1') {
+    if (cb.checked) {
+      analyzeCounselIssues();
+    } else {
+      const card = document.getElementById('counsel-issue-card');
+      if (card) { card.style.display = 'none'; card.innerHTML = ''; }
+      window._counselIssues = null;
+    }
+  }
 }
 
 // ── 상담일지 형식 선택 (SOAP / 서술형) ──
@@ -18487,7 +18497,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.02.008
+  Day:음 · v2026.07.02.009
 </div>
 </body>
 </html>
