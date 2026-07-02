@@ -6844,7 +6844,10 @@ function renderCounselIssuePicker(issues) {
 
   let html = '<div class="card-title"><div class="num">🔎</div> 상담 이슈 선택 <span style="font-size:11px;font-weight:400;color:#888;margin-left:4px">(한 번에 1개씩)</span></div>';
   html += '<div style="font-size:11px;color:#888;margin-bottom:10px">이슈 1개를 골라 상담일지를 생성해요. 다른 이슈도 필요하면 생성 후 하나씩 더 추가할 수 있어요. 선택하지 않으면 AI가 가장 핵심적인 이슈 1건을 알아서 골라요.</div>';
-  html += '<div style="margin-bottom:12px"><input id="counsel-author-name" type="text" placeholder="상담자(작성자) 성명 — 비워두면 기록지에서 자동 확인" style="width:100%;padding:9px 12px;border:1.5px solid #E0E6F0;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box"></div>';
+  html += '<div style="display:flex;gap:8px;margin-bottom:12px">' +
+    '<input id="counsel-author-name" type="text" placeholder="상담자(작성자) 성명 — 비워두면 기록지에서 자동 확인" style="flex:2;padding:9px 12px;border:1.5px solid #E0E6F0;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box">' +
+    '<input id="counsel-guardian-rel" type="text" placeholder="보호자 관계 (예: 딸)" style="flex:1;padding:9px 12px;border:1.5px solid #E0E6F0;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box">' +
+    '</div>';
   html += '<div style="display:flex;flex-direction:column;gap:8px">';
   issues.forEach((iss, i) => {
     const selfDefault = iss.target !== '보호자';
@@ -6998,12 +7001,17 @@ function buildAdditionalCounselSessionPrompt(selectedIssues, counselAuthorName) 
   }
 
   if (guardianIssues.length > 0) {
+    const guardianRel = document.getElementById('counsel-guardian-rel')?.value?.trim() || '';
+    const relRule = guardianRel
+      ? `상담대상 칸에는 반드시 "보호자(${guardianRel})"로 기입할 것.`
+      : `보호자 관계가 기록지에서 확인되면 "보호자(관계)"로 기입하고, 확인되지 않으면 "보호자"로만 기입할 것 ("관계 미상" 표기 금지).`;
     doc += `[보호자 대상 이슈]\n${guardianIssues.map(i => `${i.label} (${i.dateRange || ''}) — 상담형태: ${i.method} — ${i.reason || ''}`).join('\n')}
+${relRule}
 
 아래 구조로 session-card 1개를 작성:
 <div class="session-card" style="border-color:#8abf92">
   <div class="session-header-g"><span class="session-num">회</span><span class="session-title">회차 제목</span><span class="session-date">YYYY.MM.DD (요일)</span></div>
-  <table class="meta-table meta-table-g"><tr><th>상담일시</th><td colspan="3">...</td></tr><tr><th>상담구분</th><td>보호자 상담</td><th>상담대상</th><td>이름 (관계)</td></tr><tr><th>상담형태</th><td>...</td><th>상담자 성명</th><td>...</td></tr></table>
+  <table class="meta-table meta-table-g"><tr><th>상담일시</th><td colspan="3">...</td></tr><tr><th>상담구분</th><td>보호자 상담</td><th>상담대상</th><td>보호자(관계)</td></tr><tr><th>상담형태</th><td>...</td><th>상담자 성명</th><td>...</td></tr></table>
   S/O/A/P 각각 soap-box soap-g 클래스로 구성 (내용 기준은 위와 동일)
   <div class="action-box-g"><div class="action-title-g">조치내용</div><div class="action-item"><span class="action-arrow-g">▶</span><span>내용<span class="action-date-g">YYYY.MM.DD</span></span></div></div>
 </div>
@@ -7093,7 +7101,7 @@ function estimateMonthlyMaxTokens() {
   let tokens = 4000; // 안내문구·메타정보·출처보고 등 고정 오버헤드
   if (m1) tokens += 3500 * Math.max(1, selfCount);          // 회차 미선택 시 AI가 1회차 자동 선정
   if (m1 && m2) tokens += 3000 * Math.max(1, guardianCount); // 보호자 회차도 최소 1회분 여유 확보
-  if (m3) tokens += 4500;
+  if (m3) tokens += 7000; // 실측 결과 4500으로는 잘려서 32000 재시도가 발생 — 여유 있게 상향
   if (m4) tokens += 1500;
   if (m5) tokens += 11000; // 체크박스 선택형 정식 별지 서식 — 표·체크박스 마크업이 많아 분량이 매우 큼 (실측 출력 약 12000토큰)
 
@@ -7354,9 +7362,13 @@ function buildMonthlyPrompt(opinion) {
   // 상담 이슈 선택 결과 (사용자가 이슈 후보 중 고른 항목들) — 같은 이슈라도 본인/보호자 각각 상담했으면 별도 항목으로 들어옴
   const selectedIssues = (typeof getSelectedCounselIssues === 'function') ? getSelectedCounselIssues() : [];
   const counselAuthorName = document.getElementById('counsel-author-name')?.value?.trim() || '';
+  const guardianRel = document.getElementById('counsel-guardian-rel')?.value?.trim() || '';
   const selfIssues = selectedIssues.filter(iss => iss.target === '본인');
   const guardianIssues = selectedIssues.filter(iss => iss.target === '보호자');
   const authorLine = counselAuthorName ? `상담자(작성자) 성명은 반드시 "${counselAuthorName}"으로 기입할 것 (기록지에서 다른 이름이 확인되어도 이 이름을 우선 사용).\n` : '';
+  const guardianRelLine = guardianRel
+    ? `보호자 상담일지의 상담대상 칸에는 반드시 "보호자(${guardianRel})"로 기입할 것.\n`
+    : `보호자 관계(딸·아들 등)가 기록지에서 확인되면 "보호자(관계)"로 기입하고, 확인되지 않으면 "보호자"로만 기입할 것 ("관계 미상" 표기 금지).\n`;
   const issueInstructionText = (docs.m1 && selectedIssues.length > 0)
     ? (selfIssues.length > 0
         ? `[선택된 상담 이슈 — 분기별 상담일지(본인 대상). 반드시 아래 이슈들로만 회차를 구성할 것. 목록에 없는 이슈로 임의 회차 추가 금지]\n` +
@@ -7366,7 +7378,8 @@ function buildMonthlyPrompt(opinion) {
       (guardianIssues.length > 0
         ? `[선택된 상담 이슈 — 보호자 상담일지. 반드시 아래 이슈들로만 회차를 구성할 것. 목록에 없는 이슈로 임의 회차 추가 금지]\n` +
           guardianIssues.map((iss, i) => `${i + 1}. ${iss.label} (${iss.dateRange || ''}) — 상담형태: ${iss.method} — ${iss.reason || ''}`).join('\n') +
-          `\n보호자 상담일지 회차 수: 정확히 위 ${guardianIssues.length}개 이슈 각각에 대해 1회차씩 작성 (같은 이슈로 본인 상담도 선택된 경우, 분기별 상담일지의 해당 회차와 자연스럽게 연계된 내용으로 작성). 총 ${guardianIssues.length}회차.\n\n`
+          `\n보호자 상담일지 회차 수: 정확히 위 ${guardianIssues.length}개 이슈 각각에 대해 1회차씩 작성 (같은 이슈로 본인 상담도 선택된 경우, 분기별 상담일지의 해당 회차와 자연스럽게 연계된 내용으로 작성). 총 ${guardianIssues.length}회차.\n` +
+          guardianRelLine + `\n`
         : '') +
       authorLine
     : '';
@@ -18650,7 +18663,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.02.013
+  Day:음 · v2026.07.03.001
 </div>
 </body>
 </html>
