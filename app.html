@@ -8465,40 +8465,36 @@ ${result3 ? '[앞 단계 결과평가 핵심 참고 — 급여목표 확인용]\
     if (type === 'monthly') {
       const r = extractBodyContent(window._monthlyHtml || '');
       const resName = window.currentLinkedName;
-      if (resName) {
-        updateSessionDocNames(resName);
-        const docMap = {
-          m1: { checked: document.getElementById('m1')?.checked, label: '월간문서' },
-          m3: { checked: document.getElementById('m3')?.checked, label: '월간문서' },
-          m5: { checked: document.getElementById('m5')?.checked, label: '월간문서' },
-        };
-        let savedCount = 0;
-        for (const [, v] of Object.entries(docMap)) {
-          if (v.checked) {
-            await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, v.label, r);
-            savedCount++;
-          }
+      if (resName) updateSessionDocNames(resName);
+      const docMap = {
+        m1: { checked: document.getElementById('m1')?.checked, label: '월간문서' },
+        m3: { checked: document.getElementById('m3')?.checked, label: '월간문서' },
+        m5: { checked: document.getElementById('m5')?.checked, label: '월간문서' },
+      };
+      let savedCount = 0;
+      for (const [, v] of Object.entries(docMap)) {
+        if (v.checked) {
+          await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, v.label, r);
+          savedCount++;
         }
-        if (savedCount === 0) {
-          await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '월간문서', r);
-        }
+      }
+      if (savedCount === 0) {
+        await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, '월간문서', r);
       }
     } else {
       const resultForSave = (window._periodicHtml1 || '') + (window._periodicHtml2 || '') +
                             (window._periodicHtml3 || '') + (window._periodicHtml4 || '');
       const resName = window.currentLinkedName;
-      if (resName) {
-        updateSessionDocNames(resName);
-        const saveMap = [
-          { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
-          { html: window._periodicHtml2, label: '욕구사정' },
-          { html: window._periodicHtml3, label: '급여제공결과평가' },
-          { html: window._periodicHtml4, label: '급여제공계획서' },
-        ];
-        for (const { html: h, label } of saveMap) {
-          const fragment = extractBodyContent(h);
-          if (fragment) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, fragment);
-        }
+      if (resName) updateSessionDocNames(resName);
+      const saveMap = [
+        { html: window._periodicHtml1, label: '기초평가(낙상·욕창·인지)' },
+        { html: window._periodicHtml2, label: '욕구사정' },
+        { html: window._periodicHtml3, label: '급여제공결과평가' },
+        { html: window._periodicHtml4, label: '급여제공계획서' },
+      ];
+      for (const { html: h, label } of saveMap) {
+        const fragment = extractBodyContent(h);
+        if (fragment) await saveDocToSupabase(centerCode, cfg.name || centerCode, resName, label, fragment);
       }
     }
   } catch(saveErr) {
@@ -18102,7 +18098,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.02.003
+  Day:음 · v2026.07.02.004
 </div>
 </body>
 </html>
