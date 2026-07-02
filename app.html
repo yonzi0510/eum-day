@@ -6643,6 +6643,7 @@ async function callClaude(systemPrompt, userContent, docLabel, maxTokens = 16000
       saveUsageToSupabase(log);
     } catch(e) {}
 
+    window._lastStopReason = data.stop_reason || null;
     return data.content[0].text;
   } catch(e) {
     throw e;
@@ -6797,6 +6798,29 @@ function getSelectedCounselIssues() {
     }
   });
   return selected;
+}
+
+// ────── 월간문서 max_tokens 동적 산정 ──────
+// 선택된 문서 종류·회차 수에 맞춰 여유 있게(과소 산정 방지) 예산을 잡는다. 32000 고정 대신 사용해 체감 속도를 높임.
+function estimateMonthlyMaxTokens() {
+  const m1 = document.getElementById('m1')?.checked;
+  const m2 = document.getElementById('m2')?.checked;
+  const m3 = document.getElementById('m3')?.checked;
+  const m4 = document.getElementById('m4')?.checked;
+  const m5 = document.getElementById('m5')?.checked;
+
+  const selected = (typeof getSelectedCounselIssues === 'function') ? getSelectedCounselIssues() : [];
+  const selfCount = selected.filter(i => i.target === '본인').length;
+  const guardianCount = selected.filter(i => i.target === '보호자').length;
+
+  let tokens = 4000; // 안내문구·메타정보·출처보고 등 고정 오버헤드
+  if (m1) tokens += 3500 * Math.max(1, selfCount);          // 회차 미선택 시 AI가 1회차 자동 선정
+  if (m1 && m2) tokens += 3000 * Math.max(1, guardianCount); // 보호자 회차도 최소 1회분 여유 확보
+  if (m3) tokens += 4500;
+  if (m4) tokens += 1500;
+  if (m5) tokens += 5500; // 별지 서식 표 전체라 분량이 큼
+
+  return Math.min(32000, Math.max(8000, tokens));
 }
 
 function buildMonthlyPrompt(opinion) {
@@ -8330,7 +8354,8 @@ async function startGenerate(type) {
 
     if (type === 'monthly') {
       const systemPrompt = buildMonthlyPrompt(opinion);
-      const apiPromise = callClaude(systemPrompt, userContent, '월간문서', 32000);
+      const dynamicMaxTokens = (typeof estimateMonthlyMaxTokens === 'function') ? estimateMonthlyMaxTokens() : 32000;
+      const apiPromise = callClaude(systemPrompt, userContent, '월간문서', dynamicMaxTokens);
 
       const pctMsgs = ['기록지 분석 중...', '케어 이벤트 감지 중...', '의견 통합 중...', '문서 작성 중...', '문서 작성 중...', '문서 작성 중...', '저장 중...', '최종 완료 중...'];
       const setMonthlyPct = (pct, msg) => {
@@ -8369,6 +8394,15 @@ async function startGenerate(type) {
       prog.classList.remove('show');
       document.getElementById(type + '-result').classList.add('show');
       renderMonthlyResult(result);
+
+      // 토큰 한도로 문서가 중간에 잘렸는지 확인 — 조용히 넘어가지 않고 사용자에게 명확히 알림
+      if (window._lastStopReason === 'max_tokens') {
+        const resultWrap = document.getElementById('monthly-result');
+        const warnBox = document.createElement('div');
+        warnBox.style.cssText = 'background:#FCEBEB;border:1.5px solid #E24B4A;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#791F1F;line-height:1.7';
+        warnBox.innerHTML = '⚠️ <strong>문서가 분량 한도로 중간에 잘렸을 수 있어요.</strong><br>선택한 이슈/문서 수를 줄이거나 나눠서 다시 생성해주세요.';
+        if (resultWrap) resultWrap.insertBefore(warnBox, resultWrap.firstChild);
+      }
 
     } else {
       // ── 정기문서: 4단계 순차 API 호출 ──
@@ -18255,7 +18289,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.02.006
+  Day:음 · v2026.07.02.007
 </div>
 </body>
 </html>
