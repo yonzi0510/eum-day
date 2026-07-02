@@ -62,6 +62,43 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#F5F
 .btn-highlight{
   animation:pulseGreen 1.8s ease-in-out infinite !important;
 }
+.click-tip{
+  display:none;
+  position:absolute;
+  left:50%;
+  top:-34px;
+  transform:translate(-50%,0);
+  background:#378ADD;
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  padding:6px 13px;
+  border-radius:8px;
+  white-space:nowrap;
+  box-shadow:0 4px 12px rgba(55,138,221,.35);
+  animation:tipBounce 1.6s ease-in-out infinite;
+  pointer-events:none;
+  z-index:6;
+}
+.click-tip::after{
+  content:'';
+  position:absolute;
+  left:50%;
+  bottom:-6px;
+  transform:translateX(-50%);
+  border-width:6px 6px 0 6px;
+  border-style:solid;
+  border-color:#378ADD transparent transparent transparent;
+}
+@keyframes tipBounce{
+  0%,100%{transform:translate(-50%,0)}
+  50%{transform:translate(-50%,-5px)}
+}
+.highlight-pulse .click-tip,
+.tag-highlight .click-tip,
+.btn-highlight + .click-tip{
+  display:block;
+}
 
 /* ── 업로드존 ── */
 .upload-zone{border:2.5px dashed #A8C4E8;border-radius:12px;padding:32px 20px;text-align:center;background:linear-gradient(135deg,#F0F6FF,#F8FAFF);transition:all .3s;cursor:pointer;position:relative;overflow:visible}
@@ -70,7 +107,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#F5F
 .uz-icon{font-size:32px;margin-bottom:10px;transition:transform .3s}
 .upload-zone:hover .uz-icon{transform:scale(1.1)}
 .uz-main{font-size:14px;color:#1F3864;font-weight:700;margin-bottom:6px}
-.uz-cta{display:inline-block;background:#1F3864;color:#fff;font-size:12px;font-weight:600;padding:6px 18px;border-radius:20px;margin-bottom:10px;letter-spacing:.02em}
+.uz-cta{display:inline-block;position:relative;background:#1F3864;color:#fff;font-size:12px;font-weight:600;padding:6px 18px;border-radius:20px;margin-bottom:10px;letter-spacing:.02em}
 .uz-guide{font-size:11px;color:#666;line-height:2;text-align:left;display:inline-block;background:rgba(255,255,255,0.7);border-radius:8px;padding:8px 14px}
 .uz-sub{font-size:11px;color:#aaa;margin-top:8px}
 .file-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;justify-content:center}
@@ -91,7 +128,7 @@ body{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;background:#F5F
 .opinion-box textarea{width:100%;min-height:68px;border:1px solid #D0D5E8;border-radius:7px;padding:9px 11px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.7;color:#333}
 .opinion-box textarea:focus{outline:none;border-color:#1F3864}
 .note-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.note-tag{display:inline-flex;align-items:center;gap:5px;background:#EEF2FF;border:1px solid #C5CAE9;border-radius:16px;padding:4px 11px;font-size:11px;color:#1F3864;cursor:pointer;transition:all .2s;user-select:none}
+.note-tag{display:inline-flex;position:relative;align-items:center;gap:5px;background:#EEF2FF;border:1px solid #C5CAE9;border-radius:16px;padding:4px 11px;font-size:11px;color:#1F3864;cursor:pointer;transition:all .2s;user-select:none}
 .note-tag:hover{background:#E3E8FF;border-color:#9AAECC}
 .note-tag.active{background:#1F3864;color:#fff;border-color:#1F3864}
 
@@ -245,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <div class="upload-zone highlight-pulse" id="uploadZone" onclick="startUpload()" style="position:relative">
       <div class="uz-icon">📂</div>
       <div class="uz-main">급여제공기록지 PDF 올리기</div>
-      <div class="uz-cta">📎 파일 선택하기</div>
+      <div class="uz-cta">📎 파일 선택하기<div class="click-tip">클릭해보세요</div></div>
       <div class="uz-guide">
         📋 급여제공기록지 (최소 3개월분 필수)<br>
         📄 이전 욕구사정 평가지<br>
@@ -279,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <textarea id="opinionTxt" placeholder="예시) * 인지 기능이 직전 평가보다 눈에 띄게 저하된 것 같음&#10;* 낙상 위험이 매우 높아 이동 시 항상 보조 필요"></textarea>
       <div style="font-size:11px;color:#555;font-weight:500;margin-top:12px;margin-bottom:6px">💡 해당 사항을 눌러 빠르게 추가하세요</div>
       <div class="note-tags" id="noteTags">
-        <span class="note-tag tag-highlight" id="tag0" onclick="onTagClick(this,'등급 갱신 신청하였으나 동일 등급으로 판정됨')">등급 갱신 → 동일 등급 유지</span>
+        <span class="note-tag tag-highlight" id="tag0" onclick="onTagClick(this,'등급 갱신 신청하였으나 동일 등급으로 판정됨')">등급 갱신 → 동일 등급 유지<span class="click-tip">클릭해보세요</span></span>
         <span class="note-tag" onclick="onTagClick(this,'보호자 요청으로 서비스 항목 일부 변경 검토 필요')">보호자 서비스 변경 요청</span>
         <span class="note-tag" onclick="onTagClick(this,'낙상 사고 발생 후 이동 보조 항목 강화 필요')">낙상 사고 발생</span>
         <span class="note-tag" onclick="onTagClick(this,'신체 상태 급변으로 서비스 내용 전면 재검토 필요')">신체 상태 급변</span>
@@ -289,9 +326,12 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
 
   <!-- 생성 버튼 -->
-  <button class="gen-btn" id="genBtn" onclick="startGenerate()">
-    ✨ AI로 정기 문서 자동 생성하기
-  </button>
+  <div style="position:relative" id="genBtnWrap">
+    <button class="gen-btn" id="genBtn" onclick="startGenerate()">
+      ✨ AI로 정기 문서 자동 생성하기
+    </button>
+    <span class="click-tip" id="genBtnTip">클릭해보세요</span>
+  </div>
 
 </div><!-- /input-area -->
 
@@ -877,8 +917,8 @@ function startUpload() {
         btn.classList.add('ready');
         btn.classList.add('btn-highlight');
         btn.textContent = '✨ AI로 정기 문서 자동 생성하기';
-        // 버튼으로 스크롤
-        setTimeout(() => btn.scrollIntoView({behavior:'smooth', block:'nearest'}), 300);
+        // 버튼으로 스크롤 (말풍선이 잘리지 않도록 여유를 두고 중앙 정렬)
+        setTimeout(() => btn.scrollIntoView({behavior:'smooth', block:'center'}), 300);
       }, files.length * 120 + 200);
       return;
     }
