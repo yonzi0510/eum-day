@@ -1655,6 +1655,19 @@ function closeFullscreen() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeFullscreen();
 });
+
+// 외부 링크(?doc=key)로 들어온 경우 해당 샘플을 자동으로 열어줌
+(function(){
+  try {
+    var doc = new URLSearchParams(location.search).get('doc');
+    if (doc && SAMPLES[doc]) {
+      document.addEventListener('DOMContentLoaded', function(){
+        var card = document.querySelector('.doc-card[onclick*="\'' + doc + '\'"]');
+        if (card) card.click();
+      });
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
