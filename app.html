@@ -6734,8 +6734,11 @@ function renderCounselIssuePicker(issues) {
 
   let html = '<div class="card-title"><div class="num">🔎</div> 상담 이슈 선택 <span style="font-size:11px;font-weight:400;color:#888;margin-left:4px">(복수 선택 가능)</span></div>';
   html += '<div style="font-size:11px;color:#888;margin-bottom:10px">선택한 이슈마다 상담일지 1회차씩 작성돼요. 선택하지 않으면 AI가 가장 핵심적인 이슈 1건을 알아서 골라요.</div>';
+  html += '<div style="margin-bottom:12px"><input id="counsel-author-name" type="text" placeholder="상담자(작성자) 성명 — 비워두면 기록지에서 자동 확인" style="width:100%;padding:9px 12px;border:1.5px solid #E0E6F0;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box"></div>';
   html += '<div style="display:flex;flex-direction:column;gap:8px">';
   issues.forEach((iss, i) => {
+    const selfDefault = iss.target !== '보호자';
+    const guardianDefault = iss.target === '보호자';
     html += `
       <div style="border:1.5px solid #E0E6F0;border-radius:10px;padding:10px 12px">
         <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
@@ -6745,20 +6748,28 @@ function renderCounselIssuePicker(issues) {
             <div style="font-size:11px;color:#666;margin-top:2px">${iss.reason || ''}</div>
           </div>
         </label>
-        <div id="issue-opts-${i}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #E0E6F0;gap:8px">
-          <select id="issue-target-${i}" style="flex:1;font-size:11px;padding:5px 6px;border:1px solid #E0E6F0;border-radius:6px">
-            <option value="본인" ${iss.target === '본인' ? 'selected' : ''}>상담대상: 본인</option>
-            <option value="보호자" ${iss.target === '보호자' ? 'selected' : ''}>상담대상: 보호자</option>
-          </select>
-          <select id="issue-method-${i}" style="flex:1;font-size:11px;padding:5px 6px;border:1px solid #E0E6F0;border-radius:6px">
-            <option value="대면" ${iss.method === '대면' ? 'selected' : ''}>상담형태: 대면</option>
-            <option value="전화" ${iss.method === '전화' ? 'selected' : ''}>상담형태: 전화</option>
-          </select>
+        <div id="issue-opts-${i}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #E0E6F0;flex-direction:column;gap:6px">
+          <div style="font-size:10.5px;color:#999">같은 이슈로 본인·보호자 둘 다 상담했다면 둘 다 선택하세요</div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#333">
+            <input type="checkbox" id="issue-target-self-${i}" ${selfDefault ? 'checked' : ''}>
+            본인과 상담
+            <select id="issue-method-self-${i}" style="margin-left:auto;font-size:11px;padding:4px 6px;border:1px solid #E0E6F0;border-radius:6px">
+              <option value="대면" ${iss.method !== '전화' ? 'selected' : ''}>대면</option>
+              <option value="전화" ${iss.method === '전화' ? 'selected' : ''}>전화</option>
+            </select>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#333">
+            <input type="checkbox" id="issue-target-guardian-${i}" ${guardianDefault ? 'checked' : ''}>
+            보호자와 상담
+            <select id="issue-method-guardian-${i}" style="margin-left:auto;font-size:11px;padding:4px 6px;border:1px solid #E0E6F0;border-radius:6px">
+              <option value="전화" ${iss.method !== '대면' ? 'selected' : ''}>전화</option>
+              <option value="대면" ${iss.method === '대면' ? 'selected' : ''}>대면</option>
+            </select>
+          </label>
         </div>
       </div>`;
   });
   html += '</div>';
-  html += '<div style="margin-top:10px"><input id="counsel-author-name" type="text" placeholder="상담자(작성자) 성명 — 비워두면 기록지에서 자동 확인" style="width:100%;padding:9px 12px;border:1.5px solid #E0E6F0;border-radius:8px;font-size:12px;font-family:inherit;box-sizing:border-box"></div>';
   card.innerHTML = html;
 }
 
@@ -6773,10 +6784,16 @@ function getSelectedCounselIssues() {
   const selected = [];
   issues.forEach((iss, i) => {
     const cb = document.querySelector(`.issue-check[data-idx="${i}"]`);
-    if (cb && cb.checked) {
-      const target = document.getElementById(`issue-target-${i}`)?.value || iss.target || '본인';
-      const method = document.getElementById(`issue-method-${i}`)?.value || iss.method || '대면';
-      selected.push({ label: iss.label, dateRange: iss.dateRange, reason: iss.reason, target, method });
+    if (!cb || !cb.checked) return;
+    const selfCb = document.getElementById(`issue-target-self-${i}`);
+    const guardianCb = document.getElementById(`issue-target-guardian-${i}`);
+    if (selfCb && selfCb.checked) {
+      const method = document.getElementById(`issue-method-self-${i}`)?.value || '대면';
+      selected.push({ label: iss.label, dateRange: iss.dateRange, reason: iss.reason, target: '본인', method });
+    }
+    if (guardianCb && guardianCb.checked) {
+      const method = document.getElementById(`issue-method-guardian-${i}`)?.value || '전화';
+      selected.push({ label: iss.label, dateRange: iss.dateRange, reason: iss.reason, target: '보호자', method });
     }
   });
   return selected;
@@ -6978,14 +6995,24 @@ function buildMonthlyPrompt(opinion) {
 
   // docList가 비어있어도 기본값 추가하지 않음 (선택된 문서만 생성)
 
-  // 상담 이슈 선택 결과 (사용자가 이슈 후보 중 고른 항목들)
+  // 상담 이슈 선택 결과 (사용자가 이슈 후보 중 고른 항목들) — 같은 이슈라도 본인/보호자 각각 상담했으면 별도 항목으로 들어옴
   const selectedIssues = (typeof getSelectedCounselIssues === 'function') ? getSelectedCounselIssues() : [];
   const counselAuthorName = document.getElementById('counsel-author-name')?.value?.trim() || '';
+  const selfIssues = selectedIssues.filter(iss => iss.target === '본인');
+  const guardianIssues = selectedIssues.filter(iss => iss.target === '보호자');
+  const authorLine = counselAuthorName ? `상담자(작성자) 성명은 반드시 "${counselAuthorName}"으로 기입할 것 (기록지에서 다른 이름이 확인되어도 이 이름을 우선 사용).\n` : '';
   const issueInstructionText = (docs.m1 && selectedIssues.length > 0)
-    ? `[선택된 상담 이슈 — 반드시 아래 이슈들로만 상담일지 회차를 구성할 것. 목록에 없는 이슈로 임의 회차 추가 금지]\n` +
-      selectedIssues.map((iss, i) => `${i + 1}. ${iss.label} (${iss.dateRange || ''}) — 상담대상: ${iss.target} — 상담형태: ${iss.method} — ${iss.reason || ''}`).join('\n') +
-      `\n상담 횟수: 정확히 위 ${selectedIssues.length}개 이슈 각각에 대해 1회차씩만 작성. 총 ${selectedIssues.length}회차.\n` +
-      (counselAuthorName ? `상담자(작성자) 성명은 반드시 "${counselAuthorName}"으로 기입할 것 (기록지에서 다른 이름이 확인되어도 이 이름을 우선 사용).\n` : '')
+    ? (selfIssues.length > 0
+        ? `[선택된 상담 이슈 — 분기별 상담일지(본인 대상). 반드시 아래 이슈들로만 회차를 구성할 것. 목록에 없는 이슈로 임의 회차 추가 금지]\n` +
+          selfIssues.map((iss, i) => `${i + 1}. ${iss.label} (${iss.dateRange || ''}) — 상담형태: ${iss.method} — ${iss.reason || ''}`).join('\n') +
+          `\n분기별 상담일지 회차 수: 정확히 위 ${selfIssues.length}개 이슈 각각에 대해 1회차씩만 작성. 총 ${selfIssues.length}회차.\n\n`
+        : '') +
+      (guardianIssues.length > 0
+        ? `[선택된 상담 이슈 — 보호자 상담일지. 반드시 아래 이슈들로만 회차를 구성할 것. 목록에 없는 이슈로 임의 회차 추가 금지]\n` +
+          guardianIssues.map((iss, i) => `${i + 1}. ${iss.label} (${iss.dateRange || ''}) — 상담형태: ${iss.method} — ${iss.reason || ''}`).join('\n') +
+          `\n보호자 상담일지 회차 수: 정확히 위 ${guardianIssues.length}개 이슈 각각에 대해 1회차씩 작성 (같은 이슈로 본인 상담도 선택된 경우, 분기별 상담일지의 해당 회차와 자연스럽게 연계된 내용으로 작성). 총 ${guardianIssues.length}회차.\n\n`
+        : '') +
+      authorLine
     : '';
 
   return `${getStylePrompt('m')}파일을 읽고 아래 항목을 직접 파악하여 문서 작성에 반영할 것.
@@ -18228,7 +18255,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.02.005
+  Day:음 · v2026.07.02.006
 </div>
 </body>
 </html>
