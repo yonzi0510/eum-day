@@ -8572,7 +8572,10 @@ async function startGenerate(type) {
     stepLabels.forEach(({ id, checked, icon, text }) => {
       const el = document.getElementById(id);
       if (!el) return;
-      const isChecked = document.getElementById(checked)?.checked;
+      // 보호자 상담일지(m2)는 숨겨진 채 항상 checked라, 상담일지(m1)가 켜져 있을 때만 실제로 작성됨
+      const isChecked = checked === 'm2'
+        ? (document.getElementById('m1')?.checked && document.getElementById('m2')?.checked)
+        : document.getElementById(checked)?.checked;
       el.querySelector('.picon').textContent = isChecked ? icon : '—';
       el.childNodes[1] && (el.childNodes[1].textContent = isChecked ? text : '(미선택)');
       el.style.opacity = isChecked ? '1' : '0.35';
@@ -18647,7 +18650,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.02.012
+  Day:음 · v2026.07.02.013
 </div>
 </body>
 </html>
