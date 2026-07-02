@@ -6119,7 +6119,7 @@ async function loadDocHistory() {
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
-    const docs = (await res.json()).filter(d => d.doc_type !== '__residents__');
+    const docs = (await res.json()).filter(d => d.doc_type && !d.doc_type.startsWith('__'));
 
     if (!docs.length) {
       body.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:13px">아직 저장된 문서가 없어요.</div>';
@@ -6286,7 +6286,7 @@ async function loadResultsDocs() {
     const all = await res.json();
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     const docs = Array.isArray(all)
-      ? all.filter(d => d.doc_type && d.doc_type !== '__residents__' && new Date(d.created_at).getTime() >= cutoff)
+      ? all.filter(d => d.doc_type && !d.doc_type.startsWith('__') && new Date(d.created_at).getTime() >= cutoff)
       : [];
 
     // 세션 문서 병합 (Supabase에 없는 것만)
@@ -17995,7 +17995,7 @@ async function loadAdminDocHistory() {
     const res = await fetch(url, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
-    const docs = await res.json();
+    const docs = (await res.json()).filter(d => d.doc_type && !d.doc_type.startsWith('__'));
 
     if (!docs.length) {
       el.innerHTML = '<div style="text-align:center;color:#bbb;padding:12px;font-size:12px">저장된 문서 없음</div>';
@@ -18663,7 +18663,7 @@ function journalDownloadAll() {
 
 
 <div style="text-align:center;padding:20px 0 28px;font-size:11px;color:#bbb;font-family:'Noto Sans KR','맑은 고딕',sans-serif">
-  Day:음 · v2026.07.03.001
+  Day:음 · v2026.07.03.002
 </div>
 </body>
 </html>
